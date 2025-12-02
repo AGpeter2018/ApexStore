@@ -4,7 +4,7 @@ import { getCollections, getCollectionBySlug, createCollection, updateCollection
 const router = express.Router()
 
 router.get('/', getCollections);
-router.get('/:id', getCollectionBySlug);
+router.get('/:slug', getCollectionBySlug);
 router.post('/', createCollection);
 router.put('/:id', updateCollection);
 router.delete('/:id', deleteCollection);

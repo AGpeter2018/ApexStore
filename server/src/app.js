@@ -16,7 +16,7 @@ app.use(express.urlencoded({extended: true}))
 
 // Routes
 app.use('/api/collections', router)
-app.use('/api/products', router)
+app.use('/api/products', productRouter)
 
 
 export default app

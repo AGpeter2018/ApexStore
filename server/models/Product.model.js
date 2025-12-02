@@ -211,7 +211,7 @@ const productSchema = new mongoose.Schema({
 });
 
 // Generate slug from name before saving
-productSchema.pre('save', function(next) {
+productSchema.pre('save', async function() {
     if (this.isModified('name')) {
         this.slug = this.name
             .toLowerCase()
@@ -226,7 +226,7 @@ productSchema.pre('save', function(next) {
         this.sku = `DRUM-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     }
     
-    next();
+
 });
 
 // Virtual for discount percentage
