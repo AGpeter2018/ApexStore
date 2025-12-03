@@ -1,11 +1,14 @@
 import { ChevronDown, ChevronUp, Menu, Search, User, X } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AnchorLink from 'react-anchor-link-smooth-scroll'
+import ProductAdminFilterAndSearch from './ProductAdminFilterAndSearch'
 
 
 const NavBar = ({scrolled}) => {
     const [openMenu, setOpenMenu] = useState(false)
+    
+
    return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-slate-950/80 backdrop-blur-lg border-b border-slate-900 shadow-2xl' : 'bg-slate-950 backdrop-blur-sm'}`}>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -43,6 +46,7 @@ const NavBar = ({scrolled}) => {
                 </div>
                 </Link>
                 
+                {/* <ProductAdminFilterAndSearch/> */}
                
                 <div className='hidden md:flex items-center '>
                   <Search className=' text-gray-300 cursor-pointer w-5 h-6  md:block hidden'/>
