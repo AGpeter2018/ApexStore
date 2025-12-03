@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-import Footer from './Footer';
+import ProductAdminFilterAndSearch from './ProductAdminFilterAndSearch';
 
 const Collections = () => {
     const [collections, setCollections] = useState([]);
+    const [filteredCollections, setFilteredCollections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -17,6 +18,7 @@ const Collections = () => {
         try {
             const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/collections`);
             setCollections(data.data);
+            setFilteredCollections(data.data);
             setLoading(false);
             console.log('Fetched collections:', data.data);
         } catch (err) {
@@ -54,9 +56,11 @@ const Collections = () => {
                         Add Collection
                     </Link>
                 </div>
+
+                   <ProductAdminFilterAndSearch collections={collections} onFilter={setFilteredCollections}/>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {collections.map((collection) => (
+                    {filteredCollections.map((collection) => (
                     <Link to={`/collections/${collection.slug}`} key={collection._id}>
                         <div 
                             className="bg-white rounded-lg md:shadow-sm shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
