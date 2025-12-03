@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { ChevronLeft, Tag, Package, ShoppingCart } from 'lucide-react';
 
+import Footer from './Footer';
+
 const ProductShow = () => {
     const { slug } = useParams();
     const [collectionData, setCollectionData] = useState(null);
@@ -231,6 +233,7 @@ const ProductShow = () => {
                     </div>
                 </div>
             )}
+            <Footer/>
         </div>
     );
 };

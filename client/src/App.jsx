@@ -8,6 +8,8 @@ import AddCollectionPage from "./pages/AddCollectionPage"
 import CollectionDetailPage from "./pages/collectionDetailPage"
 import ProductShow from "./components/productShow"
 import ShowProductPage from "./pages/ShowProductPage"
+import AddProductPage from "./pages/Product-admin"
+import Footer from "./components/Footer"
 
 function App() {
   return (
@@ -36,15 +38,24 @@ function App() {
           <ShowProductPage/>
             </>    
           }
-          />
+        />
 
-          <Route path="/products/*" element={
+        <Route path="/products/*" element={
             <>
           <NavBar/>
           <CollectionDetailPage/>
+          <Footer/>
             </>    
-            }/>
-         
+          }
+        />
+
+        <Route path="/admin/add-product" element={
+            <>
+          <NavBar/>
+          <AddProductPage/>
+            </>    
+          }
+        />
         </Routes>
       </div>
   )
