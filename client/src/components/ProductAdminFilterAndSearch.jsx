@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 const ProductAdminFilterAndSearch = ({collections, onFilter}) => {
 
@@ -9,6 +9,7 @@ const ProductAdminFilterAndSearch = ({collections, onFilter}) => {
       return val.name.toLowerCase().includes(value)
     })
     onFilter(filtered)
+
   }
 
     return(
