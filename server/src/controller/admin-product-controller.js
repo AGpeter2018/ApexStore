@@ -40,35 +40,7 @@ export const adminAddProduct = async (req, res) => {
             });
         }
 
-        const newProduct = await Product.create({
-            name,
-            description,
-            shortDescription,
-            price,
-            compareAtPrice,
-            images,
-            drumType,
-            materials,
-            dimensions,
-            woodType,
-            skinType,
-            tuning,
-            sku,
-            stock,
-            lowStockThreshold,
-            collection,
-            tags,
-            origin,
-            features,
-            careInstructions,
-            videoUrl,
-            isActive,
-            featured,
-            metaTitle,
-            metaDescription,
-            customizable,
-            customizationOptions
-        });
+        const newProduct = await Product.create(req.body);
 
         res.status(201).json({
             success: true,

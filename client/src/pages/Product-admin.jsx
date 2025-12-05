@@ -718,6 +718,7 @@ const AddProductPage = () => {
                     <div className="flex gap-4">
                         <button
                             type="submit"
+                             onClick={() => navigate('/admin')}
                             disabled={loading || uploading}
                             className="flex-1 bg-orange-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                         >
@@ -738,7 +739,7 @@ const AddProductPage = () => {
                         
                         <button
                             type="button"
-                            onClick={() => navigate('/products')}
+                            onClick={() => navigate('/admin')}
                             className="px-8 py-4 bg-gray-500 text-white rounded-lg font-bold hover:bg-gray-600 transition-colors"
                         >
                             Cancel
