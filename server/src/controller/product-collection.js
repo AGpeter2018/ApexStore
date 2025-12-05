@@ -17,10 +17,11 @@ export const getCollections = async (req, res) => {
             data: collections
         });
     } catch (error) {
-        res.status(500).json({
+      return res.status(500).json({
             success: false,
-            message: error.message
-        });
+            message: 'Internal server error',
+            error: error.message  // ✅ Show the actual error
+        })
     }
 };
 
@@ -54,12 +55,41 @@ export const getCollectionBySlug = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+      return res.status(500).json({
+            success: false, 
+            message: 'Internal server error',
+            error: error.message  // ✅ Show the actual error
+        })
     }
 };
+
+export const getCollectionById = async (req, res) => {
+
+    try {
+        const { id } = req.params
+        const collection = await Collection.findById(id)
+        if(!collection) {
+           return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message  // ✅ Show the actual error
+        })
+        }
+
+        res.status(200).json({
+            success: true,
+            data: collection 
+        })
+        
+    } catch (error) {
+          return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message  // ✅ Show the actual error
+        })
+    }
+
+}
 
 // Create collection
 export const createCollection = async (req, res) => {
@@ -71,10 +101,11 @@ export const createCollection = async (req, res) => {
             data: collection
         });
     } catch (error) {
-        res.status(400).json({
+      return res.status(500).json({
             success: false,
-            message: error.message
-        });
+            message: 'Internal server error',
+            error: error.message  // ✅ Show the actual error
+        })
     }
 };
 
@@ -90,7 +121,7 @@ export const updateCollection = async (req, res) => {
         if (!collection) {
             return res.status(404).json({
                 success: false,
-                message: 'Collection not found'
+                message: 'Collection not found',
             });
         }
         
@@ -99,10 +130,11 @@ export const updateCollection = async (req, res) => {
             data: collection
         });
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+       return res.status(500).json({
+        success: false,
+            message: 'Internal server error',
+            error: error.message  // ✅ Show the actual error
+        })
     }
 };
 
@@ -123,9 +155,10 @@ export const deleteCollection = async (req, res) => {
             message: 'Collection deleted successfully'
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+       return res.status(500).json({
+        success: false,
+            message: 'Internal server error',
+            error: error.message  // ✅ Show the actual error
+        })
     }
 };

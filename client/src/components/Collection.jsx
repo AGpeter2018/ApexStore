@@ -37,7 +37,7 @@ const Collections = () => {
 
     if (error) {
         return (
-            <div className="container mx-auto px-4 py-30">
+            <div className="container mx-auto px-4 py-35">
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                     {error}
                 </div>

@@ -5,7 +5,8 @@ import {
     getProductBySlug,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    deleteImage
 } from '../controller/product.controller.js';
 
 const productRouter = express.Router();
@@ -15,5 +16,6 @@ productRouter.get('/:slug', getProductBySlug);
 productRouter.post('/', createProduct);
 productRouter.put('/:id', updateProduct);
 productRouter.delete('/:id', deleteProduct);
+productRouter.delete('/:slug/image/:imageId', deleteImage)
 
 export default productRouter;
