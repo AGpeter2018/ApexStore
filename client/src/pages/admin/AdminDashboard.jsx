@@ -104,6 +104,20 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     </Link>
+                    <Link
+                        to="/admin/users"
+                        className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="bg-green-100 p-4 rounded-lg">
+                                <BarChart3 size={32} className="text-green-600" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-lg text-gray-900">Users</h3>
+                                <p className="text-gray-600 text-sm">View users</p>
+                            </div>
+                        </div>
+                    </Link>
                 </div>
 
                 {/* Stats Overview */}
