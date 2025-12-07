@@ -4,7 +4,7 @@
   "description": "",
   "main": "/server/src/index.js",
   "scripts": {
-   "start": "node server/src/index.js",
+    "start": "node server/src/index.js",
     "dev": "nodemon server/src/index.js"
   },
   "keywords": [],
@@ -12,9 +12,11 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.0",
     "nodemon": "^3.1.11"
   }
