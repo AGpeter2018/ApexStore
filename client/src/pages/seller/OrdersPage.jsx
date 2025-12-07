@@ -1,0 +1,243 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { Eye, Filter, Download, Search } from 'lucide-react';
+
+const OrdersPage = () => {
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [filters, setFilters] = useState({
+        status: '',
+        paymentStatus: '',
+        search: ''
+    });
+
+    useEffect(() => {
+        fetchOrders();
+    }, [filters]);
+
+    const fetchOrders = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const params = new URLSearchParams();
+            if (filters.status) params.append('status', filters.status);
+            if (filters.paymentStatus) params.append('paymentStatus', filters.paymentStatus);
+
+            const { data } = await axios.get(
+                `${import.meta.env.VITE_API_URL}/orders?${params.toString()}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setOrders(data.data);
+            setLoading(false);
+            console.log(data.data)
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            setLoading(false);
+        }
+    };
+
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat('en-NG', {
+            style: 'currency',
+            currency: 'NGN',
+            minimumFractionDigits: 0
+        }).format(price);
+    };
+
+    const getStatusColor = (status) => {
+        const colors = {
+            pending: 'bg-yellow-100 text-yellow-800',
+            processing: 'bg-blue-100 text-blue-800',
+            shipped: 'bg-purple-100 text-purple-800',
+            delivered: 'bg-green-100 text-green-800',
+            cancelled: 'bg-red-100 text-red-800'
+        };
+        return colors[status] || 'bg-gray-100 text-gray-800';
+    };
+
+    const getPaymentStatusColor = (status) => {
+        const colors = {
+            pending: 'bg-yellow-100 text-yellow-800',
+            paid: 'bg-green-100 text-green-800',
+            failed: 'bg-red-100 text-red-800',
+            refunded: 'bg-gray-100 text-gray-800'
+        };
+        return colors[status] || 'bg-gray-100 text-gray-800';
+    };
+
+    const filteredOrders = orders.filter(order => {
+        if (filters.search) {
+            const searchLower = filters.search.toLowerCase();
+            return (
+                order.orderNumber.toLowerCase().includes(searchLower) ||
+                order.customer?.name.toLowerCase().includes(searchLower) ||
+                order.customer?.email.toLowerCase().includes(searchLower)
+            );
+        }
+        return true;
+    });
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-orange-600"></div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50 py-8">
+            <div className="max-w-7xl mx-auto px-4">
+                {/* Header */}
+                <div className="mb-8">
+                    <h1 className="text-4xl font-bold text-gray-900">Orders Management</h1>
+                    <p className="text-gray-600 mt-2">View and manage all your orders</p>
+                </div>
+
+                {/* Filters */}
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Search
+                            </label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+                                <input
+                                    type="text"
+                                    placeholder="Order #, customer..."
+                                    value={filters.search}
+                                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Order Status
+                            </label>
+                            <select
+                                value={filters.status}
+                                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            >
+                                <option value="">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Payment Status
+                            </label>
+                            <select
+                                value={filters.paymentStatus}
+                                onChange={(e) => setFilters({ ...filters, paymentStatus: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            >
+                                <option value="">All Payments</option>
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                                <option value="failed">Failed</option>
+                                <option value="refunded">Refunded</option>
+                            </select>
+                        </div>
+
+                        <div className="flex items-end">
+                            <button className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                                <Download size={20} />
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Orders Table */}
+                {filteredOrders.length > 0 ? (
+                    <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50 border-b">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Order #</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Items</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Amount</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Payment</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Date</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {filteredOrders.map((order) => (
+                                        <tr key={order._id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4">
+                                                <p className="font-semibold text-gray-900">{order.orderNumber}</p>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div>
+                                                    <p className="font-semibold text-gray-900">{order.customer?.name}</p>
+                                                    <p className="text-sm text-gray-500">{order.customer?.email}</p>
+                                                    <p className="text-sm text-gray-500">{order.customer?.phone}</p>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <p className="text-gray-900">{order.items?.length} item(s)</p>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <p className="font-bold text-gray-900">{formatPrice(order.total)}</p>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPaymentStatusColor(order.paymentStatus)}`}>
+                                                    {order.paymentStatus}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.orderStatus)}`}>
+                                                    {order.orderStatus}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <p className="text-sm text-gray-600">
+                                                    {new Date(order.createdAt).toLocaleDateString()}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {new Date(order.createdAt).toLocaleTimeString()}
+                                                </p>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Link
+                                                    to={`/seller/orders/${order._id}`}
+                                                    className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold"
+                                                >
+                                                    <Eye size={18} />
+                                                    View
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-xl shadow-md p-12 text-center">
+                        <div className="text-gray-300 mb-4">
+                            <Filter size={64} className="mx-auto" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">No Orders Found</h3>
+                        <p className="text-gray-600">Try adjusting your filters</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default OrdersPage;

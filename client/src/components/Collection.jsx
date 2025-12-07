@@ -58,15 +58,7 @@ const Collections = () => {
 
     return (
             <main className="container mx-auto px-4 py-25 flex-grow">
-                <div className="flex justify-between items-center mb-12">
-                    <h1 className="text-xl md:text-4xl text-slate-900 font-bold">Our Collections</h1>
-                    <Link 
-                        to="/admin/add-collection"
-                        className="bg-blue-600 text-white text-sm md:text-xl p-3 lg:px-6 py-3 rounded-lg hover:bg-blue-700"
-                    >
-                        Add Collection
-                    </Link>
-                </div>
+              
 
                 <ProductAdminFilterAndSearch collections={collections} onFilter={handleFilter} />
 
