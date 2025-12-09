@@ -15,7 +15,6 @@ const SellerDashboard = () => {
     const fetchDashboardData = async () => {
         try {
             const token = localStorage.getItem('token');
-            console.log(token)
             const [statsRes, ordersRes, productsRes] = await Promise.all([
                 axios.get(`${import.meta.env.VITE_API_URL}/orders/stats`, {
                     headers: { Authorization: `Bearer ${token}` }
@@ -29,7 +28,6 @@ const SellerDashboard = () => {
             setStats(statsRes.data.data);
             setRecentOrders(ordersRes.data.data);
             setLoading(false);
-            console.log(data.data)
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
             setLoading(false);
@@ -64,7 +62,7 @@ const SellerDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-20">
+        <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4">
                 {/* Header */}
                 <div className="mb-8">
@@ -178,7 +176,7 @@ const SellerDashboard = () => {
                     </Link>
 
                     <Link
-                        to="/seller/products"
+                        to="/seller/product/list"
                         className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
                     >
                         <div className="flex items-center gap-4">

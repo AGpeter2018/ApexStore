@@ -6,6 +6,7 @@ import { Package, Layers, Plus, BarChart3 } from 'lucide-react';
 const AdminDashboard = () => {
         const [products, setProducts] = useState([]);
         const [error, setError] = useState('');
+        const [loading, setLoading] = useState('');
         useEffect(() => {
             fetchProducts();
         }, []);
@@ -14,10 +15,10 @@ const AdminDashboard = () => {
             try {
                 const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/products`);
                 setProducts(data.data);
-                // setLoading(false);
+                setLoading(false);
             } catch (err) {
                 setError(err.response?.data?.message || 'Failed to fetch products');
-                // setLoading(false);
+                setLoading(false);
             }
         };
 
@@ -35,8 +36,26 @@ const AdminDashboard = () => {
         return { text: 'In Stock', color: 'text-green-600 bg-green-100' };
     };
 
+   if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container mx-auto px-4 py-35">
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    {error}
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-gray-50 py-20">
+        <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4">
                 <div className="mb-8">
                     <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -46,7 +65,7 @@ const AdminDashboard = () => {
                 {/* Quick Actions */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <Link
-                        to="/admin/productList"
+                        to="/admin/product/list"
                         className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
                     >
                         <div className="flex items-center gap-4">

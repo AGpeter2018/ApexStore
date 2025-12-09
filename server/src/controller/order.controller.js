@@ -1,7 +1,8 @@
 import Order from '../../models/Order.model.js';
 import Product from '../../models/Product.model.js';
 
-// Get all orders (Admin/Seller)
+
+// Get all orders (filtered by seller)
 export const getOrders = async (req, res) => {
     try {
         const { status, paymentStatus, page = 1, limit = 10 } = req.query;
@@ -10,12 +11,26 @@ export const getOrders = async (req, res) => {
         if (status) filter.orderStatus = status;
         if (paymentStatus) filter.paymentStatus = paymentStatus;
 
+        // CRITICAL: If user is a seller, only show orders containing their products
+        if (req.user.role === 'seller') {
+            filter['items.seller'] = req.user._id;
+        }
+
         const orders = await Order.find(filter)
             .populate('customer', 'name email phone')
             .populate('items.product', 'name images')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(Number(limit));
+
+        // For sellers, filter items to only show their products
+        if (req.user.role === 'seller') {
+            orders.forEach(order => {
+                order.items = order.items.filter(item => 
+                    item.seller && item.seller.toString() === req.user._id.toString()
+                );
+            });
+        }
 
         const total = await Order.countDocuments(filter);
 
@@ -36,7 +51,7 @@ export const getOrders = async (req, res) => {
     }
 };
 
-// Get single order
+// Get single order (with ownership check)
 export const getOrder = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id)
@@ -50,6 +65,25 @@ export const getOrder = async (req, res) => {
             });
         }
 
+        // CRITICAL: Check if seller has access to this order
+        if (req.user.role === 'seller') {
+            const hasAccess = order.items.some(item => 
+                item.seller && item.seller.toString() === req.user._id.toString()
+            );
+
+            if (!hasAccess) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'You do not have permission to view this order'
+                });
+            }
+
+            // Filter to show only seller's items
+            order.items = order.items.filter(item => 
+                item.seller && item.seller.toString() === req.user._id.toString()
+            );
+        }
+
         res.status(200).json({
             success: true,
             data: order
@@ -57,13 +91,13 @@ export const getOrder = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+           message: 'Internal server error',
             error: error.message
         });
     }
 };
 
-// Update order status
+// Update order status (with ownership check)
 export const updateOrderStatus = async (req, res) => {
     try {
         const { orderStatus, trackingNumber, notes } = req.body;
@@ -75,6 +109,20 @@ export const updateOrderStatus = async (req, res) => {
                 success: false,
                 message: 'Order not found'
             });
+        }
+
+        // CRITICAL: Check if seller has access to this order
+        if (req.user.role === 'seller') {
+            const hasAccess = order.items.some(item => 
+                item.seller && item.seller.toString() === req.user._id.toString()
+            );
+
+            if (!hasAccess) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'You do not have permission to update this order'
+                });
+            }
         }
 
         if (orderStatus) order.orderStatus = orderStatus;
@@ -100,21 +148,43 @@ export const updateOrderStatus = async (req, res) => {
     }
 };
 
-// Get order statistics
+// Get order statistics (filtered by seller)
 export const getOrderStats = async (req, res) => {
     try {
-        const totalOrders = await Order.countDocuments();
-        const pendingOrders = await Order.countDocuments({ orderStatus: 'pending' });
-        const processingOrders = await Order.countDocuments({ orderStatus: 'processing' });
-        const shippedOrders = await Order.countDocuments({ orderStatus: 'shipped' });
-        const cancelledOrders = await Order.countDocuments({ orderStatus: 'cancelled' });
+        let filter = {};
 
-        const totalRevenue = await Order.aggregate([
-            { $match: { paymentStatus: 'paid' } },
-            { $group: { _id: null, total: { $sum: '$total' } } }
-        ]);
+        // CRITICAL: Filter stats by seller
+        if (req.user.role === 'seller') {
+            filter = { 'items.seller': req.user._id };
+        }
 
-        const recentOrders = await Order.find()
+        const totalOrders = await Order.countDocuments(filter);
+        const pendingOrders = await Order.countDocuments({ ...filter, orderStatus: 'pending' });
+        const processingOrders = await Order.countDocuments({ ...filter, orderStatus: 'processing' });
+        const shippedOrders = await Order.countDocuments({ ...filter, orderStatus: 'shipped' });
+        const deliveredOrders = await Order.countDocuments({ ...filter, orderStatus: 'delivered' });
+        const cancelledOrders = await Order.countDocuments({ ...filter, orderStatus: 'cancelled' });
+
+        // Calculate revenue (only from seller's items)
+        let totalRevenue = 0;
+        if (req.user.role === 'seller') {
+            const orders = await Order.find(filter);
+            orders.forEach(order => {
+                order.items.forEach(item => {
+                    if (item.seller && item.seller.toString() === req.user._id.toString()) {
+                        totalRevenue += item.subtotal;
+                    }
+                });
+            });
+        } else {
+            const revenueResult = await Order.aggregate([
+                { $match: { paymentStatus: 'paid' } },
+                { $group: { _id: null, total: { $sum: '$total' } } }
+            ]);
+            totalRevenue = revenueResult[0]?.total || 0;
+        }
+
+        const recentOrders = await Order.find(filter)
             .populate('customer', 'name email')
             .sort({ createdAt: -1 })
             .limit(5);
@@ -128,7 +198,7 @@ export const getOrderStats = async (req, res) => {
                 shippedOrders,
                 deliveredOrders,
                 cancelledOrders,
-                totalRevenue: totalRevenue[0]?.total || 0,
+                totalRevenue,
                 recentOrders
             }
         });
@@ -141,10 +211,7 @@ export const getOrderStats = async (req, res) => {
     }
 };
 
-// Create order
-
-
-
+    // Create order (Customer only)
 export const createOrder = async (req, res) => {
     try {
         const {
@@ -155,24 +222,36 @@ export const createOrder = async (req, res) => {
         } = req.body;
 
         if (!items || items.length === 0) {
-            return res.status(400).json({ success: false, message: "Order items required" });
+            return res.status(400).json({ 
+                success: false, 
+                message: "Order items required" 
+            });
         }
 
-        // Calculate subtotal
+        // Calculate subtotal and prepare order items
         let subtotal = 0;
 
         const orderItems = await Promise.all(
             items.map(async item => {
                 const product = await Product.findById(item.product);
-                if (!product) throw new Error(`Product not found: ${item.product}`);
+                
+                if (!product) {
+                    throw new Error(`Product not found: ${item.product}`);
+                }
+
+                // Check stock
+                if (product.stock < item.quantity) {
+                    throw new Error(`Insufficient stock for ${product.name}`);
+                }
 
                 const subtotalPerItem = product.price * item.quantity;
                 subtotal += subtotalPerItem;
 
                 return {
                     product: product._id,
+                    seller: product.seller,
                     name: product.name,
-                    image: product.image,
+                    image: product.images?.[0]?.url || '', // Get first image from images array
                     price: product.price,
                     quantity: item.quantity,
                     subtotal: subtotalPerItem
@@ -181,11 +260,11 @@ export const createOrder = async (req, res) => {
         );
 
         const shippingFee = 1500;
-        const tax = subtotal * 0.075;
+        const tax = subtotal * 0.075; // 7.5% tax
         const total = subtotal + shippingFee + tax;
 
-        const order =  new Order({
-            customer: req.user.id,
+        const order = new Order({
+            customer: req.user._id, 
             items: orderItems,
             shippingAddress,
             paymentMethod,
@@ -196,17 +275,60 @@ export const createOrder = async (req, res) => {
             notes
         });
 
-        await order.save();  
+        await order.save();
+
+        // Populate before sending response
+        const populatedOrder = await Order.findById(order._id)
+            .populate('customer', 'name email phone')
+            .populate('items.product', 'name slug images price');
 
         res.status(201).json({
             success: true,
-            data: order
+            data: populatedOrder
         });
 
     } catch (error) {
+        console.error('Create order error:', error);
         res.status(400).json({
             success: false,
-            message: error.message
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
+
+// Get customer's own orders
+export const getMyOrders = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, status } = req.query;
+
+        const filter = { customer: req.user._id };
+        if (status) filter.orderStatus = status;
+
+        const skip = (page - 1) * limit;
+
+        const orders = await Order.find(filter)
+            .populate('items.product', 'name slug images price')
+            .sort({ createdAt: -1 })
+            .limit(Number(limit))
+            .skip(skip);
+
+        const total = await Order.countDocuments(filter);
+
+        res.status(200).json({
+            success: true,
+            count: orders.length,
+            total,
+            page: Number(page),
+            pages: Math.ceil(total / limit),
+            data: orders
+        });
+    } catch (error) {
+        console.error('Get my orders error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
         });
     }
 };

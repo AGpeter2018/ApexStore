@@ -132,7 +132,13 @@ const EditCollectionPage = () => {
                 sortOrder: Number(formData.sortOrder)
             };
 
-            await axios.put(`${import.meta.env.VITE_API_URL}/collections/${formData._id}`, collectionData);
+            const token = localStorage.getItem('token')
+
+            await axios.put(`${import.meta.env.VITE_API_URL}/collections/${formData._id}`, collectionData,  {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
 
             setMessage({ type: 'success', text: 'Collection updated successfully!' });
             

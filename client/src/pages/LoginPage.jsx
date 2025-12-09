@@ -12,6 +12,7 @@ const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('')
 
     const handleChange = (e) => {
         setFormData({
@@ -31,18 +32,23 @@ const LoginPage = () => {
                 formData
             );
 
+            console.log(data.data)
+
             // Store token and user data
             localStorage.setItem('token', data.data.token);
             localStorage.setItem('user', JSON.stringify(data.data));
 
+            setSuccessMessage('SignIn successfully')
             // Redirect based on role
-            if (data.data.role === 'admin') {
-                navigate('/admin');
-            } else if (data.data.role === 'seller') {
-                navigate('/seller');
-            } else {
-                navigate('/collections');
-            }
+            setTimeout(() => {
+                if (data.data.role === 'admin') {
+                    navigate('/admin');
+                } else if (data.data.role === 'seller') {
+                    navigate('/seller');
+                } else {
+                    navigate('/collections');
+                }
+            }, 2500)
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again.');
         } finally {
@@ -91,6 +97,12 @@ const LoginPage = () => {
                     {error && (
                         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6">
                             {error}
+                        </div>
+                    )}
+
+                    {successMessage && (
+                        <div className="bg-green-100 border-l-4 border-red-500 text-green-700 p-4 rounded mb-6">
+                            {successMessage}
                         </div>
                     )}
 

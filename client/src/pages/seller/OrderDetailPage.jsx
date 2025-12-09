@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Package, Truck, CheckCircle, MapPin } from 'lucide-react';
+import { ArrowLeft, Package, MapPin, AlertCircle } from 'lucide-react';
 
 const OrderDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [updating, setUpdating] = useState(false);
     const [updateData, setUpdateData] = useState({
         orderStatus: '',
@@ -20,14 +21,24 @@ const OrderDetailPage = () => {
     }, [id]);
 
     const fetchOrder = async () => {
+        setLoading(true);
+        setError('');
+        
         try {
             const token = localStorage.getItem('token');
+            
             const { data } = await axios.get(
                 `${import.meta.env.VITE_API_URL}/orders/${id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                { 
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    } 
+                }
             );
+            
+            console.log('Order data:', data);
             setOrder(data.data);
-            console.log(data.data)
             setUpdateData({
                 orderStatus: data.data.orderStatus,
                 trackingNumber: data.data.trackingNumber || '',
@@ -36,6 +47,18 @@ const OrderDetailPage = () => {
             setLoading(false);
         } catch (error) {
             console.error('Error fetching order:', error);
+            console.error('Error response:', error.response?.data);
+            
+            if (error.response?.status === 401) {
+                setError('Unauthorized. Please login again.');
+                localStorage.removeItem('token');
+            } else if (error.response?.status === 403) {
+                setError('You do not have permission to view this order.');
+            } else if (error.response?.status === 404) {
+                setError('Order not found.');
+            } else {
+                setError(error.response?.data?.message || 'Failed to fetch order');
+            }
             setLoading(false);
         }
     };
@@ -44,15 +67,24 @@ const OrderDetailPage = () => {
         setUpdating(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.put(
+            
+            const { data } = await axios.put(
                 `${import.meta.env.VITE_API_URL}/orders/${id}/status`,
                 updateData,
-                { headers: { Authorization: `Bearer ${token}` } }
+                { 
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    } 
+                }
             );
+            
+            console.log('Update response:', data);
             alert('Order updated successfully!');
             fetchOrder();
         } catch (error) {
-            alert('Failed to update order');
+            console.error('Update error:', error);
+            alert(error.response?.data?.message || 'Failed to update order');
         } finally {
             setUpdating(false);
         }
@@ -63,7 +95,7 @@ const OrderDetailPage = () => {
             style: 'currency',
             currency: 'NGN',
             minimumFractionDigits: 0
-        }).format(price);
+        }).format(price || 0);
     };
 
     if (loading) {
@@ -74,11 +106,40 @@ const OrderDetailPage = () => {
         );
     }
 
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-20">
+                <div className="max-w-7xl mx-auto px-4">
+                    <button
+                        onClick={() => navigate('/seller/orders')}
+                        className="flex items-center gap-2 text-orange-600 hover:text-orange-700 mb-4"
+                    >
+                        <ArrowLeft size={20} />
+                        Back to Orders
+                    </button>
+                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded flex items-start gap-3">
+                        <AlertCircle className="flex-shrink-0 mt-1" />
+                        <div>
+                            <p className="font-bold">Error Loading Order</p>
+                            <p>{error}</p>
+                            <button 
+                                onClick={fetchOrder}
+                                className="mt-3 text-sm underline hover:no-underline"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (!order) {
         return (
             <div className="min-h-screen bg-gray-50 py-20">
                 <div className="max-w-7xl mx-auto px-4">
-                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
+                    <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded">
                         Order not found
                     </div>
                 </div>
@@ -119,23 +180,27 @@ const OrderDetailPage = () => {
                         <div className="bg-white rounded-xl shadow-md p-6">
                             <h2 className="text-2xl font-bold text-gray-900 mb-6">Order Items</h2>
                             <div className="space-y-4">
-                                {order.items.map((item, index) => (
-                                    <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
-                                        <img
-                                            src={item.image || 'https://via.placeholder.com/80'}
-                                            alt={item.name}
-                                            className="w-20 h-20 rounded-lg object-cover"
-                                        />
-                                        <div className="flex-1">
-                                            <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                                            <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                                            <p className="text-sm text-gray-600">Price: {formatPrice(item.price)}</p>
+                                {order.items && order.items.length > 0 ? (
+                                    order.items.map((item, index) => (
+                                        <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
+                                            <img
+                                                src={item.image || 'https://via.placeholder.com/80'}
+                                                alt={item.name}
+                                                className="w-20 h-20 rounded-lg object-cover"
+                                            />
+                                            <div className="flex-1">
+                                                <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                                                <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                                                <p className="text-sm text-gray-600">Price: {formatPrice(item.price)}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-bold text-gray-900">{formatPrice(item.subtotal)}</p>
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-gray-900">{formatPrice(item.subtotal)}</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500">No items in this order</p>
+                                )}
                             </div>
 
                             {/* Order Summary */}
@@ -160,34 +225,38 @@ const OrderDetailPage = () => {
                         </div>
 
                         {/* Shipping Address */}
-                        <div className="bg-white rounded-xl shadow-md p-6">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <MapPin className="text-orange-600" />
-                                Shipping Address
-                            </h2>
-                            <div className="text-gray-700">
-                                <p className="font-semibold">{order.shippingAddress.name}</p>
-                                <p>{order.shippingAddress.phone}</p>
-                                <p>{order.shippingAddress.street}</p>
-                                <p>
-                                    {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
-                                </p>
-                                <p>{order.shippingAddress.country}</p>
+                        {order.shippingAddress && (
+                            <div className="bg-white rounded-xl shadow-md p-6">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <MapPin className="text-orange-600" />
+                                    Shipping Address
+                                </h2>
+                                <div className="text-gray-700">
+                                    <p className="font-semibold">{order.shippingAddress.name}</p>
+                                    <p>{order.shippingAddress.phone}</p>
+                                    <p>{order.shippingAddress.street}</p>
+                                    <p>
+                                        {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
+                                    </p>
+                                    <p>{order.shippingAddress.country}</p>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* Sidebar */}
                     <div className="space-y-6">
                         {/* Customer Info */}
-                        <div className="bg-white rounded-xl shadow-md p-6">
-                            <h2 className="text-xl font-bold text-gray-900 mb-4">Customer</h2>
-                            <div className="space-y-2 text-gray-700">
-                                <p className="font-semibold">{order.customer.name}</p>
-                                <p className="text-sm">{order.customer.email}</p>
-                                <p className="text-sm">{order.customer.phone}</p>
+                        {order.customer && (
+                            <div className="bg-white rounded-xl shadow-md p-6">
+                                <h2 className="text-xl font-bold text-gray-900 mb-4">Customer</h2>
+                                <div className="space-y-2 text-gray-700">
+                                    <p className="font-semibold">{order.customer.name}</p>
+                                    <p className="text-sm">{order.customer.email}</p>
+                                    <p className="text-sm">{order.customer.phone}</p>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Payment Info */}
                         <div className="bg-white rounded-xl shadow-md p-6">
@@ -195,7 +264,7 @@ const OrderDetailPage = () => {
                             <div className="space-y-2">
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Method</span>
-                                    <span className="font-semibold capitalize">{order.paymentMethod.replace('_', ' ')}</span>
+                                    <span className="font-semibold capitalize">{order.paymentMethod?.replace('_', ' ')}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Status</span>

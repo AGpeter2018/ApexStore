@@ -10,6 +10,8 @@ const CollectionsListPage = () => {
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [selectedCollections, setSelectedCollections] = useState([]);
 
+    const token = localStorage.getItem('token')
+
     useEffect(() => {
         fetchCollections();
     }, []);
@@ -27,7 +29,11 @@ const CollectionsListPage = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/collections/${id}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/collections/${id}`,  {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             setCollections(collections.filter(c => c._id !== id));
             setDeleteConfirm(null);
         } catch (error) {
@@ -42,7 +48,11 @@ const CollectionsListPage = () => {
             try {
                 await Promise.all(
                     selectedCollections.map(id => 
-                        axios.delete(`${import.meta.env.VITE_API_URL}/collections/${id}`)
+                        axios.delete(`${import.meta.env.VITE_API_URL}/collections/${id}`, {
+                            headers: {
+                                Authorization: `Bearer ${token}`
+                            }
+                        })
                     )
                 );
                 setCollections(collections.filter(c => !selectedCollections.includes(c._id)));
