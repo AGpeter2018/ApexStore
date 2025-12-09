@@ -23,11 +23,13 @@ import OrderDetailPage from "./pages/seller/OrderDetailPage"
 import UsersManagementPage from "./pages/admin/UsersManagementPage"
 import ReportsPage from "./pages/admin/ReportsPage"
 import LoginPage from "./pages/LoginPage"
+import RegisterPage from "./pages/RegisterPage"
 
 // Protected Route Component
+
 const ProtectedRoute = ({ children, allowedRoles }) => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    console.log(user)
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+ console.log(user)
     if (!user.role) {
         return <Navigate to="/login" replace />;
     }
@@ -49,6 +51,7 @@ function App() {
           <>
           <NavBar/>
             <CollectionPage/>
+            <Footer/>
             </>    
           }
         />
@@ -80,6 +83,15 @@ function App() {
           }
         />
 
+        <Route path="/register" element={
+            <>
+          <NavBar/>
+          <RegisterPage/>
+          <Footer/>
+            </>    
+          }
+        />
+
         {/* Admin Route */}
 
         <Route path="/admin" element={
@@ -98,26 +110,29 @@ function App() {
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>
             <AddCollectionPage/>
+            <Footer/>
           </ProtectedRoute>
             </>    
           }
         />
 
-        <Route path="/admin/add-product" element={
+        <Route path="/admin/product/add" element={
             <>
           <NavBar/>
-          <ProtectedRoute allowedRoles={['admin']}>
+          <ProtectedRoute allowedRoles={['seller','admin']}>
           <AddProductPage/>
+          <Footer/>
           </ProtectedRoute>
             </>    
           }
         />
 
-        <Route path="/admin/productList" element={
+        <Route path="/admin/product/list" element={
             <>
           <NavBar/>
-          <ProtectedRoute allowedRoles={['admin']}>
-          <ProductsListPage/>    
+          <ProtectedRoute allowedRoles={['seller','admin']}>
+          <ProductsListPage/> 
+          <Footer/>   
           </ProtectedRoute>
             </>    
           }
@@ -127,7 +142,8 @@ function App() {
             <>
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>
-          <EditProductPage/>    
+          <EditProductPage/> 
+          <Footer/>   
           </ProtectedRoute>
             </>    
           }
@@ -137,7 +153,8 @@ function App() {
             <>
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>
-          <CollectionsListPage/>    
+          <CollectionsListPage/> 
+          <Footer/>   
           </ProtectedRoute>
             </>    
           }
@@ -147,7 +164,8 @@ function App() {
             <>
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>
-          <EditCollectionPage/>    
+          <EditCollectionPage/>  
+           <Footer/>     
           </ProtectedRoute>
             </>    
           }
@@ -158,6 +176,7 @@ function App() {
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>
           <AnalyticsPage/>    
+           <Footer/>   
           </ProtectedRoute>
             </>    
           }
@@ -169,7 +188,8 @@ function App() {
             <>
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>
-          <UsersManagementPage/>    
+          <UsersManagementPage/>  
+           <Footer/>     
           </ProtectedRoute>
           </>    
           }
@@ -180,6 +200,7 @@ function App() {
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>
           <ReportsPage/>    
+           <Footer/>   
           </ProtectedRoute>
           </>    
           }
@@ -193,6 +214,7 @@ function App() {
           <NavBar/>
           <ProtectedRoute allowedRoles={['seller', 'admin']}>
             <SellerDashboard/> 
+             <Footer/>   
             </ProtectedRoute>   
             </>    
           }
@@ -202,7 +224,8 @@ function App() {
             <>
           <NavBar/>
           <ProtectedRoute allowedRoles={['seller', 'admin']}>
-          <OrdersPage/>    
+          <OrdersPage/>  
+           <Footer/>     
           </ProtectedRoute>
             </>    
           }
@@ -211,10 +234,47 @@ function App() {
         <Route path="/seller/orders/:id" element={
             <>
           <NavBar/>
+          <ProtectedRoute allowedRoles={['seller', 'admin']}>
           <OrderDetailPage/>    
+           <Footer/>   
+          </ProtectedRoute>
             </>    
           }
         />
+
+        <Route path="/seller/product/list" element={
+            <>
+          <NavBar/>
+          <ProtectedRoute allowedRoles={['seller', 'admin']}>
+          <ProductsListPage />    
+           <Footer/>   
+          </ProtectedRoute>
+            </>    
+          }
+        />
+
+          <Route path="/seller/products/edit/:slug" element={
+            <>
+          <NavBar/>
+          <ProtectedRoute allowedRoles={['seller', 'admin']}>
+          <EditProductPage/> 
+          <Footer/>   
+          </ProtectedRoute>
+            </>    
+          }
+        />
+        
+         <Route path="/seller/product/add" element={
+            <>
+          <NavBar/>
+          <ProtectedRoute allowedRoles={['seller','admin']}>
+          <AddProductPage/>
+           <Footer/>   
+          </ProtectedRoute>
+            </>    
+          }
+        />
+
         </Routes>
       </div>
   )

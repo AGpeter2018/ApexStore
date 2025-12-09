@@ -124,7 +124,11 @@ const EditProductPage = () => {
 
     const removeExistingImage = async (imageId) => {
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/products/${slug}/image/${imageId}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/products/${slug}/image/${imageId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             setFormData(prev => ({
                 ...prev,
                 images: prev.images.filter(img => img._id !== imageId)
@@ -188,12 +192,16 @@ const EditProductPage = () => {
             };
 
             // Update product
-            await axios.put(`${import.meta.env.VITE_API_URL}/products/${formData._id}`, productData);
+            await axios.put(`${import.meta.env.VITE_API_URL}/products/${formData._id}`, productData, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
 
             setMessage({ type: 'success', text: 'Product updated successfully!' });
             
             setTimeout(() => {
-                navigate('/admin');
+                navigate(`/${user.role}`);
             }, 2000);
         } catch (error) {
             setMessage({ 
@@ -205,6 +213,9 @@ const EditProductPage = () => {
             setUploading(false);
         }
     };
+
+    const token = localStorage.getItem('token')
+    const user = JSON.parse(localStorage.getItem('user'))
 
     if (loading) {
         return (
@@ -547,7 +558,7 @@ const EditProductPage = () => {
                         
                         <button
                             type="button"
-                            onClick={() => navigate('/admin')}
+                            onClick={() => navigate(`/${user.role}`)}
                             className="px-8 py-4 bg-gray-500 text-white rounded-lg font-bold hover:bg-gray-600 transition-colors"
                         >
                             Cancel

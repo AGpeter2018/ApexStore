@@ -121,7 +121,13 @@ const AddCollectionPage = () => {
                 sortOrder: Number(formData.sortOrder)
             };
 
-            await axios.post(`${import.meta.env.VITE_API_URL}/collections`, collectionData);
+            const token = localStorage.getItem('token')
+            await axios.post(`${import.meta.env.VITE_API_URL}/collections`, collectionData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
 
             setMessage({ type: 'success', text: 'Collection created successfully!' });
             

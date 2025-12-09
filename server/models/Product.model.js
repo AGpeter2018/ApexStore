@@ -124,6 +124,12 @@ const productSchema = new mongoose.Schema({
         ref: 'Collection',
         required: [true, 'Collection is required']
     },
+
+    seller: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Seller is required']
+    },
     
     // Additional categorization
     tags: [{

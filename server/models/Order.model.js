@@ -17,6 +17,10 @@ const orderSchema = new mongoose.Schema({
             ref: 'Product',
             required: true
         },
+        seller: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'  // Track which seller owns this product
+        },
         name: String,
         image: String,
         price: Number,

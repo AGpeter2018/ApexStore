@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Eye, Filter, Download, Search } from 'lucide-react';
+import { Eye, Filter, Download, Search, AlertCircle } from 'lucide-react';
 
 const OrdersPage = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [filters, setFilters] = useState({
         status: '',
         paymentStatus: '',
@@ -14,24 +15,49 @@ const OrdersPage = () => {
 
     useEffect(() => {
         fetchOrders();
-    }, [filters]);
+    }, [filters.status, filters.paymentStatus]); // Only refetch when filters change
 
     const fetchOrders = async () => {
+        setLoading(true);
+        setError('');
+        
         try {
             const token = localStorage.getItem('token');
+            
+            if (!token) {
+                setError('No authentication token found. Please login.');
+                setLoading(false);
+                return;
+            }
+
             const params = new URLSearchParams();
             if (filters.status) params.append('status', filters.status);
             if (filters.paymentStatus) params.append('paymentStatus', filters.paymentStatus);
 
+            console.log('Fetching orders with URL:', `${import.meta.env.VITE_API_URL}/orders?${params.toString()}`);
+
             const { data } = await axios.get(
                 `${import.meta.env.VITE_API_URL}/orders?${params.toString()}`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                { 
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    } 
+                }
             );
-            setOrders(data.data);
+
+            setOrders(data.data || []);
             setLoading(false);
-            console.log(data.data)
         } catch (error) {
-            console.error('Error fetching orders:', error);
+            
+            if (error.response?.status === 401) {
+                setError('Unauthorized. Please login again.');
+                localStorage.removeItem('token');
+            } else if (error.response?.status === 403) {
+                setError('You do not have permission to view orders.');
+            } else {
+                setError(error.response?.data?.message || 'Failed to fetch orders');
+            }
             setLoading(false);
         }
     };
@@ -69,9 +95,9 @@ const OrdersPage = () => {
         if (filters.search) {
             const searchLower = filters.search.toLowerCase();
             return (
-                order.orderNumber.toLowerCase().includes(searchLower) ||
-                order.customer?.name.toLowerCase().includes(searchLower) ||
-                order.customer?.email.toLowerCase().includes(searchLower)
+                order.orderNumber?.toLowerCase().includes(searchLower) ||
+                order.customer?.name?.toLowerCase().includes(searchLower) ||
+                order.customer?.email?.toLowerCase().includes(searchLower)
             );
         }
         return true;
@@ -85,13 +111,37 @@ const OrdersPage = () => {
         );
     }
 
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-20">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded flex items-start gap-3">
+                        <AlertCircle className="flex-shrink-0 mt-1" />
+                        <div>
+                            <p className="font-bold">Error Loading Orders</p>
+                            <p>{error}</p>
+                            <button 
+                                onClick={fetchOrders}
+                                className="mt-3 text-sm underline hover:no-underline"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4">
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-4xl font-bold text-gray-900">Orders Management</h1>
-                    <p className="text-gray-600 mt-2">View and manage all your orders</p>
+                    <p className="text-gray-600 mt-2">
+                        {orders.length} {orders.length === 1 ? 'order' : 'orders'} found
+                    </p>
                 </div>
 
                 {/* Filters */}
@@ -148,8 +198,14 @@ const OrdersPage = () => {
                             </select>
                         </div>
 
-                        <div className="flex items-end">
-                            <button className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                        <div className="flex items-end gap-2">
+                            <button 
+                                onClick={fetchOrders}
+                                className="flex-1 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+                            >
+                                Refresh
+                            </button>
+                            <button className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
                                 <Download size={20} />
                                 Export
                             </button>
@@ -182,16 +238,16 @@ const OrdersPage = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div>
-                                                    <p className="font-semibold text-gray-900">{order.customer?.name}</p>
-                                                    <p className="text-sm text-gray-500">{order.customer?.email}</p>
-                                                    <p className="text-sm text-gray-500">{order.customer?.phone}</p>
+                                                    <p className="font-semibold text-gray-900">{order.customer?.name || 'N/A'}</p>
+                                                    <p className="text-sm text-gray-500">{order.customer?.email || 'N/A'}</p>
+                                                    <p className="text-sm text-gray-500">{order.customer?.phone || 'N/A'}</p>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <p className="text-gray-900">{order.items?.length} item(s)</p>
+                                                <p className="text-gray-900">{order.items?.length || 0} item(s)</p>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <p className="font-bold text-gray-900">{formatPrice(order.total)}</p>
+                                                <p className="font-bold text-gray-900">{formatPrice(order.total || 0)}</p>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPaymentStatusColor(order.paymentStatus)}`}>
@@ -232,7 +288,11 @@ const OrdersPage = () => {
                             <Filter size={64} className="mx-auto" />
                         </div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">No Orders Found</h3>
-                        <p className="text-gray-600">Try adjusting your filters</p>
+                        <p className="text-gray-600">
+                            {filters.search || filters.status || filters.paymentStatus 
+                                ? 'Try adjusting your filters' 
+                                : 'No orders have been placed yet'}
+                        </p>
                     </div>
                 )}
             </div>

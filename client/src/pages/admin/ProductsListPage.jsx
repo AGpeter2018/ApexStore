@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Plus, Edit, Trash2, Eye, Package } from 'lucide-react';
 
+
 const ProductsListPage = () => {
+    const user = JSON.parse(localStorage.getItem('user'))
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -19,15 +21,25 @@ const ProductsListPage = () => {
             console.log(data.data)
             setProducts(data.data);
             setLoading(false);
+            console.log(data.data)
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to fetch products');
             setLoading(false);
+            console.log(err.message)
         }
     };
 
+   
+    const token = localStorage.getItem('token')
+    console.log(token)
+   
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/products/${id}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/products/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` 
+                }
+            });
             setProducts(products.filter(p => p._id !== id));
             setDeleteConfirm(null);
         } catch (error) {
@@ -58,7 +70,7 @@ const ProductsListPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-25">
+        <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4">
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8">
@@ -67,7 +79,7 @@ const ProductsListPage = () => {
                         <p className="text-gray-600 mt-2">Manage your drum inventory</p>
                     </div>
                     <Link
-                        to="/admin/add-product"
+                        to={`/${user.role}/product/add`}
                         className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors flex items-center gap-2"
                     >
                         <Plus size={20} />
@@ -158,7 +170,7 @@ const ProductsListPage = () => {
                                                             <Eye size={18} />
                                                         </Link>
                                                         <Link
-                                                            to={`/admin/products/edit/${product.slug}`}
+                                                            to={`/${user.role}/products/edit/${product.slug}`}
                                                             className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
                                                             title="Edit"
                                                         >
@@ -186,7 +198,7 @@ const ProductsListPage = () => {
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">No Products Yet</h3>
                         <p className="text-gray-600 mb-6">Start by adding your first product</p>
                         <Link
-                            to="/admin/add-product"
+                            to={`/${user.role}/product/add`}
                             className="inline-block bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
                         >
                             Add Product
