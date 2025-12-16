@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { Navigate } from "react-router-dom"
 
-import CollectionPage from "./components/Collection"
+import CategoryPage from "./components/Category"
 import Homepage from "./pages/homepage"
 import NavBar from "./components/Navbar-2"
 import CollectionDetailPage from "./pages/collectionDetailPage"
@@ -14,8 +14,6 @@ import AddCollectionPage from "./pages/admin/AddCollectionPage"
 import AdminDashboard from "./pages/admin/AdminDashboard"
 import ProductsListPage from "./pages/admin/ProductsListPage"
 import EditProductPage from "./pages/admin/EditProductPage"
-import CollectionsListPage from "./pages/admin/CollectionsListPage"
-import EditCollectionPage from "./pages/admin/EditCollectionPage"
 import AnalyticsPage from "./pages/admin/AnalyticsPage"
 import SellerDashboard from "./pages/seller/SellerDashboard"
 import OrdersPage from "./pages/seller/OrdersPage"
@@ -24,6 +22,10 @@ import UsersManagementPage from "./pages/admin/UsersManagementPage"
 import ReportsPage from "./pages/admin/ReportsPage"
 import LoginPage from "./pages/LoginPage"
 import RegisterPage from "./pages/RegisterPage"
+import ForgotPasswordPage from "./pages/ForgotPasswordPage"
+import ResetPasswordPage from "./pages/ResetPasswordPage"
+import EditCategoryPage from "./pages/admin/EditCategoryPage"
+import CategoriesListPage from "./pages/admin/CategoriesListPage"
 
 // Protected Route Component
 
@@ -47,17 +49,17 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Homepage/>}/>
-        <Route path="/collections" element={
+        <Route path="/categories" element={
           <>
           <NavBar/>
-            <CollectionPage/>
+            <CategoryPage/>
             <Footer/>
             </>    
           }
         />
             
 
-        <Route path="/collections/*" element={
+        <Route path="/categories/*" element={
           <>
           <NavBar/>
           <ShowProductPage/>
@@ -92,6 +94,24 @@ function App() {
           }
         />
 
+        <Route path="/forgot-password" element={
+            <>
+          <NavBar/>
+          <ForgotPasswordPage/>
+          <Footer/>
+            </>    
+          }
+        />
+
+        <Route path="/reset-password/:token" element={
+            <>
+          <NavBar/>
+          <ResetPasswordPage/>
+          <Footer/>
+            </>    
+          }
+        />
+
         {/* Admin Route */}
 
         <Route path="/admin" element={
@@ -105,7 +125,7 @@ function App() {
           }
         />
 
-        <Route path="/admin/add-collection" element={
+        <Route path="/admin/categories/add" element={
           <>
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>
@@ -149,22 +169,22 @@ function App() {
           }
         />
 
-        <Route path="/admin/collection/list" element={
+        <Route path="/admin/categories" element={
             <>
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>
-          <CollectionsListPage/> 
+          <CategoriesListPage/> 
           <Footer/>   
           </ProtectedRoute>
             </>    
           }
         />
 
-        <Route path="/admin/collections/edit/:id" element={
+        <Route path="/admin/categories/edit/:id" element={
             <>
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>
-          <EditCollectionPage/>  
+          <EditCategoryPage/>  
            <Footer/>     
           </ProtectedRoute>
             </>    

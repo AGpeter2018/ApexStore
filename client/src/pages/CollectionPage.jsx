@@ -1,12 +1,12 @@
 import React from 'react'
-import Collections from '../components/Collection'
+import Category from '../components/Category'
 
-const CollectionPage = () => {
+const CategoryPage = () => {
   return (
     <div>
-        <Collections/>
+        <Category/>
     </div>
   )
 }
 
-export default CollectionPage
+export default CategoryPage
