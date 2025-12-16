@@ -1,61 +1,72 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { Upload, X, Loader, Plus, Minus, Info } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Upload, X, Loader, Plus, Minus, Info, AlertCircle } from 'lucide-react';
 
-const AddCategoryPage = () => {
+const EditCategoryPage = () => {
+    const { id } = useParams();
     const navigate = useNavigate();
-    const [categories, setCategories] = useState([]); // For parent dropdown
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        parentId: '',
-        icon: '',
-        metaTitle: '',
-        metaDescription: '',
-        keywords: [],
-        featured: false,
-        isActive: true,
-        sortOrder: 0,
-        colorTheme: {
-            primary: '#F59E0B',
-            secondary: '#10B981'
-        },
-        rules: {
-            minPrice: 0,
-            maxPrice: null,
-            requiresVerification: false,
-            commissionRate: null,
-            requiresShipping: true
-        }
-    });
-
+    const [categories, setCategories] = useState([]);
+    const [formData, setFormData] = useState(null);
     const [attributes, setAttributes] = useState([]);
-    const [mainImage, setMainImage] = useState(null);
-    const [mainImagePreview, setMainImagePreview] = useState('');
-    const [galleryImages, setGalleryImages] = useState([]);
-    const [galleryPreviews, setGalleryPreviews] = useState([]);
+    const [keywords, setKeywords] = useState([]);
     const [keywordInput, setKeywordInput] = useState('');
+    
+    const [newMainImage, setNewMainImage] = useState(null);
+    const [mainImagePreview, setMainImagePreview] = useState('');
+    const [newGalleryImages, setNewGalleryImages] = useState([]);
+    const [galleryPreviews, setGalleryPreviews] = useState([]);
+    
     const [uploading, setUploading] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
 
     const token = localStorage.getItem('token');
 
     useEffect(() => {
         fetchCategories();
-    }, []);
+        fetchCategory();
+    }, [id]);
 
     const fetchCategories = async () => {
         try {
             const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/categories`);
-            // Only show main categories as parent options
-            const mainCategories = (data.data || []).filter(cat => !cat.parentId || cat.level === 1);
+            const mainCategories = (data.data || [])
+                .filter(cat => (!cat.parentId || cat.level === 1) && cat._id !== id);
             setCategories(mainCategories);
-            console.log(import.meta.env.VITE_API_URL);
-
         } catch (err) {
             console.error('Failed to fetch categories:', err);
+        }
+    };
+
+    const fetchCategory = async () => {
+        try {
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/categories/${id}`);
+            const category = data.data;
+            
+            setFormData({
+                ...category,
+                parentId: category.parentId || '',
+                colorTheme: category.colorTheme || {
+                    primary: '#F59E0B',
+                    secondary: '#10B981'
+                },
+                rules: category.rules || {
+                    minPrice: 0,
+                    maxPrice: null,
+                    requiresVerification: false,
+                    commissionRate: null,
+                    requiresShipping: true
+                }
+            });
+            
+            setAttributes(category.attributes || []);
+            setKeywords(category.keywords || []);
+            setLoading(false);
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Failed to load category' });
+            setLoading(false);
         }
     };
 
@@ -82,7 +93,7 @@ const AddCategoryPage = () => {
     const handleMainImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setMainImage(file);
+            setNewMainImage(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setMainImagePreview(reader.result);
@@ -94,12 +105,13 @@ const AddCategoryPage = () => {
     const handleGalleryImagesChange = (e) => {
         const files = Array.from(e.target.files);
         
-        if (files.length + galleryImages.length > 10) {
+        const totalImages = (formData.galleryImages?.length || 0) + newGalleryImages.length + files.length;
+        if (totalImages > 10) {
             setMessage({ type: 'error', text: 'Maximum 10 gallery images allowed' });
             return;
         }
 
-        setGalleryImages(prev => [...prev, ...files]);
+        setNewGalleryImages(prev => [...prev, ...files]);
 
         files.forEach(file => {
             const reader = new FileReader();
@@ -110,27 +122,28 @@ const AddCategoryPage = () => {
         });
     };
 
-    const removeGalleryImage = (index) => {
-        setGalleryImages(prev => prev.filter((_, i) => i !== index));
+    const removeNewGalleryImage = (index) => {
+        setNewGalleryImages(prev => prev.filter((_, i) => i !== index));
         setGalleryPreviews(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const removeExistingGalleryImage = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            galleryImages: prev.galleryImages.filter((_, i) => i !== index)
+        }));
     };
 
     // Keyword management
     const addKeyword = () => {
-        if (keywordInput.trim() && !formData.keywords.includes(keywordInput.trim())) {
-            setFormData(prev => ({
-                ...prev,
-                keywords: [...prev.keywords, keywordInput.trim()]
-            }));
+        if (keywordInput.trim() && !keywords.includes(keywordInput.trim())) {
+            setKeywords(prev => [...prev, keywordInput.trim()]);
             setKeywordInput('');
         }
     };
 
     const removeKeyword = (keyword) => {
-        setFormData(prev => ({
-            ...prev,
-            keywords: prev.keywords.filter(k => k !== keyword)
-        }));
+        setKeywords(prev => prev.filter(k => k !== keyword));
     };
 
     // Attribute management
@@ -190,42 +203,36 @@ const AddCategoryPage = () => {
         formDataCloud.append('cloud_name', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
         formDataCloud.append('folder', `apexstore/${folder}`);
 
-        try {
-            const response = await axios.post(
-                `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-                formDataCloud
-            );
-            return {
-                url: response.data.secure_url,
-                publicId: response.data.public_id,
-                alt: ''
-            };
-        } catch (error) {
-            throw new Error('Image upload failed');
-        }
+        const response = await axios.post(
+            `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+            formDataCloud
+        );
+        return {
+            url: response.data.secure_url,
+            publicId: response.data.public_id,
+            alt: ''
+        };
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
+        setSaving(true);
         setMessage({ type: '', text: '' });
 
         try {
-            if (!mainImage) {
-                setMessage({ type: 'error', text: 'Category image is required' });
-                setLoading(false);
-                return;
+            setUploading(true);
+
+            // Upload new main image if changed
+            let mainImageData = formData.categoryImage;
+            if (newMainImage) {
+                mainImageData = await uploadToCloudinary(newMainImage);
             }
 
-            // Upload main image
-            setUploading(true);
-            const mainImageData = await uploadToCloudinary(mainImage);
-
-            // Upload gallery images
-            const galleryImagesData = [];
-            for (let file of galleryImages) {
+            // Upload new gallery images
+            const newGalleryImagesData = [];
+            for (let file of newGalleryImages) {
                 const imageData = await uploadToCloudinary(file, 'categories/gallery');
-                galleryImagesData.push(imageData);
+                newGalleryImagesData.push(imageData);
             }
             setUploading(false);
 
@@ -233,8 +240,9 @@ const AddCategoryPage = () => {
             const categoryData = {
                 ...formData,
                 categoryImage: mainImageData,
-                galleryImages: galleryImagesData,
+                galleryImages: [...(formData.galleryImages || []), ...newGalleryImagesData],
                 attributes: attributes.filter(attr => attr.name && attr.label),
+                keywords: keywords,
                 sortOrder: Number(formData.sortOrder),
                 parentId: formData.parentId || null,
                 rules: {
@@ -245,8 +253,8 @@ const AddCategoryPage = () => {
                 }
             };
 
-            await axios.post(
-                `${import.meta.env.VITE_API_URL}/categories`, 
+            await axios.put(
+                `${import.meta.env.VITE_API_URL}/categories/${id}`, 
                 categoryData,
                 {
                     headers: {
@@ -256,7 +264,7 @@ const AddCategoryPage = () => {
                 }
             );
 
-            setMessage({ type: 'success', text: 'Category created successfully!' });
+            setMessage({ type: 'success', text: 'Category updated successfully!' });
             
             setTimeout(() => {
                 navigate('/admin/categories');
@@ -264,20 +272,52 @@ const AddCategoryPage = () => {
         } catch (error) {
             setMessage({ 
                 type: 'error', 
-                text: error.response?.data?.message || 'Failed to create category' 
+                text: error.response?.data?.message || 'Failed to update category' 
             });
         } finally {
-            setLoading(false);
+            setSaving(false);
             setUploading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen bg-gray-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-orange-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600 font-medium">Loading category...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!formData) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-8">
+                <div className="max-w-4xl mx-auto px-4">
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex items-start gap-3">
+                        <AlertCircle className="text-red-600 flex-shrink-0" size={20} />
+                        <div>
+                            <h3 className="font-semibold text-red-800">Category not found</h3>
+                            <button
+                                onClick={() => navigate('/admin/categories')}
+                                className="mt-2 text-red-700 underline hover:text-red-800"
+                            >
+                                Back to categories
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-5xl mx-auto px-4">
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-gray-900">Add New Category</h1>
-                    <p className="text-gray-600 mt-2">Create a new product category for your marketplace</p>
+                    <h1 className="text-4xl font-bold text-gray-900">Edit Category</h1>
+                    <p className="text-gray-600 mt-2">Update category: {formData.name}</p>
                 </div>
 
                 {message.text && (
@@ -308,7 +348,6 @@ const AddCategoryPage = () => {
                                     onChange={handleInputChange}
                                     required
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="e.g., Fashion & Apparel"
                                 />
                             </div>
 
@@ -330,7 +369,7 @@ const AddCategoryPage = () => {
                                     ))}
                                 </select>
                                 <p className="text-sm text-gray-500 mt-1">
-                                    Leave empty for main category, or select parent for subcategory
+                                    Current level: {formData.level === 1 ? 'Main Category' : 'Subcategory'}
                                 </p>
                             </div>
 
@@ -345,7 +384,6 @@ const AddCategoryPage = () => {
                                     required
                                     rows="4"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="Describe this category..."
                                 />
                             </div>
 
@@ -357,14 +395,11 @@ const AddCategoryPage = () => {
                                     <input
                                         type="text"
                                         name="icon"
-                                        value={formData.icon}
+                                        value={formData.icon || ''}
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         placeholder="e.g., shirt, music, package"
                                     />
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        Icon identifier from your icon library
-                                    </p>
                                 </div>
 
                                 <div>
@@ -378,9 +413,7 @@ const AddCategoryPage = () => {
                                         onChange={handleInputChange}
                                         min="0"
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                        placeholder="0"
                                     />
-                                    <p className="text-sm text-gray-500 mt-1">Lower numbers appear first</p>
                                 </div>
                             </div>
                         </div>
@@ -388,39 +421,56 @@ const AddCategoryPage = () => {
 
                     {/* Category Image */}
                     <div className="bg-white rounded-xl shadow-md p-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Category Image *</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Category Image</h2>
                         
+                        {/* Current Image */}
                         <div className="mb-4">
-                            <label className="flex items-center justify-center w-full h-48 px-4 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
+                            <h3 className="text-sm font-semibold text-gray-700 mb-2">Current Image</h3>
+                            {formData.categoryImage?.url ? (
+                                <img
+                                    src={formData.categoryImage.url}
+                                    alt={formData.name}
+                                    className="w-full h-48 object-cover rounded-lg"
+                                />
+                            ) : (
+                                <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                                    <p className="text-gray-500">No image</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Upload New */}
+                        <div>
+                            <h3 className="text-sm font-semibold text-gray-700 mb-2">Change Image</h3>
+                            <label className="flex items-center justify-center w-full h-32 px-4 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
                                 <div className="flex flex-col items-center">
-                                    <Upload className="w-12 h-12 text-gray-400" />
-                                    <p className="mt-2 text-sm text-gray-600">Click to upload category image</p>
-                                    <p className="text-xs text-gray-500">Recommended: 1200x600px</p>
+                                    <Upload className="w-8 h-8 text-gray-400" />
+                                    <p className="mt-2 text-sm text-gray-600">Click to upload new image</p>
                                 </div>
                                 <input
                                     type="file"
                                     accept="image/*"
                                     onChange={handleMainImageChange}
                                     className="hidden"
-                                    required
                                 />
                             </label>
                         </div>
 
                         {mainImagePreview && (
-                            <div className="relative">
+                            <div className="relative mt-4">
+                                <p className="text-sm font-semibold text-gray-700 mb-2">New Image Preview</p>
                                 <img
                                     src={mainImagePreview}
-                                    alt="Main preview"
-                                    className="w-full h-64 object-cover rounded-lg"
+                                    alt="New preview"
+                                    className="w-full h-48 object-cover rounded-lg"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        setMainImage(null);
+                                        setNewMainImage(null);
                                         setMainImagePreview('');
                                     }}
-                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600"
+                                    className="absolute top-8 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600"
                                 >
                                     <X size={16} />
                                 </button>
@@ -430,14 +480,40 @@ const AddCategoryPage = () => {
 
                     {/* Gallery Images */}
                     <div className="bg-white rounded-xl shadow-md p-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Gallery Images (Optional)</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Gallery Images</h2>
                         
-                        <div className="mb-4">
+                        {/* Existing Gallery */}
+                        {formData.galleryImages && formData.galleryImages.length > 0 && (
+                            <div className="mb-6">
+                                <h3 className="text-sm font-semibold text-gray-700 mb-3">Current Gallery</h3>
+                                <div className="grid grid-cols-5 gap-4">
+                                    {formData.galleryImages.map((image, index) => (
+                                        <div key={index} className="relative">
+                                            <img
+                                                src={image.url}
+                                                alt={`Gallery ${index + 1}`}
+                                                className="w-full h-32 object-cover rounded-lg"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeExistingGalleryImage(index)}
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Add New Gallery Images */}
+                        <div>
+                            <h3 className="text-sm font-semibold text-gray-700 mb-3">Add More Images</h3>
                             <label className="flex items-center justify-center w-full h-32 px-4 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
                                 <div className="flex flex-col items-center">
                                     <Upload className="w-8 h-8 text-gray-400" />
-                                    <p className="mt-2 text-sm text-gray-600">Click to upload gallery images</p>
-                                    <p className="text-xs text-gray-500">Max 10 images</p>
+                                    <p className="mt-2 text-sm text-gray-600">Click to upload (Max 10 total)</p>
                                 </div>
                                 <input
                                     type="file"
@@ -450,17 +526,17 @@ const AddCategoryPage = () => {
                         </div>
 
                         {galleryPreviews.length > 0 && (
-                            <div className="grid grid-cols-5 gap-4">
+                            <div className="grid grid-cols-5 gap-4 mt-4">
                                 {galleryPreviews.map((preview, index) => (
                                     <div key={index} className="relative">
                                         <img
                                             src={preview}
-                                            alt={`Gallery ${index + 1}`}
+                                            alt={`New ${index + 1}`}
                                             className="w-full h-32 object-cover rounded-lg"
                                         />
                                         <button
                                             type="button"
-                                            onClick={() => removeGalleryImage(index)}
+                                            onClick={() => removeNewGalleryImage(index)}
                                             className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
                                         >
                                             <X size={14} />
@@ -495,7 +571,6 @@ const AddCategoryPage = () => {
                                             target: { name: 'colorTheme.primary', value: e.target.value }
                                         })}
                                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-                                        placeholder="#F59E0B"
                                     />
                                 </div>
                             </div>
@@ -519,7 +594,6 @@ const AddCategoryPage = () => {
                                             target: { name: 'colorTheme.secondary', value: e.target.value }
                                         })}
                                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-                                        placeholder="#10B981"
                                     />
                                 </div>
                             </div>
@@ -531,7 +605,7 @@ const AddCategoryPage = () => {
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h2 className="text-2xl font-bold text-gray-900">Product Attributes</h2>
-                                <p className="text-sm text-gray-600 mt-1">Define fields that products in this category should have</p>
+                                <p className="text-sm text-gray-600 mt-1">Define fields for products in this category</p>
                             </div>
                             <button
                                 type="button"
@@ -544,14 +618,13 @@ const AddCategoryPage = () => {
                         </div>
 
                         {attributes.length === 0 ? (
-                            <div className="text-center py-8 text-gray-500">
-                                <p>No attributes added yet</p>
-                                <p className="text-sm mt-2">Attributes define what information products in this category should have</p>
+                            <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
+                                <p>No attributes defined</p>
                             </div>
                         ) : (
                             <div className="space-y-6">
                                 {attributes.map((attr, index) => (
-                                    <div key={index} className="border border-gray-200 rounded-lg p-4">
+                                    <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                                         <div className="flex items-start justify-between mb-4">
                                             <h3 className="font-semibold text-gray-900">Attribute {index + 1}</h3>
                                             <button
@@ -572,8 +645,8 @@ const AddCategoryPage = () => {
                                                     type="text"
                                                     value={attr.name}
                                                     onChange={(e) => updateAttribute(index, 'name', e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                    placeholder="e.g., size, material, color"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                                                    placeholder="e.g., size, material"
                                                 />
                                             </div>
 
@@ -585,8 +658,8 @@ const AddCategoryPage = () => {
                                                     type="text"
                                                     value={attr.label}
                                                     onChange={(e) => updateAttribute(index, 'label', e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                    placeholder="e.g., Size, Material, Color"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                                                    placeholder="e.g., Size, Material"
                                                 />
                                             </div>
                                         </div>
@@ -599,7 +672,7 @@ const AddCategoryPage = () => {
                                                 <select
                                                     value={attr.type}
                                                     onChange={(e) => updateAttribute(index, 'type', e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
                                                 >
                                                     <option value="text">Text</option>
                                                     <option value="number">Number</option>
@@ -615,10 +688,9 @@ const AddCategoryPage = () => {
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={attr.placeholder}
+                                                    value={attr.placeholder || ''}
                                                     onChange={(e) => updateAttribute(index, 'placeholder', e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                    placeholder="Hint text..."
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
                                                 />
                                             </div>
                                         </div>
@@ -628,13 +700,13 @@ const AddCategoryPage = () => {
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     Options
                                                 </label>
-                                                {attr.options.map((option, optIndex) => (
+                                                {(attr.options || []).map((option, optIndex) => (
                                                     <div key={optIndex} className="flex gap-2 mb-2">
                                                         <input
                                                             type="text"
                                                             value={option}
                                                             onChange={(e) => updateAttributeOption(index, optIndex, e.target.value)}
-                                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
                                                             placeholder={`Option ${optIndex + 1}`}
                                                         />
                                                         <button
@@ -689,7 +761,6 @@ const AddCategoryPage = () => {
                                         onChange={handleInputChange}
                                         min="0"
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                                        placeholder="0"
                                     />
                                 </div>
 
@@ -722,7 +793,7 @@ const AddCategoryPage = () => {
                                     max="100"
                                     step="0.1"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                                    placeholder="Leave empty for platform default (12%)"
+                                    placeholder="Leave empty for platform default"
                                 />
                             </div>
 
@@ -736,7 +807,7 @@ const AddCategoryPage = () => {
                                 />
                                 <div>
                                     <span className="text-sm font-semibold text-gray-700">Requires Verification</span>
-                                    <p className="text-xs text-gray-500">Products need admin approval before going live</p>
+                                    <p className="text-xs text-gray-500">Products need admin approval</p>
                                 </div>
                             </label>
 
@@ -750,7 +821,7 @@ const AddCategoryPage = () => {
                                 />
                                 <div>
                                     <span className="text-sm font-semibold text-gray-700">Requires Shipping</span>
-                                    <p className="text-xs text-gray-500">Physical products that need delivery</p>
+                                    <p className="text-xs text-gray-500">Physical products</p>
                                 </div>
                             </label>
                         </div>
@@ -768,14 +839,13 @@ const AddCategoryPage = () => {
                                 <input
                                     type="text"
                                     name="metaTitle"
-                                    value={formData.metaTitle}
+                                    value={formData.metaTitle || ''}
                                     onChange={handleInputChange}
                                     maxLength="60"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                                    placeholder="SEO title for search engines"
                                 />
                                 <p className="text-sm text-gray-500 mt-1">
-                                    {formData.metaTitle.length}/60 characters
+                                    {(formData.metaTitle || '').length}/60 characters
                                 </p>
                             </div>
 
@@ -785,15 +855,14 @@ const AddCategoryPage = () => {
                                 </label>
                                 <textarea
                                     name="metaDescription"
-                                    value={formData.metaDescription}
+                                    value={formData.metaDescription || ''}
                                     onChange={handleInputChange}
                                     maxLength="160"
                                     rows="3"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                                    placeholder="SEO description for search engines"
                                 />
                                 <p className="text-sm text-gray-500 mt-1">
-                                    {formData.metaDescription.length}/160 characters
+                                    {(formData.metaDescription || '').length}/160 characters
                                 </p>
                             </div>
 
@@ -818,9 +887,9 @@ const AddCategoryPage = () => {
                                         Add
                                     </button>
                                 </div>
-                                {formData.keywords.length > 0 && (
+                                {keywords.length > 0 && (
                                     <div className="flex flex-wrap gap-2 mt-3">
-                                        {formData.keywords.map((keyword, index) => (
+                                        {keywords.map((keyword, index) => (
                                             <span
                                                 key={index}
                                                 className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
@@ -856,7 +925,7 @@ const AddCategoryPage = () => {
                                 />
                                 <div>
                                     <span className="text-sm font-semibold text-gray-700">Featured Category</span>
-                                    <p className="text-xs text-gray-500">Show this category prominently on homepage</p>
+                                    <p className="text-xs text-gray-500">Show prominently on homepage</p>
                                 </div>
                             </label>
 
@@ -870,7 +939,7 @@ const AddCategoryPage = () => {
                                 />
                                 <div>
                                     <span className="text-sm font-semibold text-gray-700">Active</span>
-                                    <p className="text-xs text-gray-500">Make this category visible to customers</p>
+                                    <p className="text-xs text-gray-500">Make visible to customers</p>
                                 </div>
                             </label>
                         </div>
@@ -880,7 +949,7 @@ const AddCategoryPage = () => {
                     <div className="flex gap-4">
                         <button
                             type="submit"
-                            disabled={loading || uploading}
+                            disabled={saving || uploading}
                             className="flex-1 bg-orange-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                         >
                             {uploading ? (
@@ -888,13 +957,13 @@ const AddCategoryPage = () => {
                                     <Loader className="animate-spin" size={20} />
                                     Uploading Images...
                                 </>
-                            ) : loading ? (
+                            ) : saving ? (
                                 <>
                                     <Loader className="animate-spin" size={20} />
-                                    Creating Category...
+                                    Updating Category...
                                 </>
                             ) : (
-                                'Create Category'
+                                'Update Category'
                             )}
                         </button>
                         
@@ -912,4 +981,4 @@ const AddCategoryPage = () => {
     );
 };
 
-export default AddCategoryPage;
+export default EditCategoryPage;

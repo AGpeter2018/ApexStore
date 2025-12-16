@@ -1,10 +1,12 @@
 import express from 'express'
 import cors from 'cors'
-import router from './routes/product-collection-route.js';
+import categoryRouter from './routes/product-category-route.js';
 import productRouter from './routes/product.routes.js';
 import adminRouter from './routes/admin-product-route.js';
 import orderRouter from './routes/order.routes.js';
 import userRouter from './routes/user.routes.js';
+import authRouter from './routes/authRoutes.js';
+import vendorRouter from './routes/vendor.route.js';
 
 const app = express()
 // Middleware
@@ -19,8 +21,8 @@ app.use(express.urlencoded({extended: true}))
 
 // Routes
 
-//  Collectionn Route
-app.use('/api/collections', router)
+//  Categories Route
+app.use('/api/categories', categoryRouter)
 
 // Product Route
 app.use('/api/products', productRouter)
@@ -31,8 +33,14 @@ app.use('/api/orders', orderRouter)
 // User Route
 app.use('/api/users', userRouter)
 
+// Auth Route
+app.use('/api/auth', authRouter)
+
+// Vendor Route
+app.use('/api/vendors', vendorRouter)
+
 // Admin Route
-app.use('/admin/products', adminRouter);
+app.use('/api/admin/products', adminRouter);
 
 
 

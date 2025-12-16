@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 // Generate JWT
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET || process.env.MY_KEY, {
-        expiresIn: '5d'
+        expiresIn: '1d'
     });
 };
 
@@ -173,7 +173,7 @@ export const getUserStats = async (req, res) => {
     try {
         const totalUsers = await User.countDocuments();
         const customers = await User.countDocuments({ role: 'customer' });
-        const sellers = await User.countDocuments({ role: 'seller' });
+        const sellers = await User.countDocuments({ role: 'vendor' });
         const admins = await User.countDocuments({ role: 'admin' });
         const activeUsers = await User.countDocuments({ isActive: true });
         const verifiedUsers = await User.countDocuments({ isVerified: true });
