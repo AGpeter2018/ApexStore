@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['customer', 'seller', 'admin'],
+        enum: ['customer',  'vendor', 'admin'],
         default: 'customer'
     },
     avatar: {
@@ -47,27 +47,7 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    // Seller specific fields
-    storeName: {
-        type: String,
-        trim: true
-    },
-    storeDescription: {
-        type: String,
-        trim: true
-    },
-    businessLicense: {
-        type: String,
-        trim: true
-    },
-    totalSales: {
-        type: Number,
-        default: 0
-    },
-    totalOrders: {
-        type: Number,
-        default: 0
-    }
+    
 }, {
     timestamps: true
 });
