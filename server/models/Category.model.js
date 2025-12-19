@@ -1,11 +1,5 @@
 import mongoose from "mongoose";
 
-// ============================================
-// CATEGORY SCHEMA - Multi-Product Support
-// ============================================
-// Evolved from "Collection" to support any product type
-// Supports hierarchical categories (main + subcategories)
-
 const categorySchema = new mongoose.Schema({
     // ===== BASIC INFO =====
     name: {
@@ -103,38 +97,38 @@ const categorySchema = new mongoose.Schema({
     // ===== CATEGORY-SPECIFIC ATTRIBUTES (NEW!) =====
     // Different categories have different product attributes
     // Example: Fashion needs "Size", Musical Instruments need "Material"
-    attributes: [{
-        name: {
-            type: String,
-            required: true,
-            trim: true
-        },
-        label: {
-            type: String, // Display label
-            required: true
-        },
-        type: {
-            type: String,
-            enum: ['text', 'number', 'select', 'multiselect', 'boolean'],
-            default: 'text'
-        },
-        options: [{
-            type: String
-        }], // For select/multiselect types
-        required: {
-            type: Boolean,
-            default: false
-        },
-        placeholder: {
-            type: String,
-            default: ''
-        },
-        // For display order in forms
-        order: {
-            type: Number,
-            default: 0
-        }
-    }],
+    attributes: [
+  {
+    group: {
+      type: String,
+      default: 'General'
+    },
+    key: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    label: {
+      type: String,
+      required: true
+    },
+    type: {
+      type: String,
+      enum: ['text', 'number', 'select', 'multi-select', 'boolean'],
+      required: true
+    },
+    options: {
+      type: [String],
+      default: undefined
+    },
+    unit: String,
+    required: {
+      type: Boolean,
+      default: false
+    }
+  }
+],
+
     
     // ===== CATEGORY RULES (NEW!) =====
     // Different categories may have different business rules
@@ -257,15 +251,24 @@ categorySchema.virtual('products', {
 // ============================================
 
 // Generate slug from name before saving
-categorySchema.pre('save', function() {
-    if (this.isModified('name')) {
-        this.slug = this.name
-            .toLowerCase()
-            .replace(/[^\w\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .trim();
-    }
+categorySchema.pre('save', async function() {
+   if (!this.isModified('name')) return;
+
+  let base = this.name
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+
+  let slug = base;
+  let i = 1;
+
+  while (await this.constructor.exists({ slug })) {
+    slug = `${base}-${i++}`;
+  }
+
+  this.slug = slug;
     
 });
 
@@ -280,20 +283,20 @@ categorySchema.pre('save', function() {
 });
 
 // Update product count when category is saved
-categorySchema.post('save', async function(doc) {
-    const Product = mongoose.model('Product');
-    const productCount = await Product.countDocuments({ 
-        categoryId: doc._id,
-        status: 'active'
-    });
-    
-    if (doc.stats.productCount !== productCount) {
-        await mongoose.model('Category').updateOne(
-            { _id: doc._id },
-            { 'stats.productCount': productCount }
-        );
-    }
-});
+// categorySchema.post('save', async function(doc) {
+//     const Product = mongoose.model('Product');
+//     const productCount = await Product.countDocuments({ 
+//         categoryId: doc._id,
+//         status: 'active'
+//     });
+
+//     if (doc.stats.productCount !== productCount) {
+//         await mongoose.model('Category').updateOne(
+//             { _id: doc._id },
+//             { 'stats.productCount': productCount }
+//         );
+//     }
+// });
 
 // ============================================
 // INDEXES
@@ -318,6 +321,19 @@ categorySchema.methods.getPath = async function() {
     const parent = await this.model('Category').findById(this.parentId);
     return parent ? `${parent.name} > ${this.name}` : this.name;
 };
+
+categorySchema.path('attributes').validate(function(attrs) {
+  for (const attr of attrs) {
+    if (
+      ['boolean', 'number', 'text'].includes(attr.type) &&
+      attr.options?.length
+    ) {
+      return false;
+    }
+  }
+  return true;
+}, 'Options are only allowed for select and multi-select attributes');
+
 
 // Check if category has subcategories
 categorySchema.methods.hasSubcategories = async function() {

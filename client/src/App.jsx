@@ -10,7 +10,7 @@ import ShowProductPage from "./pages/ShowProductPage"
 import AddProductPage from "./pages/Product-admin"
 import Footer from "./components/Footer"
 
-import AddCollectionPage from "./pages/admin/AddCollectionPage"
+import AddCategoryPage from "./pages/admin/AddCategoryPage"
 import AdminDashboard from "./pages/admin/AdminDashboard"
 import ProductsListPage from "./pages/admin/ProductsListPage"
 import EditProductPage from "./pages/admin/EditProductPage"
@@ -129,7 +129,7 @@ function App() {
           <>
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>
-            <AddCollectionPage/>
+            <AddCategoryPage/>
             <Footer/>
           </ProtectedRoute>
             </>    
@@ -158,7 +158,7 @@ function App() {
           }
         />
 
-        <Route path="/admin/products/edit/:slug" element={
+        <Route path="/admin/products/edit/:id" element={
             <>
           <NavBar/>
           <ProtectedRoute allowedRoles={['admin']}>

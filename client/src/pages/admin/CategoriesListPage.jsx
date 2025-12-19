@@ -75,12 +75,13 @@ const CategoriesListPage = () => {
         setFilteredCategories(filtered);
     };
 
+    // --- CHANGED: string-safe ID comparisons & subcategory check ---
     const handleDelete = async (id) => {
         try {
             // Check if category can be deleted
-            const category = categories.find(c => c._id === id);
+            const category = categories.find(c => String(c._id) === String(id));
             const hasProducts = category?.stats?.productCount > 0;
-            const hasSubcategories = categories.some(c => c.parentId === id);
+            const hasSubcategories = categories.some(c => String(c.parentId) === String(id));
 
             if (hasProducts) {
                 alert(`Cannot delete category with ${category.stats.productCount} products. Please move or delete products first.`);
@@ -100,7 +101,7 @@ const CategoriesListPage = () => {
                 }
             });
             
-            setCategories(categories.filter(c => c._id !== id));
+            setCategories(categories.filter(c => String(c._id) !== String(id)));
             setDeleteConfirm(null);
         } catch (error) {
             alert(error.response?.data?.message || 'Failed to delete category');
@@ -137,24 +138,27 @@ const CategoriesListPage = () => {
         }
     };
 
+    // --- CHANGED: select uses string ids to avoid ObjectId mismatch ---
     const toggleSelectAll = () => {
         if (selectedCategories.length === filteredCategories.length) {
             setSelectedCategories([]);
         } else {
-            setSelectedCategories(filteredCategories.map(c => c._id));
+            setSelectedCategories(filteredCategories.map(c => String(c._id)));
         }
     };
 
     const toggleSelect = (id) => {
         setSelectedCategories(prev => 
-            prev.includes(id) 
-                ? prev.filter(cId => cId !== id)
-                : [...prev, id]
+            prev.includes(String(id)) 
+                ? prev.filter(cId => cId !== String(id))
+                : [...prev, String(id)]
         );
     };
 
+    // --- CHANGED: parent lookup uses string-safe compare, returns null if none ---
     const getParentName = (parentId) => {
-        const parent = categories.find(c => c._id === parentId);
+        if (!parentId) return null;
+        const parent = categories.find(c => String(c._id) === String(parentId));
         return parent ? parent.name : 'Unknown';
     };
 
@@ -324,7 +328,7 @@ const CategoriesListPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredCategories.map((category) => (
                             <div 
-                                key={category._id} 
+                                key={String(category._id)} 
                                 className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                             >
                                 <div className="relative">
@@ -332,14 +336,19 @@ const CategoriesListPage = () => {
                                     <div className="absolute top-3 left-3 z-10">
                                         <input
                                             type="checkbox"
-                                            checked={selectedCategories.includes(category._id)}
-                                            onChange={() => toggleSelect(category._id)}
+                                            checked={selectedCategories.includes(String(category._id))}
+                                            onChange={() => toggleSelect(String(category._id))}
                                             className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
                                         />
                                     </div>
 
-                                    {/* Image */}
-                                    <div className="h-48 overflow-hidden bg-gradient-to-br from-orange-100 to-red-100">
+                                    {/* Image with category colorTheme fallback */}
+                                    <div
+                                        className="h-48 overflow-hidden"
+                                        style={{
+                                            background: `linear-gradient(135deg, ${category.colorTheme?.primary || '#FFEDD5'} 0%, ${category.colorTheme?.secondary || '#FEE2B3'} 100%)`
+                                        }}
+                                    >
                                         {category.categoryImage?.url ? (
                                             <img
                                                 src={category.categoryImage.url}
@@ -400,8 +409,8 @@ const CategoriesListPage = () => {
                                         {category.description || 'No description'}
                                     </p>
 
-                                    {/* Stats */}
-                                    <div className="flex items-center gap-4 mb-4 text-sm">
+                                    {/* Stats: productCount, views, attrs, vendors, revenue */}
+                                    <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
                                         <span className="flex items-center gap-1 text-gray-600">
                                             <Package size={14} />
                                             {category.stats?.productCount || 0} products
@@ -409,6 +418,18 @@ const CategoriesListPage = () => {
                                         <span className="flex items-center gap-1 text-gray-600">
                                             <TrendingUp size={14} />
                                             {category.stats?.viewCount || 0} views
+                                        </span>
+                                        <span className="flex items-center gap-1 text-gray-600">
+                                            <Layers size={14} />
+                                            {category.attributes?.length || 0} attrs
+                                        </span>
+                                        <span className="flex items-center gap-1 text-gray-600">
+                                            <Package size={14} />
+                                            {category.stats?.vendorCount || 0} vendors
+                                        </span>
+                                        <span className="flex items-center gap-1 text-gray-600">
+                                            <TrendingUp size={14} />
+                                            ₦{(category.stats?.totalRevenue || 0).toLocaleString()}
                                         </span>
                                     </div>
 
@@ -429,7 +450,7 @@ const CategoriesListPage = () => {
                                             Edit
                                         </Link>
                                         <button
-                                            onClick={() => setDeleteConfirm(category._id)}
+                                            onClick={() => setDeleteConfirm(String(category._id))}
                                             className="p-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors"
                                             title="Delete category"
                                         >

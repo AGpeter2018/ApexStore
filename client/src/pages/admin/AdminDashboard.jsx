@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 
 const AdminDashboard = () => {
+    const user = JSON.parse(localStorage.getItem('user'))
     const [stats, setStats] = useState(null);
     const [products, setProducts] = useState([]);
     const [error, setError] = useState('');
@@ -314,7 +315,7 @@ const AdminDashboard = () => {
                                         <tr key={vendor.vendorId} className="border-b border-gray-100 hover:bg-gray-50">
                                             <td className="py-3 px-4">
                                                 <span className="font-medium text-gray-900">
-                                                    {vendor.vendorName || 'Unknown Vendor'}
+                                                    {vendor.vendorName || user.name || 'Unknown Vendor'}
                                                 </span>
                                             </td>
                                             <td className="py-3 px-4 text-right text-gray-600">

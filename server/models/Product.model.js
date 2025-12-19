@@ -14,11 +14,19 @@ const productSchema = new mongoose.Schema({
         lowercase: true,
         trim: true
     },
-    description: {
-        type: String,
-        required: [true, 'Product description is required'],
-        maxlength: [5000, 'Description cannot exceed 5000 characters']
-    },
+    description: [
+        {
+           type: {
+           type: String,
+           enum: ['text', 'list', 'image', 'table'],
+           required: true
+        },
+           title: String,
+           content: mongoose.Schema.Types.Mixed,
+            order: Number
+        }
+    ],
+
     shortDescription: {
         type: String,
         maxlength: [200, 'Short description cannot exceed 200 characters']
@@ -68,93 +76,55 @@ const productSchema = new mongoose.Schema({
         default: null // Optional - only if product is in subcategory
     },
     
-    // DEPRECATED: Keep for backward compatibility during migration
-    // Remove after all products are migrated
-    collection: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Collection'
-    },
     
     // ===== VENDOR INFO =====
     // CHANGED: seller → vendorId for consistency
     vendorId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Vendor', // or 'User' if vendors are users
-        required: [true, 'Vendor is required']
+        // required: [true, 'Vendor is required']
+        default: null
     },
-    
-    // DEPRECATED: Keep for backward compatibility
-    seller: {
+
+    createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        required: true
+    },
+
+    createdByRole: {
+        type: String,
+        enum: ['admin', 'vendor'],
+        required: true
     },
     
-    // ===== FLEXIBLE SPECIFICATIONS (NEW!) =====
-    // Replaces drum-specific fields with flexible JSON
-    // Different categories can store different attributes
-    specifications: {
-        type: mongoose.Schema.Types.Mixed,
-        default: {}
+   specifications: [
+  {
+    group: {
+      type: String,
+      trim: true,
+      default: 'General'
     },
-    /*
-    Example for Musical Instruments (Drums):
-    specifications: {
-        drumType: 'Talking Drum (Gangan)',
-        materials: ['Cowhide', 'Wood', 'Leather Straps'],
-        woodType: 'Mahogany',
-        skinType: 'Cowhide',
-        tuning: 'Adjustable',
-        dimensions: {
-            height: 45,
-            diameter: 20,
-            weight: 2.5
-        }
+    key: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    value: {
+      type: mongoose.Schema.Types.Mixed,
+      required: true
+    },
+    unit: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    order: {
+      type: Number,
+      default: 0
     }
-    
-    Example for Fashion (Ankara Dress):
-    specifications: {
-        gender: 'Women',
-        size: 'L',
-        material: 'Ankara Cotton',
-        color: 'Blue/Yellow',
-        pattern: 'Traditional Adire',
-        careInstructions: 'Hand wash cold'
-    }
-    
-    Example for Electronics (Phone):
-    specifications: {
-        brand: 'Samsung',
-        model: 'Galaxy S23',
-        storage: '256GB',
-        color: 'Phantom Black',
-        warranty: '1 year'
-    }
-    */
-    
-    // ===== DRUM-SPECIFIC (DEPRECATED - Moving to specifications) =====
-    // Keep these temporarily for backward compatibility
-    drumType: {
-        type: String,
-        enum: ['Talking Drum (Gangan)', 'Bata Drum', 'Dundun', 'Sakara', 'Agogo', 'Bembe', 'Other']
-    },
-    materials: [{
-        type: String,
-        enum: ['Cowhide', 'Goatskin', 'Wood', 'Leather Straps', 'Metal Rings', 'Rope', 'Other']
-    }],
-    dimensions: {
-        height: Number,
-        diameter: Number,
-        weight: Number
-    },
-    woodType: String,
-    skinType: {
-        type: String,
-        enum: ['Cowhide', 'Goatskin', 'Mixed']
-    },
-    tuning: {
-        type: String,
-        enum: ['Pre-tuned', 'Adjustable', 'Fixed']
-    },
+  }
+],
     
     // ===== INVENTORY =====
     sku: {
@@ -163,15 +133,10 @@ const productSchema = new mongoose.Schema({
         sparse: true,
         trim: true
     },
-    stock: {
-        type: Number,
-        required: [true, 'Stock quantity is required'],
-        min: [0, 'Stock cannot be negative'],
-        default: 0
-    },
     // RENAMED: stock → stockQuantity for clarity
     stockQuantity: {
         type: Number,
+        required: true, 
         min: [0, 'Stock cannot be negative'],
         default: 0
     },
@@ -304,14 +269,23 @@ const productSchema = new mongoose.Schema({
 
 // Generate slug from name before saving
 productSchema.pre('save', async function() {
-    if (this.isModified('name')) {
-        this.slug = this.name
-            .toLowerCase()
-            .replace(/[^\w\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .trim();
-    }
+    if (!this.isModified('name')) return;
+
+  let base = this.name
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+
+  let slug = base;
+  let i = 1;
+
+  while (await this.constructor.exists({ slug })) {
+    slug = `${base}-${i++}`;
+  }
+
+  this.slug = slug;
     
     // Auto-generate SKU if not provided
     if (!this.sku && this.isNew) {
@@ -527,6 +501,74 @@ productSchema.statics.search = function(query, options = {}) {
         .populate('vendorId', 'storeName rating')
         .populate('categoryId', 'name slug');
 };
+
+productSchema.pre('validate', async function () {
+  if (!this.categoryId) return;
+
+  const Category = mongoose.model('Category');
+  const category = await Category.findById(this.categoryId).lean();
+
+  if (!category?.attributes?.length) return;
+
+  this.specifications ||= [];
+
+  for (const attr of category.attributes) {
+    let specEntry = this.specifications.find(
+      s => s.key === attr.key
+    );
+
+    // AUTO-DEFAULT BOOLEAN (ONLY IF NOT REQUIRED)
+    if (attr.type === 'boolean') {
+      if (!specEntry && !attr.required) {
+        this.specifications.push({
+          key: attr.key,
+          value: false
+        });
+        specEntry = { value: false };
+      } else if (
+        specEntry &&
+        specEntry.value === undefined &&
+        !attr.required
+      ) {
+        specEntry.value = false;
+      }
+    }
+
+    // REQUIRED CHECK
+    if (attr.required && (!specEntry || specEntry.value === undefined)) {
+      throw new Error(`${attr.label || attr.key} is required`);
+    }
+
+    if (!specEntry) continue;
+
+    const value = specEntry.value;
+
+    // SELECT / MULTI-SELECT
+    if (['select', 'multi-select'].includes(attr.type)) {
+      const values = Array.isArray(value) ? value : [value];
+
+      for (const v of values) {
+        if (!attr.options?.includes(v)) {
+          throw new Error(
+            `Invalid value for ${attr.label || attr.key}: ${v}`
+          );
+        }
+      }
+    }
+
+    // NUMBER
+    if (attr.type === 'number' && typeof value !== 'number') {
+      throw new Error(`${attr.label || attr.key} must be a number`);
+    }
+
+    // BOOLEAN
+    if (attr.type === 'boolean' && typeof value !== 'boolean') {
+      throw new Error(`${attr.label || attr.key} must be true or false`);
+    }
+  }
+});
+
+
 
 export default mongoose.model('Product', productSchema);
 

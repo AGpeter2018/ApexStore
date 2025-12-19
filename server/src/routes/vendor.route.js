@@ -38,7 +38,7 @@ vendorRouter.put(
 );
 
 // Get vendors
-vendorRouter.get('/vendore', protect, authorize('admin'), getVendors)
+vendorRouter.get('/', protect, authorize('admin'), getVendors)
 
 // Vendor products
 vendorRouter.get(

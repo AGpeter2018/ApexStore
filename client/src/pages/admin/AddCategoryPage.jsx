@@ -1,3 +1,4 @@
+// ...existing code...
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +31,7 @@ const AddCategoryPage = () => {
         }
     });
 
+    // Attributes now follow server Category model: { group, key, type, options, unit, required, order }
     const [attributes, setAttributes] = useState([]);
     const [mainImage, setMainImage] = useState(null);
     const [mainImagePreview, setMainImagePreview] = useState('');
@@ -53,7 +55,6 @@ const AddCategoryPage = () => {
             const mainCategories = (data.data || []).filter(cat => !cat.parentId || cat.level === 1);
             setCategories(mainCategories);
             console.log(import.meta.env.VITE_API_URL);
-
         } catch (err) {
             console.error('Failed to fetch categories:', err);
         }
@@ -117,10 +118,11 @@ const AddCategoryPage = () => {
 
     // Keyword management
     const addKeyword = () => {
-        if (keywordInput.trim() && !formData.keywords.includes(keywordInput.trim())) {
+        const kw = keywordInput.trim();
+        if (kw && !formData.keywords.includes(kw)) {
             setFormData(prev => ({
                 ...prev,
-                keywords: [...prev.keywords, keywordInput.trim()]
+                keywords: [...prev.keywords, kw]
             }));
             setKeywordInput('');
         }
@@ -133,15 +135,15 @@ const AddCategoryPage = () => {
         }));
     };
 
-    // Attribute management
+    // Attribute management - match server model fields
     const addAttribute = () => {
         setAttributes(prev => [...prev, {
-            name: '',
-            label: '',
-            type: 'text',
+            group: '',      // display label or group name
+            key: '',        // attribute key used in product.specifications
+            type: 'text',   // 'text' | 'number' | 'select' | 'multi-select'
             options: [],
+            unit: '',
             required: false,
-            placeholder: '',
             order: prev.length
         }]);
     };
@@ -229,12 +231,22 @@ const AddCategoryPage = () => {
             }
             setUploading(false);
 
-            // Prepare category data
+            // Prepare category data - align attributes to model shape
             const categoryData = {
                 ...formData,
                 categoryImage: mainImageData,
                 galleryImages: galleryImagesData,
-                attributes: attributes.filter(attr => attr.name && attr.label),
+                attributes: attributes
+                    .filter(attr => attr.key && attr.group)
+                    .map((attr, i) => ({
+                        group: attr.group,
+                        key: attr.key,
+                        type: attr.type,
+                        options: Array.isArray(attr.options) ? attr.options.filter(Boolean) : [],
+                        unit: attr.unit || '',
+                        required: Boolean(attr.required),
+                        order: attr.order ?? i
+                    })),
                 sortOrder: Number(formData.sortOrder),
                 parentId: formData.parentId || null,
                 rules: {
@@ -260,11 +272,11 @@ const AddCategoryPage = () => {
             
             setTimeout(() => {
                 navigate('/admin/categories');
-            }, 2000);
+            }, 1200);
         } catch (error) {
             setMessage({ 
                 type: 'error', 
-                text: error.response?.data?.message || 'Failed to create category' 
+                text: error.response?.data?.message || error.message || 'Failed to create category' 
             });
         } finally {
             setLoading(false);
@@ -526,7 +538,7 @@ const AddCategoryPage = () => {
                         </div>
                     </div>
 
-                    {/* Category Attributes */}
+                    {/* Category Attributes (aligned with server model) */}
                     <div className="bg-white rounded-xl shadow-md p-6">
                         <div className="flex items-center justify-between mb-6">
                             <div>
@@ -563,35 +575,34 @@ const AddCategoryPage = () => {
                                             </button>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4 mb-4">
+                                        <div className="grid md:grid-cols-3 gap-4 mb-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Field Name *
+                                                    Group / Label *
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={attr.name}
-                                                    onChange={(e) => updateAttribute(index, 'name', e.target.value)}
+                                                    value={attr.group}
+                                                    onChange={(e) => updateAttribute(index, 'group', e.target.value)}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                    placeholder="e.g., size, material, color"
+                                                    placeholder="e.g., Size, Material"
                                                 />
                                             </div>
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Display Label *
+                                                    Field Key *
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={attr.label}
-                                                    onChange={(e) => updateAttribute(index, 'label', e.target.value)}
+                                                    value={attr.key}
+                                                    onChange={(e) => updateAttribute(index, 'key', e.target.value)}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                    placeholder="e.g., Size, Material, Color"
+                                                    placeholder="e.g., size, material"
                                                 />
+                                                <p className="text-xs text-gray-400 mt-1">Used in product spec key (no spaces)</p>
                                             </div>
-                                        </div>
 
-                                        <div className="grid grid-cols-2 gap-4 mb-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                                     Type
@@ -604,26 +615,12 @@ const AddCategoryPage = () => {
                                                     <option value="text">Text</option>
                                                     <option value="number">Number</option>
                                                     <option value="select">Select (Dropdown)</option>
-                                                    <option value="multiselect">Multi-select</option>
-                                                    <option value="boolean">Yes/No</option>
+                                                    <option value="multi-select">Multi-select</option>
                                                 </select>
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Placeholder
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={attr.placeholder}
-                                                    onChange={(e) => updateAttribute(index, 'placeholder', e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                    placeholder="Hint text..."
-                                                />
                                             </div>
                                         </div>
 
-                                        {(attr.type === 'select' || attr.type === 'multiselect') && (
+                                        {(attr.type === 'select' || attr.type === 'multi-select') && (
                                             <div className="mb-4">
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     Options
@@ -657,15 +654,30 @@ const AddCategoryPage = () => {
                                             </div>
                                         )}
 
-                                        <label className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={attr.required}
-                                                onChange={(e) => updateAttribute(index, 'required', e.target.checked)}
-                                                className="w-4 h-4 text-orange-600 rounded"
-                                            />
-                                            <span className="text-sm text-gray-700">Required field</span>
-                                        </label>
+                                        <div className="grid md:grid-cols-2 gap-4 items-center">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Unit (optional)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={attr.unit}
+                                                    onChange={(e) => updateAttribute(index, 'unit', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                    placeholder="e.g., cm, kg"
+                                                />
+                                            </div>
+
+                                            <label className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={attr.required}
+                                                    onChange={(e) => updateAttribute(index, 'required', e.target.checked)}
+                                                    className="w-4 h-4 text-orange-600 rounded"
+                                                />
+                                                <span className="text-sm text-gray-700">Required field</span>
+                                            </label>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -913,3 +925,4 @@ const AddCategoryPage = () => {
 };
 
 export default AddCategoryPage;
+// ...existing code...

@@ -54,6 +54,7 @@ const ProductsListPage = () => {
         try {
             const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/categories`);
             setCategories(data.data || []);
+            // console.log(data.data)
         } catch (err) {
             console.error('Failed to fetch categories:', err);
         }
@@ -112,6 +113,7 @@ const ProductsListPage = () => {
             setTotalPages(data.pages || 1);
             setTotalProducts(data.total || 0);
             setLoading(false);
+            console.log(data.data)
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to fetch products');
             setLoading(false);

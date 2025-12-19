@@ -158,8 +158,11 @@ export const getProduct = async (req, res) => {
             });
         }
 
+        console.log('Product ID:', req.params.id);
+
+
         // ===== OWNERSHIP CHECK (for sellers) =====
-        if (req.user && req.user.role === 'vendor') {
+        if (req.user?.user.role === 'vendor' && req.vendor) {
             const vendorId = product.vendorId?._id;
             if (vendorId.toString() !== req.vendor._id.toString()) {
                 return res.status(403).json({
@@ -233,77 +236,85 @@ export const getProductBySlug = async (req, res) => {
 // ============================================
 export const createProduct = async (req, res) => {
     try {
-        // Validate category exists
-        if (req.body.categoryId) {
-            const category = await Category.findById(req.body.categoryId);
-            if (!category) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid category'
-                });
-            }
-        }
-        
-        // Validate subcategory if provided
-        if (req.body.subcategoryId) {
-            const subcategory = await Category.findById(req.body.subcategoryId);
-            if (!subcategory || subcategory.parentId === null) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid subcategory'
-                });
-            }
-        }
-        
-        // Prepare product data
-        if (req.user.role !== 'vendor' && req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Only vendors or admins can create products'
-            });
-        }
+    // Only admin or vendor
+    if (!['admin', 'vendor'].includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admins or vendors can create products'
+      });
+    }
 
-         // 🔍 Find vendor profile
-         
-         
-         let vendorId = req.body.vendorId;
-         
-         if(req.user.role === 'vendor') {
-             const vendor = await Vendor.findOne({ owner: req.user._id })
-             if (!vendor) {
-                 return res.status(400).json({
-                     success: false,
-                     message: 'Vendor profile not found. Please create a vendor account first.'
-                    });
-                }
-                  vendorId = vendor._id;
-             
-            }
+    // Validate category
+    const category = await Category.findById(req.body.categoryId);
+    if (!category) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid category'
+      });
+    }
 
-        const productData = {
-            ...req.body,
-            vendorId// Automatically assign vendor
-        };
-        
-        // Sync stock fields
-        if (productData.stock !== undefined && !productData.stockQuantity) {
-            productData.stockQuantity = productData.stock;
-        }
-
-        const product = await Product.create(productData);
-        
-        // Populate before returning
-        await product.populate([
-            { path: 'categoryId', select: 'name slug' },
-            { path: 'subcategoryId', select: 'name slug' },
-            { path: 'vendorId', select: 'storeName' }
-        ]);
-
-        res.status(201).json({
-            success: true,
-            message: 'Product created successfully',
-            data: product
+    // Validate subcategory
+    if (req.body.subcategoryId) {
+      const subcategory = await Category.findById(req.body.subcategoryId);
+      if (!subcategory || !subcategory.parentId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid subcategory'
         });
+      }
+    }
+
+    let vendorId = null;
+
+    // If vendor → attach vendor profile
+    if (req.user.role === 'vendor') {
+      const vendor = await Vendor.findOne({ owner: req.user._id });
+      if (!vendor) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vendor profile not found'
+        });
+      }
+      vendorId = vendor._id;
+    }
+
+    // Admin MAY optionally attach a vendor
+    if (req.user.role === 'admin' && req.body.vendorId) {
+      const vendorExists = await Vendor.findById(req.body.vendorId);
+      if (!vendorExists) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid vendorId'
+        });
+      }
+      vendorId = req.body.vendorId;
+    }
+
+    const productData = {
+      ...req.body,
+      vendorId,
+      createdBy: req.user._id,
+      createdByRole: req.user.role
+    };
+
+    // Sync stock
+    if (productData.stock !== undefined && !productData.stockQuantity) {
+      productData.stockQuantity = productData.stock;
+    }
+
+    const product = await Product.create(productData);
+
+    await product.populate([
+      { path: 'categoryId', select: 'name slug' },
+      { path: 'subcategoryId', select: 'name slug' },
+      { path: 'vendorId', select: 'storeName' }
+    ]);
+
+    res.status(201).json({
+      success: true,
+      message: 'Product created successfully',
+      data: product
+    });
     } catch (error) {
         console.error('Error creating product:', error);
         
