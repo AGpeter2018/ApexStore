@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { 
-    Plus, 
-    Edit, 
-    Trash2, 
-    Eye, 
+import {
+    Plus,
+    Edit,
+    Trash2,
+    Eye,
     Package,
     Search,
     Filter,
@@ -19,26 +19,26 @@ import {
 const ProductsListPage = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token');
-    
+
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [deleteConfirm, setDeleteConfirm] = useState(null);
-    
+
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [statusFilter, setStatusFilter] = useState('all'); // all, active, inactive, draft
     const [stockFilter, setStockFilter] = useState('all'); // all, in-stock, low-stock, out-of-stock
     const [featuredFilter, setFeaturedFilter] = useState('all'); // all, featured, not-featured
-    
+
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProducts, setTotalProducts] = useState(0);
     const itemsPerPage = 20;
-    
+
     // Sort
     const [sortBy, setSortBy] = useState('-createdAt'); // -createdAt, name, price, -price
 
@@ -63,17 +63,17 @@ const ProductsListPage = () => {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            
+
             // Build query parameters
             const params = new URLSearchParams({
                 page: currentPage,
                 limit: itemsPerPage,
                 sort: sortBy
             });
-            
+
             if (searchTerm) params.append('search', searchTerm);
             if (selectedCategory) params.append('categoryId', selectedCategory);
-            
+
             // Status filtering
             if (statusFilter === 'active') {
                 params.append('status', 'active');
@@ -83,7 +83,7 @@ const ProductsListPage = () => {
             } else if (statusFilter === 'draft') {
                 params.append('status', 'draft');
             }
-            
+
             // Stock filtering
             if (stockFilter === 'in-stock') {
                 params.append('inStock', 'true');
@@ -92,14 +92,14 @@ const ProductsListPage = () => {
             } else if (stockFilter === 'low-stock') {
                 params.append('lowStock', 'true');
             }
-            
+
             // Featured filtering
             if (featuredFilter === 'featured') {
                 params.append('featured', 'true');
             } else if (featuredFilter === 'not-featured') {
                 params.append('featured', 'false');
             }
-            
+
             const { data } = await axios.get(
                 `${import.meta.env.VITE_API_URL}/admin/products?${params.toString()}`,
                 {
@@ -108,7 +108,7 @@ const ProductsListPage = () => {
                     }
                 }
             );
-            
+
             setProducts(data.data || []);
             setTotalPages(data.pages || 1);
             setTotalProducts(data.total || 0);
@@ -124,12 +124,12 @@ const ProductsListPage = () => {
         try {
             await axios.delete(`${import.meta.env.VITE_API_URL}/admin/products/${id}`, {
                 headers: {
-                    Authorization: `Bearer ${token}` 
+                    Authorization: `Bearer ${token}`
                 }
             });
             setProducts(products.filter(p => p._id !== id));
             setDeleteConfirm(null);
-            
+
             // Refresh if current page is empty
             if (products.length === 1 && currentPage > 1) {
                 setCurrentPage(currentPage - 1);
@@ -149,9 +149,12 @@ const ProductsListPage = () => {
         }).format(price);
     };
 
-    const getStockStatus = (stockQuantity) => {
-        if (stockQuantity === 0) return { text: 'Out of Stock', color: 'text-red-600 bg-red-100' };
-        if (stockQuantity <= 5) return { text: 'Low Stock', color: 'text-yellow-600 bg-yellow-100' };
+    const getStockStatus = (product) => {
+        const quantity = product.stockQuantity || product.stock || 0;
+        const threshold = product.lowStockThreshold || 5;
+
+        if (quantity === 0) return { text: 'Out of Stock', color: 'text-red-600 bg-red-100' };
+        if (quantity <= threshold) return { text: 'Low Stock', color: 'text-yellow-600 bg-yellow-100' };
         return { text: 'In Stock', color: 'text-green-600 bg-green-100' };
     };
 
@@ -369,7 +372,7 @@ const ProductsListPage = () => {
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
                                         {products.map((product) => {
-                                            const stockStatus = getStockStatus(product.stockQuantity || product.stock || 0);
+                                            const stockStatus = getStockStatus(product);
                                             return (
                                                 <tr key={product._id} className="hover:bg-gray-50">
                                                     <td className="px-6 py-4">
@@ -491,7 +494,7 @@ const ProductsListPage = () => {
                                     >
                                         <ChevronLeft size={20} />
                                     </button>
-                                    
+
                                     <div className="flex gap-1">
                                         {[...Array(Math.min(5, totalPages))].map((_, idx) => {
                                             let pageNum;
@@ -504,23 +507,22 @@ const ProductsListPage = () => {
                                             } else {
                                                 pageNum = currentPage - 2 + idx;
                                             }
-                                            
+
                                             return (
                                                 <button
                                                     key={idx}
                                                     onClick={() => setCurrentPage(pageNum)}
-                                                    className={`px-4 py-2 rounded-lg font-medium ${
-                                                        currentPage === pageNum
-                                                            ? 'bg-orange-600 text-white'
-                                                            : 'border border-gray-300 hover:bg-gray-50'
-                                                    }`}
+                                                    className={`px-4 py-2 rounded-lg font-medium ${currentPage === pageNum
+                                                        ? 'bg-orange-600 text-white'
+                                                        : 'border border-gray-300 hover:bg-gray-50'
+                                                        }`}
                                                 >
                                                     {pageNum}
                                                 </button>
                                             );
                                         })}
                                     </div>
-                                    
+
                                     <button
                                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                         disabled={currentPage === totalPages}

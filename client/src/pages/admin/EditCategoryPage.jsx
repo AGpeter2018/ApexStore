@@ -65,8 +65,9 @@ const EditCategoryPage = () => {
 
             // Normalize attributes to new model: { group, key, type, options, unit, required, order }
             const normalizedAttrs = (category.attributes || []).map((a, idx) => ({
-                group: a.group || a.label || a.name || '',
+                group: a.group || 'General',
                 key: a.key || a.name || (a.label ? a.label.toLowerCase().replace(/\s+/g, '_') : ''),
+                label: a.label || a.name || '',
                 type: (a.type || 'text').replace('multiselect', 'multi-select'),
                 options: Array.isArray(a.options) ? a.options : (a.options ? [a.options] : []),
                 unit: a.unit || '',
@@ -156,8 +157,9 @@ const EditCategoryPage = () => {
     // Attributes (new model)
     const addAttribute = () => {
         setAttributes(prev => [...prev, {
-            group: '',
+            group: 'General',
             key: '',
+            label: '',
             type: 'text',
             options: [],
             unit: '',
@@ -224,10 +226,11 @@ const EditCategoryPage = () => {
             setUploading(false);
 
             const mappedAttributes = attributes
-                .filter(a => a.group && a.key)
+                .filter(a => a.key && a.label)
                 .map((a, idx) => ({
-                    group: a.group,
+                    group: a.group || 'General',
                     key: a.key,
+                    label: a.label,
                     type: a.type,
                     options: Array.isArray(a.options) ? a.options.filter(Boolean) : [],
                     unit: a.unit || '',
@@ -304,9 +307,8 @@ const EditCategoryPage = () => {
                 </div>
 
                 {message.text && (
-                    <div className={`p-4 mb-6 rounded-lg flex items-start gap-3 ${
-                        message.type === 'success' ? 'bg-green-50 text-green-800 border-l-4 border-green-500' : 'bg-red-50 text-red-800 border-l-4 border-red-500'
-                    }`}>
+                    <div className={`p-4 mb-6 rounded-lg flex items-start gap-3 ${message.type === 'success' ? 'bg-green-50 text-green-800 border-l-4 border-green-500' : 'bg-red-50 text-red-800 border-l-4 border-red-500'
+                        }`}>
                         <Info size={20} className="flex-shrink-0 mt-0.5" />
                         <span>{message.text}</span>
                     </div>
@@ -466,16 +468,23 @@ const EditCategoryPage = () => {
                                             <button type="button" onClick={() => removeAttribute(index)} className="text-red-600 hover:text-red-700"><Minus size={18} /></button>
                                         </div>
 
-                                        <div className="grid md:grid-cols-3 gap-4 mb-4">
+                                        <div className="grid md:grid-cols-2 gap-4 mb-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Group / Label *</label>
-                                                <input type="text" value={attr.group} onChange={(e) => updateAttribute(index, 'group', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white" placeholder="e.g., Size, Material" />
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Label *</label>
+                                                <input type="text" value={attr.label} onChange={(e) => updateAttribute(index, 'label', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white" placeholder="e.g., Screen Size" />
                                             </div>
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">Field Key *</label>
-                                                <input type="text" value={attr.key} onChange={(e) => updateAttribute(index, 'key', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white" placeholder="e.g., size, material (no spaces)" />
-                                                <p className="text-xs text-gray-400 mt-1">Used in product.specifications</p>
+                                                <input type="text" value={attr.key} onChange={(e) => updateAttribute(index, 'key', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white" placeholder="e.g., screen_size" />
+                                                <p className="text-xs text-gray-400 mt-1">Used in system (no spaces)</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid md:grid-cols-3 gap-4 mb-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Group</label>
+                                                <input type="text" value={attr.group} onChange={(e) => updateAttribute(index, 'group', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white" placeholder="e.g., General" />
                                             </div>
 
                                             <div>
@@ -485,8 +494,13 @@ const EditCategoryPage = () => {
                                                     <option value="number">Number</option>
                                                     <option value="select">Select (Dropdown)</option>
                                                     <option value="multi-select">Multi-select</option>
-                                                    <option value="boolean">Yes/No</option>
+                                                    <option value="boolean">Boolean (Yes/No)</option>
                                                 </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Unit (optional)</label>
+                                                <input type="text" value={attr.unit || ''} onChange={(e) => updateAttribute(index, 'unit', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white" placeholder="e.g., cm, kg" />
                                             </div>
                                         </div>
 
@@ -503,16 +517,9 @@ const EditCategoryPage = () => {
                                             </div>
                                         )}
 
-                                        <div className="grid md:grid-cols-2 gap-4 items-center">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Unit (optional)</label>
-                                                <input type="text" value={attr.unit || ''} onChange={(e) => updateAttribute(index, 'unit', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white" placeholder="e.g., cm, kg" />
-                                            </div>
-
-                                            <label className="flex items-center gap-2">
-                                                <input type="checkbox" checked={attr.required} onChange={(e) => updateAttribute(index, 'required', e.target.checked)} className="w-4 h-4 text-orange-600 rounded" />
-                                                <span className="text-sm text-gray-700">Required field</span>
-                                            </label>
+                                        <div className="flex items-center gap-2">
+                                            <input type="checkbox" checked={attr.required} onChange={(e) => updateAttribute(index, 'required', e.target.checked)} className="w-4 h-4 text-orange-600 rounded" />
+                                            <span className="text-sm text-gray-700">Required field</span>
                                         </div>
                                     </div>
                                 ))}

@@ -76,8 +76,8 @@ const RegisterPage = () => {
                     password: formData.password,
                     phone: formData.phone,
                     role: formData.role,
-                    storeName: formData.role === 'seller' ? formData.storeName : undefined,
-                    storeDescription: formData.role === 'seller' ? formData.storeDescription : undefined
+                    storeName: formData.role === 'vendor' ? formData.storeName : undefined,
+                    storeDescription: formData.role === 'vendor' ? formData.storeDescription : undefined
                 }
             );
 
@@ -89,13 +89,13 @@ const RegisterPage = () => {
             // Redirect based on role
             setTimeout(() => {
                 if (data.data.role === 'admin') {
-                   navigate('/admin')
-                } else if (data.data.role === 'seller') {
-                    navigate('/seller');
+                    navigate('/admin')
+                } else if (data.data.role === 'vendor') {
+                    navigate('/vendor/dashboard');
                 } else {
                     navigate('/collections');
                 }
-            },2500)
+            }, 2500)
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed. Please try again.');
         } finally {
@@ -111,46 +111,44 @@ const RegisterPage = () => {
                     <svg className='h-20 w-20 mx-auto' viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style={{stopColor:'#3b82f6',stopOpacity:'1' }}/>
-                                <stop offset="100%" style={{stopColor:'#06b6d4',stopOpacity: '1' }}/>
-                                </linearGradient>
-                                <filter id="shadow"> <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.25"/>
-                                </filter>
-                                </defs>
-                                <g transform="translate(50, 50)" filter="url(#shadow)"><rect x="-20" y="-15" width="40" height="38" rx="4" 
-                                fill="url(#gradient1)"/>
-                                <path d="M -10 -15 Q -10 -28 0 -28 Q 10 -28 10 -15"  stroke="#1e293b" stroke-width="3" 
+                                <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: '1' }} />
+                                <stop offset="100%" style={{ stopColor: '#06b6d4', stopOpacity: '1' }} />
+                            </linearGradient>
+                            <filter id="shadow"> <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.25" />
+                            </filter>
+                        </defs>
+                        <g transform="translate(50, 50)" filter="url(#shadow)"><rect x="-20" y="-15" width="40" height="38" rx="4"
+                            fill="url(#gradient1)" />
+                            <path d="M -10 -15 Q -10 -28 0 -28 Q 10 -28 10 -15" stroke="#1e293b" stroke-width="3"
                                 fill="none"
-                                stroke-linecap="round"/>
-                                <path d="M 0 -5 L -8 8 L 8 8 Z" fill="#fbbf24" 
-                                opacity="0.9"/>
-                                <circle cx="-8" cy="-5" r="2.5" fill="rgba(255,255,255,0.3)"/>
-                                <line x1="-15" y1="18" x2="15" y2="18" 
-                                stroke="rgba(255,255,255,0.2)" 
+                                stroke-linecap="round" />
+                            <path d="M 0 -5 L -8 8 L 8 8 Z" fill="#fbbf24"
+                                opacity="0.9" />
+                            <circle cx="-8" cy="-5" r="2.5" fill="rgba(255,255,255,0.3)" />
+                            <line x1="-15" y1="18" x2="15" y2="18"
+                                stroke="rgba(255,255,255,0.2)"
                                 stroke-width="2"
-                                stroke-linecap="round"/>
-                                </g>
-                            </svg>
-                   <div className='text-xl font-bold font-serif tracking-tight cursor-pointer pl-0'>
-                 <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent">
-                  ApexStore
-                </span>
-                </div>
+                                stroke-linecap="round" />
+                        </g>
+                    </svg>
+                    <div className='text-xl font-bold font-serif tracking-tight cursor-pointer pl-0'>
+                        <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent">
+                            ApexStore
+                        </span>
+                    </div>
                     <p className="text-gray-600 mt-2">Create your account</p>
                 </div>
 
                 {/* Progress Indicator */}
                 <div className="flex items-center justify-center mb-8">
                     <div className="flex items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                            step >= 1 ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-600'
-                        }`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-600'
+                            }`}>
                             1
                         </div>
                         <div className={`w-24 h-1 ${step >= 2 ? 'bg-orange-600' : 'bg-gray-200'}`}></div>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                            step >= 2 ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-600'
-                        }`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-600'
+                            }`}>
                             2
                         </div>
                     </div>
@@ -295,32 +293,28 @@ const RegisterPage = () => {
                                         <button
                                             type="button"
                                             onClick={() => setFormData({ ...formData, role: 'customer' })}
-                                            className={`p-6 rounded-xl border-2 transition-all cursor-pointer ${
-                                                formData.role === 'customer'
-                                                    ? 'border-orange-600 bg-orange-50'
-                                                    : 'border-gray-200 hover:border-orange-300'
-                                            }`}
+                                            className={`p-6 rounded-xl border-2 transition-all cursor-pointer ${formData.role === 'customer'
+                                                ? 'border-orange-600 bg-orange-50'
+                                                : 'border-gray-200 hover:border-orange-300'
+                                                }`}
                                         >
-                                            <User size={32} className={`mx-auto mb-3 ${
-                                                formData.role === 'customer' ? 'text-orange-600' : 'text-gray-400'
-                                            }`} />
+                                            <User size={32} className={`mx-auto mb-3 ${formData.role === 'customer' ? 'text-orange-600' : 'text-gray-400'
+                                                }`} />
                                             <h3 className="font-bold text-lg mb-2">Customer</h3>
                                             <p className="text-sm text-gray-600">Browse and purchase drums</p>
                                         </button>
 
                                         <button
                                             type="button"
-                                            onClick={() => setFormData({ ...formData, role: 'seller' })}
-                                            className={`p-6 rounded-xl border-2 transition-all cursor-pointer ${
-                                                formData.role === 'seller'
-                                                    ? 'border-blue-600 bg-blue-50'
-                                                    : 'border-gray-200 hover:border-blue-300'
-                                            }`}
+                                            onClick={() => setFormData({ ...formData, role: 'vendor' })}
+                                            className={`p-6 rounded-xl border-2 transition-all cursor-pointer ${formData.role === 'vendor'
+                                                ? 'border-blue-600 bg-blue-50'
+                                                : 'border-gray-200 hover:border-blue-300'
+                                                }`}
                                         >
-                                            <Store size={32} className={`mx-auto mb-3 ${
-                                                formData.role === 'seller' ? 'text-blue-600' : 'text-gray-400'
-                                            }`} />
-                                            <h3 className="font-bold text-lg mb-2">Seller</h3>
+                                            <Store size={32} className={`mx-auto mb-3 ${formData.role === 'vendor' ? 'text-blue-600' : 'text-gray-400'
+                                                }`} />
+                                            <h3 className="font-bold text-lg mb-2">Vendor</h3>
                                             <p className="text-sm text-gray-600">Sell your drums online</p>
                                         </button>
                                     </div>
@@ -343,8 +337,8 @@ const RegisterPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Seller-specific fields */}
-                                {formData.role === 'seller' && (
+                                {/* vendor-specific fields */}
+                                {formData.role === 'vendor' && (
                                     <>
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -357,7 +351,7 @@ const RegisterPage = () => {
                                                     name="storeName"
                                                     value={formData.storeName}
                                                     onChange={handleChange}
-                                                    required={formData.role === 'seller'}
+                                                    required={formData.role === 'vendor'}
                                                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                                     placeholder="My Drum Store"
                                                 />

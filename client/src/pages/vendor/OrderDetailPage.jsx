@@ -23,20 +23,20 @@ const OrderDetailPage = () => {
     const fetchOrder = async () => {
         setLoading(true);
         setError('');
-        
+
         try {
             const token = localStorage.getItem('token');
-            
+
             const { data } = await axios.get(
                 `${import.meta.env.VITE_API_URL}/orders/${id}`,
-                { 
-                    headers: { 
+                {
+                    headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    } 
+                    }
                 }
             );
-            
+
             console.log('Order data:', data);
             setOrder(data.data);
             setUpdateData({
@@ -48,7 +48,7 @@ const OrderDetailPage = () => {
         } catch (error) {
             console.error('Error fetching order:', error);
             console.error('Error response:', error.response?.data);
-            
+
             if (error.response?.status === 401) {
                 setError('Unauthorized. Please login again.');
                 localStorage.removeItem('token');
@@ -67,18 +67,18 @@ const OrderDetailPage = () => {
         setUpdating(true);
         try {
             const token = localStorage.getItem('token');
-            
+
             const { data } = await axios.put(
                 `${import.meta.env.VITE_API_URL}/orders/${id}/status`,
                 updateData,
-                { 
-                    headers: { 
+                {
+                    headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    } 
+                    }
                 }
             );
-            
+
             console.log('Update response:', data);
             alert('Order updated successfully!');
             fetchOrder();
@@ -111,7 +111,7 @@ const OrderDetailPage = () => {
             <div className="min-h-screen bg-gray-50 py-20">
                 <div className="max-w-7xl mx-auto px-4">
                     <button
-                        onClick={() => navigate('/seller/orders')}
+                        onClick={() => navigate('/vendor/orders')}
                         className="flex items-center gap-2 text-orange-600 hover:text-orange-700 mb-4"
                     >
                         <ArrowLeft size={20} />
@@ -122,7 +122,7 @@ const OrderDetailPage = () => {
                         <div>
                             <p className="font-bold">Error Loading Order</p>
                             <p>{error}</p>
-                            <button 
+                            <button
                                 onClick={fetchOrder}
                                 className="mt-3 text-sm underline hover:no-underline"
                             >
@@ -153,7 +153,7 @@ const OrderDetailPage = () => {
                 {/* Header */}
                 <div className="mb-8">
                     <button
-                        onClick={() => navigate('/seller/orders')}
+                        onClick={() => navigate('/vendor/orders')}
                         className="flex items-center gap-2 text-orange-600 hover:text-orange-700 mb-4"
                     >
                         <ArrowLeft size={20} />
@@ -268,9 +268,8 @@ const OrderDetailPage = () => {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Status</span>
-                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                        order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                    }`}>
+                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                        }`}>
                                         {order.paymentStatus}
                                     </span>
                                 </div>

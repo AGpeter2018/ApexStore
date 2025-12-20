@@ -15,14 +15,14 @@ const orderRouter = express.Router();
 orderRouter.post('/', protect, authorize('customer'), createOrder),
 orderRouter.get('/my-orders', protect, authorize('customer'), getMyOrders);
 
-// Admin/Seller routes
-orderRouter.get('/', protect, authorize('seller', 'admin'), getOrders);
-orderRouter.get('/stats', protect, authorize('seller', 'admin'), getOrderStats);
+// Admin/vendor routes
+orderRouter.get('/', protect, authorize('vendor', 'admin'), getOrders);
+orderRouter.get('/stats', protect, authorize('vendor', 'admin'), getOrderStats);
 
-// Single order (accessible by customer, seller, or admin)
-orderRouter.get('/:id',protect, authorize('customer','seller', 'admin'), getOrder);
+// Single order (accessible by customer, vendor, or admin)
+orderRouter.get('/:id',protect, authorize('customer','vendor', 'admin'), getOrder);
 
-// Update status (seller/admin only)
-orderRouter.put('/:id/status', protect, authorize('seller', 'admin'), updateOrderStatus);
+// Update status (vendor/admin only)
+orderRouter.put('/:id/status', protect, authorize('vendor', 'admin'), updateOrderStatus);
 
 export default orderRouter;

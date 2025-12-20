@@ -17,9 +17,9 @@ const orderSchema = new mongoose.Schema({
             ref: 'Product',
             required: true
         },
-        seller: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'  // Track which seller owns this product
+        vendor: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'  // Track which vendor owns this product
         },
         name: String,
         image: String,
@@ -94,12 +94,12 @@ const orderSchema = new mongoose.Schema({
 });
 
 // Generate order number before saving
-orderSchema.pre('validate', async function() {
+orderSchema.pre('validate', async function () {
     if (!this.orderNumber) {
         const count = await mongoose.model('Order').countDocuments();
         this.orderNumber = `ORD-${Date.now()}-${count + 1}`;
     }
-    
+
 });
 
 export default mongoose.model('Order', orderSchema);

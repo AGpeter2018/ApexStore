@@ -20,10 +20,10 @@ const OrdersPage = () => {
     const fetchOrders = async () => {
         setLoading(true);
         setError('');
-        
+
         try {
             const token = localStorage.getItem('token');
-            
+
             if (!token) {
                 setError('No authentication token found. Please login.');
                 setLoading(false);
@@ -38,18 +38,18 @@ const OrdersPage = () => {
 
             const { data } = await axios.get(
                 `${import.meta.env.VITE_API_URL}/orders?${params.toString()}`,
-                { 
-                    headers: { 
+                {
+                    headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    } 
+                    }
                 }
             );
 
             setOrders(data.data || []);
             setLoading(false);
         } catch (error) {
-            
+
             if (error.response?.status === 401) {
                 setError('Unauthorized. Please login again.');
                 localStorage.removeItem('token');
@@ -120,7 +120,7 @@ const OrdersPage = () => {
                         <div>
                             <p className="font-bold">Error Loading Orders</p>
                             <p>{error}</p>
-                            <button 
+                            <button
                                 onClick={fetchOrders}
                                 className="mt-3 text-sm underline hover:no-underline"
                             >
@@ -199,7 +199,7 @@ const OrdersPage = () => {
                         </div>
 
                         <div className="flex items-end gap-2">
-                            <button 
+                            <button
                                 onClick={fetchOrders}
                                 className="flex-1 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
                             >
@@ -269,7 +269,7 @@ const OrdersPage = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <Link
-                                                    to={`/seller/orders/${order._id}`}
+                                                    to={`/vendor/orders/${order._id}`}
                                                     className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold"
                                                 >
                                                     <Eye size={18} />
@@ -289,8 +289,8 @@ const OrdersPage = () => {
                         </div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">No Orders Found</h3>
                         <p className="text-gray-600">
-                            {filters.search || filters.status || filters.paymentStatus 
-                                ? 'Try adjusting your filters' 
+                            {filters.search || filters.status || filters.paymentStatus
+                                ? 'Try adjusting your filters'
                                 : 'No orders have been placed yet'}
                         </p>
                     </div>

@@ -29,7 +29,7 @@ export const createVendor = async (req, res) => {
     const vendor = await Vendor.create({
       owner: req.user._id,
       storeName: req.body.storeName,
-      storedescription: req.body.description,
+      storeDescription: req.body.description,
       location: req.body.location,
       // businessLicense,
       phone: req.body.phone,
@@ -195,13 +195,16 @@ export const getVendors = async (req, res) => {
  */
 export const updateVendorStatus = async (req, res) => {
   try {
-    const { isActive } = req.body;
+    const { isActive, isApproved } = req.body;
+    const update = {};
+    if (isActive !== undefined) update.isActive = isActive;
+    if (isApproved !== undefined) update.isApproved = isApproved;
 
     const vendor = await Vendor.findByIdAndUpdate(
       req.params.id,
-      { isActive },
+      update,
       { new: true }
-    );
+    ).populate("owner", "name email");
 
     if (!vendor) {
       return res.status(404).json({
@@ -212,12 +215,52 @@ export const updateVendorStatus = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Vendor status updated",
+      message: "Vendor status updated successfully",
       data: vendor
     });
 
   } catch (error) {
     res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Admin: Get vendor statistics
+ * @route   GET /api/vendors/stats
+ * @access  Admin
+ */
+export const getVendorStats = async (req, res) => {
+  try {
+    const totalVendors = await Vendor.countDocuments();
+    const activeVendors = await Vendor.countDocuments({ isActive: true });
+    const pendingApprovals = await Vendor.countDocuments({ isApproved: false });
+
+    const salesData = await Vendor.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$totalSales" },
+          totalOrders: { $sum: "$totalOrders" }
+        }
+      }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalVendors,
+        activeVendors,
+        pendingApprovals,
+        totalRevenue: salesData[0]?.totalRevenue || 0,
+        totalOrders: salesData[0]?.totalOrders || 0
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
       success: false,
       message: error.message
     });

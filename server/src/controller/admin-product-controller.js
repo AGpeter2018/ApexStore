@@ -15,24 +15,24 @@ export const adminAddProduct = async (req, res) => {
             price,
             compareAtPrice,
             images,
-            
+
             // ===== CATEGORY SYSTEM (NEW!) =====
             categoryId,
             subcategoryId,
-            
+
             // ===== FLEXIBLE SPECIFICATIONS (NEW!) =====
             // Stores category-specific attributes as JSON
             specifications,
-            
+
             // ===== INVENTORY =====
             sku,
             stock,
             stockQuantity,
             lowStockThreshold,
-            
+
             // ===== VENDOR =====
             vendorId,
-            
+
             // ===== ADDITIONAL INFO =====
             tags,
             origin,
@@ -40,20 +40,20 @@ export const adminAddProduct = async (req, res) => {
             careInstructions,
             culturalStory,
             videoUrl,
-            
+
             // ===== STATUS =====
             isActive,
             status,
             featured,
-            
+
             // ===== SEO =====
             metaTitle,
             metaDescription,
-            
+
             // ===== CUSTOMIZATION =====
             customizable,
             customizationOptions,
-            
+
             // ===== LEGACY SUPPORT (Backward Compatibility) =====
             drumType,
             materials,
@@ -89,7 +89,7 @@ export const adminAddProduct = async (req, res) => {
                     message: 'Invalid subcategory - must be a child category'
                 });
             }
-            
+
             // Ensure subcategory belongs to the selected category
             if (subcategory.parentId.toString() !== categoryId) {
                 return res.status(400).json({
@@ -100,7 +100,18 @@ export const adminAddProduct = async (req, res) => {
         }
 
         // Validate vendor if provided
-        if (vendorId) {
+        let effectiveVendorId = vendorId;
+        if (req.user.role === 'vendor') {
+            const vendor = await Vendor.findOne({ owner: req.user._id });
+            if (!vendor) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Vendor profile not found"
+                });
+            }
+            // Force vendorId to be the user's own vendor ID
+            effectiveVendorId = vendor._id;
+        } else if (vendorId) {
             const vendor = await Vendor.findById(vendorId);
             if (!vendor) {
                 return res.status(400).json({
@@ -113,7 +124,7 @@ export const adminAddProduct = async (req, res) => {
         // ===== VALIDATE CATEGORY-SPECIFIC ATTRIBUTES =====
         if (category.attributes && category.attributes.length > 0) {
             const missingRequired = [];
-            
+
             for (const attr of category.attributes) {
                 if (attr.required) {
                     const value = specifications?.[attr.name];
@@ -122,7 +133,7 @@ export const adminAddProduct = async (req, res) => {
                     }
                 }
             }
-            
+
             if (missingRequired.length > 0) {
                 return res.status(400).json({
                     success: false,
@@ -147,7 +158,7 @@ export const adminAddProduct = async (req, res) => {
         if (compareAtPrice) productData.compareAtPrice = compareAtPrice;
         if (images && images.length > 0) productData.images = images;
         if (subcategoryId) productData.subcategoryId = subcategoryId;
-        if (vendorId) productData.vendorId = vendorId;
+        if (effectiveVendorId) productData.vendorId = effectiveVendorId;
         if (sku) productData.sku = sku;
         if (lowStockThreshold !== undefined) productData.lowStockThreshold = lowStockThreshold;
         if (tags && tags.length > 0) productData.tags = tags;
@@ -178,7 +189,7 @@ export const adminAddProduct = async (req, res) => {
 
         // ===== FLEXIBLE SPECIFICATIONS (Category-Specific Attributes) =====
         productData.specifications = specifications || {};
-        
+
         // For backward compatibility: If legacy drum fields provided, add to specifications
         if (drumType || materials || dimensions || woodType || skinType || tuning) {
             productData.specifications = {
@@ -190,7 +201,7 @@ export const adminAddProduct = async (req, res) => {
                 ...(skinType && { skinType }),
                 ...(tuning && { tuning })
             };
-            
+
             // Also save to legacy fields for backward compatibility
             if (drumType) productData.drumType = drumType;
             if (materials) productData.materials = materials;
@@ -199,7 +210,7 @@ export const adminAddProduct = async (req, res) => {
             if (skinType) productData.skinType = skinType;
             if (tuning) productData.tuning = tuning;
         }
-        
+
 
         // ===== CREATE PRODUCT =====
         const newProduct = await Product.create(productData);
@@ -219,16 +230,16 @@ export const adminAddProduct = async (req, res) => {
 
     } catch (error) {
         console.error('Admin product creation error:', error);
-        
+
         if (error.name === 'ValidationError') {
             const messages = Object.values(error.errors).map(err => err.message);
             return res.status(400).json({
                 success: false,
                 message: 'Validation failed',
-                errors: messages
+                errors: error.messages
             });
         }
-        
+
         if (error.code === 11000) {
             const field = Object.keys(error.keyPattern)[0];
             return res.status(400).json({
@@ -236,7 +247,7 @@ export const adminAddProduct = async (req, res) => {
                 message: `Product with this ${field} already exists`
             });
         }
-        
+
         res.status(400).json({
             success: false,
             message: error.message
@@ -253,31 +264,31 @@ export const getAdminProducts = async (req, res) => {
             // Category filters
             categoryId,
             subcategoryId,
-            
+
             // Vendor filters
             vendorId,
-            
+
             // Legacy support
             drumType,
-            
+
             // Status filters
             isActive,
             status,
             featured,
             inStock,
             lowStock,
-            
+
             // Price filters
             minPrice,
             maxPrice,
-            
+
             // Search
             search,
             tags,
-            
+
             // Sorting
             sort = '-createdAt',
-            
+
             // Pagination
             page = 1,
             limit = 50
@@ -285,6 +296,21 @@ export const getAdminProducts = async (req, res) => {
 
         // Build filter object
         const filter = {};
+
+        // Force vendor filtering for vendor role
+        if (req.user && req.user.role === 'vendor') {
+            const vendor = await Vendor.findOne({ owner: req.user._id });
+            if (!vendor) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Vendor profile not found"
+                });
+            }
+            filter.vendorId = vendor._id;
+        } else if (vendorId) {
+            // Admin can still filter by specific vendor
+            filter.vendorId = vendorId;
+        }
 
         // Category filtering
         if (categoryId) {
@@ -295,11 +321,6 @@ export const getAdminProducts = async (req, res) => {
         }
         if (subcategoryId) {
             filter.subcategoryId = subcategoryId;
-        }
-
-        // Vendor filtering
-        if (vendorId) {
-            filter.vendorId = vendorId;
         }
 
         // Legacy filters
@@ -322,7 +343,7 @@ export const getAdminProducts = async (req, res) => {
         } else if (inStock === 'false') {
             filter.stockQuantity = 0;
         }
-        
+
         if (lowStock === 'true') {
             filter.$expr = { $lte: ['$stockQuantity', '$lowStockThreshold'] };
             filter.stockQuantity = { $gt: 0 };
@@ -365,7 +386,7 @@ export const getAdminProducts = async (req, res) => {
                 .skip(skip)
                 .limit(limitNum)
                 .lean(),
-                Product.countDocuments(filter)
+            Product.countDocuments(filter)
         ]);
 
         res.status(200).json({
@@ -389,7 +410,8 @@ export const getAdminProducts = async (req, res) => {
         console.error('Admin get products error:', error);
         res.status(500).json({
             success: false,
-            message: error.message
+            message: 'internal server error',
+            error: error.message
         });
     }
 };
@@ -399,12 +421,12 @@ export const getAdminProducts = async (req, res) => {
 // ============================================
 export const getAdminProductBySlug = async (req, res) => {
     try {
-        const product = await Product.findOne({ 
+        const product = await Product.findOne({
             slug: req.params.slug
         })
-        .populate('categoryId', 'name slug icon attributes')
-        .populate('subcategoryId', 'name slug')
-        .populate('vendorId', 'storeName rating location email phone')
+            .populate('categoryId', 'name slug icon attributes')
+            .populate('subcategoryId', 'name slug')
+            .populate('vendorId', 'storeName rating location email phone')
 
         if (!product) {
             return res.status(404).json({
@@ -412,7 +434,7 @@ export const getAdminProductBySlug = async (req, res) => {
                 message: 'Product not found'
             });
         }
-        
+
         res.status(200).json({
             success: true,
             data: product
@@ -422,7 +444,8 @@ export const getAdminProductBySlug = async (req, res) => {
         console.error('Admin get product by slug error:', error);
         res.status(500).json({
             success: false,
-            message: error.message
+            message: 'Internal server error',
+            error: error.message
         });
     }
 };
@@ -443,7 +466,7 @@ export const getAdminProductById = async (req, res) => {
                 message: 'Product not found'
             });
         }
-        
+
         res.status(200).json({
             success: true,
             data: product
@@ -464,12 +487,23 @@ export const getAdminProductById = async (req, res) => {
 export const updateAdminProduct = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
-        
+
         if (!product) {
             return res.status(404).json({
                 success: false,
                 message: 'Product not found'
             });
+        }
+
+        // Ownership check for vendors
+        if (req.user.role === 'vendor') {
+            const vendor = await Vendor.findOne({ owner: req.user._id });
+            if (!vendor || !product.vendorId || product.vendorId.toString() !== vendor._id.toString()) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'You do not have permission to update this product'
+                });
+            }
         }
 
         // Validate category if being changed
@@ -525,9 +559,9 @@ export const updateAdminProduct = async (req, res) => {
             req.body,
             { new: true, runValidators: true }
         )
-        .populate('categoryId', 'name slug icon')
-        .populate('subcategoryId', 'name slug')
-        .populate('vendorId', 'storeName rating')
+            .populate('categoryId', 'name slug icon')
+            .populate('subcategoryId', 'name slug')
+            .populate('vendorId', 'storeName rating')
 
         res.status(200).json({
             success: true,
@@ -536,7 +570,7 @@ export const updateAdminProduct = async (req, res) => {
         });
     } catch (error) {
         console.error('Admin product update error:', error);
-        
+
         if (error.name === 'ValidationError') {
             const messages = Object.values(error.errors).map(err => err.message);
             return res.status(400).json({
@@ -545,7 +579,7 @@ export const updateAdminProduct = async (req, res) => {
                 errors: messages
             });
         }
-        
+
         res.status(400).json({
             success: false,
             message: error.message
@@ -558,14 +592,27 @@ export const updateAdminProduct = async (req, res) => {
 // ============================================
 export const deleteAdminProduct = async (req, res) => {
     try {
-        const product = await Product.findByIdAndDelete(req.params.id);
-        
+        const product = await Product.findById(req.params.id);
+
         if (!product) {
             return res.status(404).json({
                 success: false,
                 message: 'Product not found'
             });
         }
+
+        // Ownership check for vendors
+        if (req.user.role === 'vendor') {
+            const vendor = await Vendor.findOne({ owner: req.user._id });
+            if (!vendor || !product.vendorId || product.vendorId.toString() !== vendor._id.toString()) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'You do not have permission to delete this product'
+                });
+            }
+        }
+
+        await product.deleteOne();
 
         res.status(200).json({
             success: true,
@@ -609,8 +656,22 @@ export const bulkUpdateProducts = async (req, res) => {
             updates.stockQuantity = updates.stock;
         }
 
+        const query = { _id: { $in: productIds } };
+
+        // Ownership check for vendors
+        if (req.user.role === 'vendor') {
+            const vendor = await Vendor.findOne({ owner: req.user._id });
+            if (!vendor) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Vendor profile not found"
+                });
+            }
+            query.vendorId = vendor._id;
+        }
+
         const result = await Product.updateMany(
-            { _id: { $in: productIds } },
+            query,
             { $set: updates },
             { runValidators: true }
         );
@@ -637,6 +698,20 @@ export const bulkUpdateProducts = async (req, res) => {
 // ============================================
 export const getProductStats = async (req, res) => {
     try {
+        let filter = {};
+
+        // Ownership check for vendors
+        if (req.user.role === 'vendor') {
+            const vendor = await Vendor.findOne({ owner: req.user._id });
+            if (!vendor) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Vendor profile not found"
+                });
+            }
+            filter.vendorId = vendor._id;
+        }
+
         const [
             totalProducts,
             activeProducts,
@@ -646,13 +721,14 @@ export const getProductStats = async (req, res) => {
             outOfStock,
             lowStock
         ] = await Promise.all([
-            Product.countDocuments(),
-            Product.countDocuments({ status: 'active', isActive: true }),
-            Product.countDocuments({ isActive: false }),
-            Product.countDocuments({ status: 'draft' }),
-            Product.countDocuments({ featured: true }),
-            Product.countDocuments({ stockQuantity: 0 }),
+            Product.countDocuments(filter),
+            Product.countDocuments({ ...filter, status: 'active', isActive: true }),
+            Product.countDocuments({ ...filter, isActive: false }),
+            Product.countDocuments({ ...filter, status: 'draft' }),
+            Product.countDocuments({ ...filter, featured: true }),
+            Product.countDocuments({ ...filter, stockQuantity: 0 }),
             Product.countDocuments({
+                ...filter,
                 $expr: { $lte: ['$stockQuantity', '$lowStockThreshold'] },
                 stockQuantity: { $gt: 0 }
             })
@@ -660,7 +736,7 @@ export const getProductStats = async (req, res) => {
 
         // Products by category
         const productsByCategory = await Product.aggregate([
-            { $match: { categoryId: { $exists: true } } },
+            { $match: { ...filter, categoryId: { $exists: true } } },
             {
                 $group: {
                     _id: '$categoryId',
@@ -764,7 +840,8 @@ export const getProductStats = async (req, res) => {
         console.error('Admin stats error:', error);
         res.status(500).json({
             success: false,
-            message: error.message
+            message: 'Internal server error',
+            error: error.message
         });
     }
 };
@@ -775,16 +852,16 @@ export const getProductStats = async (req, res) => {
 export const getCategoryAttributes = async (req, res) => {
     try {
         const { categoryId } = req.params;
-        
+
         const category = await Category.findById(categoryId);
-        
+
         if (!category) {
             return res.status(404).json({
                 success: false,
                 message: 'Category not found'
             });
         }
-        
+
         res.status(200).json({
             success: true,
             data: {
@@ -798,7 +875,8 @@ export const getCategoryAttributes = async (req, res) => {
         console.error('Get category attributes error:', error);
         res.status(500).json({
             success: false,
-            message: error.message
+            message: 'Internal server error',
+            error: error.message
         });
     }
 };

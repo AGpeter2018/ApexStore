@@ -227,7 +227,7 @@ Total Products: ${reportData.products?.total || 0}
                                 <span className="text-2xl font-bold text-green-600">{reportData.users?.customers || 0}</span>
                             </div>
                             <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
-                                <span className="font-semibold text-gray-900">Sellers</span>
+                                <span className="font-semibold text-gray-900">Vendors</span>
                                 <span className="text-2xl font-bold text-blue-600">{reportData.users?.sellers || 0}</span>
                             </div>
                             <div className="flex justify-between items-center p-4 bg-red-50 rounded-lg">
@@ -282,7 +282,7 @@ Total Products: ${reportData.products?.total || 0}
                         <div>
                             <p className="text-orange-100 text-sm mb-2">Order Success Rate</p>
                             <p className="text-2xl font-bold">
-                                {reportData.orders?.totalOrders 
+                                {reportData.orders?.totalOrders
                                     ? Math.round((reportData.orders.deliveredOrders / reportData.orders.totalOrders) * 100)
                                     : 0}%
                             </p>

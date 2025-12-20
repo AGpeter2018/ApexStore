@@ -1,17 +1,23 @@
 import express from 'express';
-import { 
-    adminAddProduct, 
-    deleteAdminProduct, 
-    getAdminProducts, 
-    getAdminProductBySlug,
-    getAdminProductById,
-    updateAdminProduct,
-    bulkUpdateProducts,
-    getProductStats,
-    getCategoryAttributes
+import {
+  adminAddProduct,
+  deleteAdminProduct,
+  getAdminProducts,
+  getAdminProductBySlug,
+  getAdminProductById,
+  updateAdminProduct,
+  bulkUpdateProducts,
+  getProductStats,
+  getCategoryAttributes
 } from '../controller/admin-product-controller.js';
 
+import { protect, authorize } from '../../middleware/auth.js';
+
 const adminRouter = express.Router();
+
+// Apply protection to all admin product routes
+adminRouter.use(protect);
+adminRouter.use(authorize('admin', 'vendor'));
 
 // ============================================
 // STATISTICS & ANALYTICS

@@ -1,4 +1,5 @@
 import User from '../../models/User.model.js';
+import Vendor from '../../models/Vendor.js';
 import jwt from 'jsonwebtoken';
 
 // Generate JWT
@@ -42,7 +43,8 @@ export const register = async (req, res) => {
         console.log("REGISTER ERROR:", error);
         res.status(400).json({
             success: false,
-            message: error.message
+            message: 'Internal server error',
+            error: error.message
         });
 
     }
@@ -68,6 +70,26 @@ export const login = async (req, res) => {
             });
         }
 
+        // Auto-migrate legacy 'seller' role to 'vendor'
+        if (user.role === 'seller') {
+            user.role = 'vendor';
+            await user.save();
+        }
+
+        // Ensure Vendor profile exists for all vendors
+        if (user.role === 'vendor') {
+            const vendorProfile = await Vendor.findOne({ owner: user._id });
+            if (!vendorProfile) {
+                console.log(`Creating missing vendor profile for user: ${user.email}`);
+                await Vendor.create({
+                    owner: user._id,
+                    storeName: `${user.name}'s Store`,
+                    storeDescription: "Premium African products and craftsmanship.",
+                    location: user.address?.state || "Lagos",
+                });
+            }
+        }
+
         res.status(200).json({
             success: true,
             data: {
@@ -81,7 +103,8 @@ export const login = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: error.message
+            message: 'Internal server error',
+            error: error.message
         });
     }
 };
@@ -90,7 +113,7 @@ export const login = async (req, res) => {
 export const getUsers = async (req, res) => {
     try {
         const { role, isActive } = req.query;
-        
+
         const filter = {};
         if (role) filter.role = role;
         if (isActive) filter.isActive = isActive === 'true';
@@ -105,7 +128,8 @@ export const getUsers = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: error.message
+            message: 'Internal server error',
+            error: error.message
         });
     }
 };
@@ -135,7 +159,8 @@ export const updateUserRole = async (req, res) => {
     } catch (error) {
         res.status(400).json({
             success: false,
-            message: error.message
+            message: 'Internal server error',
+            error: error.message
         });
     }
 };
@@ -163,7 +188,37 @@ export const deactivateUser = async (req, res) => {
     } catch (error) {
         res.status(400).json({
             success: false,
-            message: error.message
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
+
+// Verify user (Admin only)
+export const verifyUser = async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { isVerified: true },
+            { new: true }
+        ).select('-password');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: user
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
         });
     }
 };
@@ -173,7 +228,7 @@ export const getUserStats = async (req, res) => {
     try {
         const totalUsers = await User.countDocuments();
         const customers = await User.countDocuments({ role: 'customer' });
-        const sellers = await User.countDocuments({ role: 'vendor' });
+        const vendors = await User.countDocuments({ role: 'vendor' });
         const admins = await User.countDocuments({ role: 'admin' });
         const activeUsers = await User.countDocuments({ isActive: true });
         const verifiedUsers = await User.countDocuments({ isVerified: true });
@@ -183,7 +238,7 @@ export const getUserStats = async (req, res) => {
             data: {
                 totalUsers,
                 customers,
-                sellers,
+                vendors,
                 admins,
                 activeUsers,
                 verifiedUsers
@@ -192,7 +247,8 @@ export const getUserStats = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: error.message
+            message: 'Internal server error',
+            error: error.message
         });
     }
 };

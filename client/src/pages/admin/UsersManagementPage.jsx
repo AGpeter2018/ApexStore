@@ -84,10 +84,27 @@ const UsersManagementPage = () => {
         }
     };
 
+    const handleVerifyUser = async (userId) => {
+        if (!confirm('Are you sure you want to verify this user?')) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(
+                `${import.meta.env.VITE_API_URL}/users/${userId}/verify`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert('User verified successfully!');
+            fetchUsers();
+        } catch (error) {
+            alert('Failed to verify user');
+        }
+    };
+
     const getRoleBadgeColor = (role) => {
         const colors = {
             admin: 'bg-red-100 text-red-800',
-            seller: 'bg-blue-100 text-blue-800',
+            vendor: 'bg-blue-100 text-blue-800',
             customer: 'bg-green-100 text-green-800'
         };
         return colors[role] || 'bg-gray-100 text-gray-800';
@@ -149,8 +166,8 @@ const UsersManagementPage = () => {
                         </div>
 
                         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md p-6 text-white">
-                            <p className="text-blue-100 text-sm mb-2">Sellers</p>
-                            <p className="text-4xl font-bold">{stats.sellers}</p>
+                            <p className="text-blue-100 text-sm mb-2">Vendors</p>
+                            <p className="text-4xl font-bold">{stats.vendors}</p>
                         </div>
 
                         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-md p-6 text-white">
@@ -190,7 +207,7 @@ const UsersManagementPage = () => {
                             >
                                 <option value="">All Roles</option>
                                 <option value="customer">Customer</option>
-                                <option value="seller">Seller</option>
+                                <option value="vendor">Vendor</option>
                                 <option value="admin">Admin</option>
                             </select>
                         </div>
@@ -243,7 +260,7 @@ const UsersManagementPage = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeColor(user.role)}`}>
-                                                    {user.role}
+                                                    {user.role === 'seller' ? 'vendor' : user.role}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
@@ -261,9 +278,15 @@ const UsersManagementPage = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 {user.isVerified ? (
-                                                    <span className="text-green-600">✓ Verified</span>
+                                                    <span className="flex items-center gap-1 text-green-600 font-semibold">
+                                                        <CheckCircle size={16} />
+                                                        Verified
+                                                    </span>
                                                 ) : (
-                                                    <span className="text-gray-500">Not verified</span>
+                                                    <span className="flex items-center gap-1 text-gray-400">
+                                                        <XCircle size={16} />
+                                                        Not verified
+                                                    </span>
                                                 )}
                                             </td>
                                             <td className="px-6 py-4">
@@ -283,6 +306,15 @@ const UsersManagementPage = () => {
                                                     >
                                                         <Edit size={18} />
                                                     </button>
+                                                    {!user.isVerified && (
+                                                        <button
+                                                            onClick={() => handleVerifyUser(user._id)}
+                                                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                            title="Verify User"
+                                                        >
+                                                            <CheckCircle size={18} />
+                                                        </button>
+                                                    )}
                                                     {user.isActive && (
                                                         <button
                                                             onClick={() => handleDeactivateUser(user._id)}
@@ -313,11 +345,11 @@ const UsersManagementPage = () => {
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                         <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
                             <h3 className="text-2xl font-bold text-gray-900 mb-6">Edit User Role</h3>
-                            
+
                             <div className="mb-6">
                                 <p className="text-gray-600 mb-2">User: <span className="font-semibold text-gray-900">{editingUser.name}</span></p>
                                 <p className="text-gray-600 mb-4">Email: <span className="font-semibold text-gray-900">{editingUser.email}</span></p>
-                                
+
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Select New Role
                                 </label>
@@ -327,7 +359,7 @@ const UsersManagementPage = () => {
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                 >
                                     <option value="customer">Customer</option>
-                                    <option value="seller">Seller</option>
+                                    <option value="vendor">Vendor</option>
                                     <option value="admin">Admin</option>
                                 </select>
                             </div>

@@ -62,7 +62,7 @@ const AddCategoryPage = () => {
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
-        
+
         if (name.includes('.')) {
             const [parent, child] = name.split('.');
             setFormData(prev => ({
@@ -94,7 +94,7 @@ const AddCategoryPage = () => {
 
     const handleGalleryImagesChange = (e) => {
         const files = Array.from(e.target.files);
-        
+
         if (files.length + galleryImages.length > 10) {
             setMessage({ type: 'error', text: 'Maximum 10 gallery images allowed' });
             return;
@@ -138,9 +138,10 @@ const AddCategoryPage = () => {
     // Attribute management - match server model fields
     const addAttribute = () => {
         setAttributes(prev => [...prev, {
-            group: '',      // display label or group name
+            group: 'General',      // display label or group name
             key: '',        // attribute key used in product.specifications
-            type: 'text',   // 'text' | 'number' | 'select' | 'multi-select'
+            label: '',       // Display name for the attribute
+            type: 'text',   // 'text' | 'number' | 'select' | 'multi-select' | 'boolean'
             options: [],
             unit: '',
             required: false,
@@ -153,24 +154,24 @@ const AddCategoryPage = () => {
     };
 
     const updateAttribute = (index, field, value) => {
-        setAttributes(prev => prev.map((attr, i) => 
+        setAttributes(prev => prev.map((attr, i) =>
             i === index ? { ...attr, [field]: value } : attr
         ));
     };
 
     const addAttributeOption = (attrIndex) => {
-        setAttributes(prev => prev.map((attr, i) => 
-            i === attrIndex 
+        setAttributes(prev => prev.map((attr, i) =>
+            i === attrIndex
                 ? { ...attr, options: [...attr.options, ''] }
                 : attr
         ));
     };
 
     const updateAttributeOption = (attrIndex, optIndex, value) => {
-        setAttributes(prev => prev.map((attr, i) => 
-            i === attrIndex 
-                ? { 
-                    ...attr, 
+        setAttributes(prev => prev.map((attr, i) =>
+            i === attrIndex
+                ? {
+                    ...attr,
                     options: attr.options.map((opt, j) => j === optIndex ? value : opt)
                 }
                 : attr
@@ -178,8 +179,8 @@ const AddCategoryPage = () => {
     };
 
     const removeAttributeOption = (attrIndex, optIndex) => {
-        setAttributes(prev => prev.map((attr, i) => 
-            i === attrIndex 
+        setAttributes(prev => prev.map((attr, i) =>
+            i === attrIndex
                 ? { ...attr, options: attr.options.filter((_, j) => j !== optIndex) }
                 : attr
         ));
@@ -237,10 +238,11 @@ const AddCategoryPage = () => {
                 categoryImage: mainImageData,
                 galleryImages: galleryImagesData,
                 attributes: attributes
-                    .filter(attr => attr.key && attr.group)
+                    .filter(attr => attr.key && attr.label)
                     .map((attr, i) => ({
-                        group: attr.group,
+                        group: attr.group || 'General',
                         key: attr.key,
+                        label: attr.label,
                         type: attr.type,
                         options: Array.isArray(attr.options) ? attr.options.filter(Boolean) : [],
                         unit: attr.unit || '',
@@ -258,7 +260,7 @@ const AddCategoryPage = () => {
             };
 
             await axios.post(
-                `${import.meta.env.VITE_API_URL}/categories`, 
+                `${import.meta.env.VITE_API_URL}/categories`,
                 categoryData,
                 {
                     headers: {
@@ -269,14 +271,14 @@ const AddCategoryPage = () => {
             );
 
             setMessage({ type: 'success', text: 'Category created successfully!' });
-            
+
             setTimeout(() => {
                 navigate('/admin/categories');
             }, 1200);
         } catch (error) {
-            setMessage({ 
-                type: 'error', 
-                text: error.response?.data?.message || error.message || 'Failed to create category' 
+            setMessage({
+                type: 'error',
+                text: error.response?.data?.message || error.message || 'Failed to create category'
             });
         } finally {
             setLoading(false);
@@ -293,11 +295,10 @@ const AddCategoryPage = () => {
                 </div>
 
                 {message.text && (
-                    <div className={`p-4 mb-6 rounded-lg flex items-start gap-3 ${
-                        message.type === 'success' 
-                            ? 'bg-green-50 text-green-800 border-l-4 border-green-500' 
-                            : 'bg-red-50 text-red-800 border-l-4 border-red-500'
-                    }`}>
+                    <div className={`p-4 mb-6 rounded-lg flex items-start gap-3 ${message.type === 'success'
+                        ? 'bg-green-50 text-green-800 border-l-4 border-green-500'
+                        : 'bg-red-50 text-red-800 border-l-4 border-red-500'
+                        }`}>
                         <Info size={20} className="flex-shrink-0 mt-0.5" />
                         <span>{message.text}</span>
                     </div>
@@ -307,7 +308,7 @@ const AddCategoryPage = () => {
                     {/* Basic Information */}
                     <div className="bg-white rounded-xl shadow-md p-6">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Information</h2>
-                        
+
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -401,7 +402,7 @@ const AddCategoryPage = () => {
                     {/* Category Image */}
                     <div className="bg-white rounded-xl shadow-md p-6">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Category Image *</h2>
-                        
+
                         <div className="mb-4">
                             <label className="flex items-center justify-center w-full h-48 px-4 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
                                 <div className="flex flex-col items-center">
@@ -443,7 +444,7 @@ const AddCategoryPage = () => {
                     {/* Gallery Images */}
                     <div className="bg-white rounded-xl shadow-md p-6">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Gallery Images (Optional)</h2>
-                        
+
                         <div className="mb-4">
                             <label className="flex items-center justify-center w-full h-32 px-4 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
                                 <div className="flex flex-col items-center">
@@ -486,7 +487,7 @@ const AddCategoryPage = () => {
                     {/* Color Theme */}
                     <div className="bg-white rounded-xl shadow-md p-6">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Color Theme</h2>
-                        
+
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -575,17 +576,17 @@ const AddCategoryPage = () => {
                                             </button>
                                         </div>
 
-                                        <div className="grid md:grid-cols-3 gap-4 mb-4">
+                                        <div className="grid md:grid-cols-2 gap-4 mb-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Group / Label *
+                                                    Label *
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={attr.group}
-                                                    onChange={(e) => updateAttribute(index, 'group', e.target.value)}
+                                                    value={attr.label}
+                                                    onChange={(e) => updateAttribute(index, 'label', e.target.value)}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                    placeholder="e.g., Size, Material"
+                                                    placeholder="e.g., Screen Size"
                                                 />
                                             </div>
 
@@ -598,9 +599,24 @@ const AddCategoryPage = () => {
                                                     value={attr.key}
                                                     onChange={(e) => updateAttribute(index, 'key', e.target.value)}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                    placeholder="e.g., size, material"
+                                                    placeholder="e.g., screen_size"
                                                 />
-                                                <p className="text-xs text-gray-400 mt-1">Used in product spec key (no spaces)</p>
+                                                <p className="text-xs text-gray-400 mt-1">Used in system (no spaces)</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid md:grid-cols-3 gap-4 mb-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Group
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={attr.group}
+                                                    onChange={(e) => updateAttribute(index, 'group', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                    placeholder="e.g., Tech Specs"
+                                                />
                                             </div>
 
                                             <div>
@@ -616,7 +632,21 @@ const AddCategoryPage = () => {
                                                     <option value="number">Number</option>
                                                     <option value="select">Select (Dropdown)</option>
                                                     <option value="multi-select">Multi-select</option>
+                                                    <option value="boolean">Boolean (Yes/No)</option>
                                                 </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Unit (optional)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={attr.unit}
+                                                    onChange={(e) => updateAttribute(index, 'unit', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                    placeholder="e.g., cm, kg"
+                                                />
                                             </div>
                                         </div>
 
@@ -654,29 +684,14 @@ const AddCategoryPage = () => {
                                             </div>
                                         )}
 
-                                        <div className="grid md:grid-cols-2 gap-4 items-center">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Unit (optional)
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={attr.unit}
-                                                    onChange={(e) => updateAttribute(index, 'unit', e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                    placeholder="e.g., cm, kg"
-                                                />
-                                            </div>
-
-                                            <label className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={attr.required}
-                                                    onChange={(e) => updateAttribute(index, 'required', e.target.checked)}
-                                                    className="w-4 h-4 text-orange-600 rounded"
-                                                />
-                                                <span className="text-sm text-gray-700">Required field</span>
-                                            </label>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={attr.required}
+                                                onChange={(e) => updateAttribute(index, 'required', e.target.checked)}
+                                                className="w-4 h-4 text-orange-600 rounded"
+                                            />
+                                            <span className="text-sm text-gray-700">Required field</span>
                                         </div>
                                     </div>
                                 ))}
@@ -687,7 +702,7 @@ const AddCategoryPage = () => {
                     {/* Category Rules */}
                     <div className="bg-white rounded-xl shadow-md p-6">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Category Rules</h2>
-                        
+
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -771,7 +786,7 @@ const AddCategoryPage = () => {
                     {/* SEO */}
                     <div className="bg-white rounded-xl shadow-md p-6">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">SEO Settings</h2>
-                        
+
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -856,7 +871,7 @@ const AddCategoryPage = () => {
                     {/* Settings */}
                     <div className="bg-white rounded-xl shadow-md p-6">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Settings</h2>
-                        
+
                         <div className="space-y-4">
                             <label className="flex items-center gap-3">
                                 <input
@@ -909,7 +924,7 @@ const AddCategoryPage = () => {
                                 'Create Category'
                             )}
                         </button>
-                        
+
                         <button
                             type="button"
                             onClick={() => navigate('/admin/categories')}

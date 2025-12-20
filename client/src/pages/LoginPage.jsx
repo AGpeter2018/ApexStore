@@ -43,10 +43,10 @@ const LoginPage = () => {
             setTimeout(() => {
                 if (data.data.role === 'admin') {
                     navigate('/admin');
-                } else if (data.data.role === 'seller') {
-                    navigate('/seller');
+                } else if (data.data.role === 'vendor') {
+                    navigate('/vendor');
                 } else {
-                    navigate('/collections');
+                    navigate('/categories');
                 }
             }, 2500)
         } catch (err) {
@@ -61,34 +61,34 @@ const LoginPage = () => {
             <div className="max-w-md w-full">
                 {/* Logo/Brand */}
                 <div className="text-center mb-8">
-                  <svg className='h-20 w-20 mx-auto' viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <svg className='h-20 w-20 mx-auto' viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style={{stopColor:'#3b82f6',stopOpacity:'1' }}/>
-                                <stop offset="100%" style={{stopColor:'#06b6d4',stopOpacity: '1' }}/>
-                                </linearGradient>
-                                <filter id="shadow"> <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.25"/>
-                                </filter>
-                                </defs>
-                                <g transform="translate(50, 50)" filter="url(#shadow)"><rect x="-20" y="-15" width="40" height="38" rx="4" 
-                                fill="url(#gradient1)"/>
-                                <path d="M -10 -15 Q -10 -28 0 -28 Q 10 -28 10 -15"  stroke="#1e293b" stroke-width="3" 
+                                <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: '1' }} />
+                                <stop offset="100%" style={{ stopColor: '#06b6d4', stopOpacity: '1' }} />
+                            </linearGradient>
+                            <filter id="shadow"> <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.25" />
+                            </filter>
+                        </defs>
+                        <g transform="translate(50, 50)" filter="url(#shadow)"><rect x="-20" y="-15" width="40" height="38" rx="4"
+                            fill="url(#gradient1)" />
+                            <path d="M -10 -15 Q -10 -28 0 -28 Q 10 -28 10 -15" stroke="#1e293b" stroke-width="3"
                                 fill="none"
-                                stroke-linecap="round"/>
-                                <path d="M 0 -5 L -8 8 L 8 8 Z" fill="#fbbf24" 
-                                opacity="0.9"/>
-                                <circle cx="-8" cy="-5" r="2.5" fill="rgba(255,255,255,0.3)"/>
-                                <line x1="-15" y1="18" x2="15" y2="18" 
-                                stroke="rgba(255,255,255,0.2)" 
+                                stroke-linecap="round" />
+                            <path d="M 0 -5 L -8 8 L 8 8 Z" fill="#fbbf24"
+                                opacity="0.9" />
+                            <circle cx="-8" cy="-5" r="2.5" fill="rgba(255,255,255,0.3)" />
+                            <line x1="-15" y1="18" x2="15" y2="18"
+                                stroke="rgba(255,255,255,0.2)"
                                 stroke-width="2"
-                                stroke-linecap="round"/>
-                                </g>
-                            </svg>
+                                stroke-linecap="round" />
+                        </g>
+                    </svg>
                     <div className='text-xl font-bold font-serif tracking-tight cursor-pointer pl-0'>
-                 <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent">
-                  ApexStore
-                </span>
-                </div>
+                        <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent">
+                            ApexStore
+                        </span>
+                    </div>
                     <p className="text-gray-600 mt-2">Sign in to your account</p>
                 </div>
 
@@ -187,7 +187,7 @@ const LoginPage = () => {
                     <p className="text-sm text-gray-700 font-semibold mb-2">Demo Accounts:</p>
                     <div className="text-xs text-gray-600 space-y-1">
                         <p>Admin: admin@apexstore.com / password123</p>
-                        <p>Seller: seller@apexstore.com / password123</p>
+                        <p>Vendor: vendor@apexstore.com / password123</p>
                         <p>Customer: customer@apexstore.com / password123</p>
                     </div>
                 </div>

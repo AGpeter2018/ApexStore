@@ -48,21 +48,3 @@ export const authorize = (...roles) => {
     };
 };
 
-export const checkOwnership = (resource) => {
-    return (req, res, next) => {
-        // Admins can access everything
-        if (req.user.role === 'admin') {
-            return next();
-        }
-
-        // Check if seller owns the resource
-        if (req.user.role === 'seller' && resource.seller.toString() !== req.user._id.toString()) {
-            return res.status(403).json({
-                success: false,
-                message: 'You do not have permission to access this resource'
-            });
-        }
-
-        next();
-    };
-};

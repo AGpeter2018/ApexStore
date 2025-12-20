@@ -49,7 +49,7 @@ productRouter.get('/', getProducts);
 // Get single product by ID
 productRouter.get('/:id', getProduct);
 
-// ===== PROTECTED ROUTES (Seller/Admin only) =====
+// ===== PROTECTED ROUTES (Vendor/Admin only) =====
 // Create product
 productRouter.post('/', protect, authorize('vendor', 'admin'), createProduct);
 
@@ -60,7 +60,7 @@ productRouter.put('/:id', protect, authorize('vendor', 'admin'), updateProduct);
 productRouter.delete('/:id', protect, authorize('vendor', 'admin'), deleteProduct);
 
 // Delete product image
-productRouter.delete('/:slug/images/:imageId', protect, authorize('vendor', 'admin'), deleteImage);
+productRouter.delete('/:id/images/:imageId', protect, authorize('vendor', 'admin'), deleteImage);
 // Note: Changed from '/image/' to '/images/' for consistency
 
 export default productRouter;

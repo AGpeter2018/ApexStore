@@ -44,7 +44,7 @@ const Hero = () => {
                     Experience the Rich Cultural Heritage of Nigerian Percussion - Handcrafted by Master Artisans
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp-delay-2">
-                    <Link to="/collections"  className="bg-slate-50 text-slate-950 px-10 py-4 rounded-lg text-lg font-bold hover:bg-slate-200 hover:shadow-2xl hover:-translate-y-1 transition-all shadow-xl inline-block">
+                    <Link to="/categories"  className="bg-slate-50 text-slate-950 px-10 py-4 rounded-lg text-lg font-bold hover:bg-slate-200 hover:shadow-2xl hover:-translate-y-1 transition-all shadow-xl inline-block">
                         Shop Now
                     </Link>
                     <Link to="/more" href="#about" className="bg-slate-800/50 backdrop-blur-sm text-white border-2 border-slate-400 px-10 py-4 rounded-lg text-lg font-bold hover:bg-slate-700 hover:border-slate-300 transition-all inline-block">

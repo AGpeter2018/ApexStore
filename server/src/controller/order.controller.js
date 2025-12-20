@@ -2,18 +2,18 @@ import Order from '../../models/Order.model.js';
 import Product from '../../models/Product.model.js';
 
 
-// Get all orders (filtered by seller)
+// Get all orders (filtered by vendor)
 export const getOrders = async (req, res) => {
     try {
         const { status, paymentStatus, page = 1, limit = 10 } = req.query;
-        
+
         const filter = {};
         if (status) filter.orderStatus = status;
         if (paymentStatus) filter.paymentStatus = paymentStatus;
 
-        // CRITICAL: If user is a seller, only show orders containing their products
-        if (req.user.role === 'seller') {
-            filter['items.seller'] = req.user._id;
+        // CRITICAL: If user is a vendor, only show orders containing their products
+        if (req.user.role === 'vendor') {
+            filter['items.vendor'] = req.user._id;
         }
 
         const orders = await Order.find(filter)
@@ -23,11 +23,11 @@ export const getOrders = async (req, res) => {
             .skip((page - 1) * limit)
             .limit(Number(limit));
 
-        // For sellers, filter items to only show their products
-        if (req.user.role === 'seller') {
+        // For vendors, filter items to only show their products
+        if (req.user.role === 'vendor') {
             orders.forEach(order => {
-                order.items = order.items.filter(item => 
-                    item.seller && item.seller.toString() === req.user._id.toString()
+                order.items = order.items.filter(item =>
+                    item.vendor && item.vendor.toString() === req.user._id.toString()
                 );
             });
         }
@@ -65,10 +65,10 @@ export const getOrder = async (req, res) => {
             });
         }
 
-        // CRITICAL: Check if seller has access to this order
-        if (req.user.role === 'seller') {
-            const hasAccess = order.items.some(item => 
-                item.seller && item.seller.toString() === req.user._id.toString()
+        // CRITICAL: Check if vendor has access to this order
+        if (req.user.role === 'vendor') {
+            const hasAccess = order.items.some(item =>
+                item.vendor && item.vendor.toString() === req.user._id.toString()
             );
 
             if (!hasAccess) {
@@ -78,9 +78,9 @@ export const getOrder = async (req, res) => {
                 });
             }
 
-            // Filter to show only seller's items
-            order.items = order.items.filter(item => 
-                item.seller && item.seller.toString() === req.user._id.toString()
+            // Filter to show only vendor's items
+            order.items = order.items.filter(item =>
+                item.vendor && item.vendor.toString() === req.user._id.toString()
             );
         }
 
@@ -91,7 +91,7 @@ export const getOrder = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-           message: 'Internal server error',
+            message: 'Internal server error',
             error: error.message
         });
     }
@@ -111,10 +111,10 @@ export const updateOrderStatus = async (req, res) => {
             });
         }
 
-        // CRITICAL: Check if seller has access to this order
-        if (req.user.role === 'seller') {
-            const hasAccess = order.items.some(item => 
-                item.seller && item.seller.toString() === req.user._id.toString()
+        // CRITICAL: Check if vendor has access to this order
+        if (req.user.role === 'vendor') {
+            const hasAccess = order.items.some(item =>
+                item.vendor && item.vendor.toString() === req.user._id.toString()
             );
 
             if (!hasAccess) {
@@ -148,14 +148,14 @@ export const updateOrderStatus = async (req, res) => {
     }
 };
 
-// Get order statistics (filtered by seller)
+// Get order statistics (filtered by vendor)
 export const getOrderStats = async (req, res) => {
     try {
         let filter = {};
 
-        // CRITICAL: Filter stats by seller
-        if (req.user.role === 'seller') {
-            filter = { 'items.seller': req.user._id };
+        // CRITICAL: Filter stats by vendor
+        if (req.user.role === 'vendor') {
+            filter = { 'items.vendor': req.user._id };
         }
 
         const totalOrders = await Order.countDocuments(filter);
@@ -165,13 +165,13 @@ export const getOrderStats = async (req, res) => {
         const deliveredOrders = await Order.countDocuments({ ...filter, orderStatus: 'delivered' });
         const cancelledOrders = await Order.countDocuments({ ...filter, orderStatus: 'cancelled' });
 
-        // Calculate revenue (only from seller's items)
+        // Calculate revenue (only from vendor's items)
         let totalRevenue = 0;
-        if (req.user.role === 'seller') {
+        if (req.user.role === 'vendor') {
             const orders = await Order.find(filter);
             orders.forEach(order => {
                 order.items.forEach(item => {
-                    if (item.seller && item.seller.toString() === req.user._id.toString()) {
+                    if (item.vendor && item.vendor.toString() === req.user._id.toString()) {
                         totalRevenue += item.subtotal;
                     }
                 });
@@ -211,7 +211,7 @@ export const getOrderStats = async (req, res) => {
     }
 };
 
-    // Create order (Customer only)
+// Create order (Customer only)
 export const createOrder = async (req, res) => {
     try {
         const {
@@ -222,9 +222,9 @@ export const createOrder = async (req, res) => {
         } = req.body;
 
         if (!items || items.length === 0) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Order items required" 
+            return res.status(400).json({
+                success: false,
+                message: "Order items required"
             });
         }
 
@@ -234,7 +234,7 @@ export const createOrder = async (req, res) => {
         const orderItems = await Promise.all(
             items.map(async item => {
                 const product = await Product.findById(item.product);
-                
+
                 if (!product) {
                     throw new Error(`Product not found: ${item.product}`);
                 }
@@ -249,7 +249,7 @@ export const createOrder = async (req, res) => {
 
                 return {
                     product: product._id,
-                    seller: product.seller,
+                    vendor: product.createdBy,
                     name: product.name,
                     image: product.images?.[0]?.url || '', // Get first image from images array
                     price: product.price,
@@ -264,7 +264,7 @@ export const createOrder = async (req, res) => {
         const total = subtotal + shippingFee + tax;
 
         const order = new Order({
-            customer: req.user._id, 
+            customer: req.user._id,
             items: orderItems,
             shippingAddress,
             paymentMethod,

@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import {useParams} from 'react-router-dom'
-import { Upload, X, Plus, Loader, AlertCircle, CheckCircle, Package, ArrowLeft } from 'lucide-react';
+import { useParams } from 'react-router-dom'
+import { Upload, X, Plus, Loader, AlertCircle, CheckCircle, Package, ArrowLeft, Trash2 } from 'lucide-react';
 import axios from 'axios';
 
 const EditProductPage = () => {
-    const {id} = useParams()
+  const { id } = useParams()
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [productId, setProductId] = useState(null); // Get from URL params
-  
+
   const [formData, setFormData] = useState(null);
   const [newImages, setNewImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -26,10 +26,10 @@ const EditProductPage = () => {
     // In real app, get productId from useParams()
     // const { id } = useParams();
     setProductId(id);
-    
+
     // For demo, use a mock ID
     // setProductId('mock-product-id');
-    
+
     fetchCategories();
     fetchProduct(id);
   }, []);
@@ -37,15 +37,21 @@ const EditProductPage = () => {
   useEffect(() => {
     if (formData?.categoryId) {
       fetchSubcategories(formData.categoryId);
-      loadCategoryAttributes(formData.categoryId);
+
+      // If we have a subcategory, load its attributes, otherwise load category attributes
+      if (formData.subcategoryId) {
+        loadCategoryAttributes(formData.subcategoryId);
+      } else {
+        loadCategoryAttributes(formData.categoryId);
+      }
     }
-  }, [formData?.categoryId]);
+  }, [formData?.categoryId, formData?.subcategoryId, categories, subcategories]);
 
   const fetchCategories = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL ;
+      const apiUrl = import.meta.env.VITE_API_URL;
       const response = await axios.get(`${apiUrl}/categories?parentId=null&isActive=true`);
-      
+
       setCategories(response.data.data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -55,9 +61,9 @@ const EditProductPage = () => {
 
   const fetchSubcategories = async (categoryId) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL 
+      const apiUrl = import.meta.env.VITE_API_URL
       const response = await axios.get(`${apiUrl}/categories?parentId=${categoryId}&isActive=true`);
-      
+
       setSubcategories(response.data.data || []);
     } catch (error) {
       console.error('Error fetching subcategories:', error);
@@ -67,20 +73,40 @@ const EditProductPage = () => {
 
   const fetchProduct = async (id) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL 
+      const apiUrl = import.meta.env.VITE_API_URL
       const response = await axios.get(`${apiUrl}/products/${id}`);
       const product = response.data.data;
       console.log(product)
-      
+
       setFormData({
         ...product,
         categoryId: product.categoryId?._id || product.categoryId,
         subcategoryId: product.subcategoryId?._id || product.subcategoryId || '',
         tags: product.tags?.join(', ') || '',
         features: product.features?.length > 0 ? product.features : [''],
-        specifications: product.specifications || {}
+        // Map specifications array to object for form handling { key: value }
+        specifications: Array.isArray(product.specifications)
+          ? product.specifications.reduce((acc, spec) => ({ ...acc, [spec.key]: spec.value }), {})
+          : product.specifications || {},
+        stock: product.stockQuantity || 0,
+        lowStockThreshold: product.lowStockThreshold || 5, // Default to 5
+        metaTitle: product.metaTitle || '',
+        metaDescription: product.metaDescription || '',
+        description: Array.isArray(product.description)
+          ? product.description
+          : [{ type: 'text', title: '', content: product.description || '', order: 0 }],
       });
-      
+
+      // Initialize specifications fields from populated product data
+      const initialCategory = product.subcategoryId?.attributes?.length > 0
+        ? product.subcategoryId
+        : product.categoryId;
+
+      if (initialCategory && initialCategory.attributes) {
+        setSpecFields(initialCategory.attributes);
+        setSelectedCategory(initialCategory);
+      }
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -90,7 +116,10 @@ const EditProductPage = () => {
   };
 
   const loadCategoryAttributes = (categoryId) => {
-    const category = categories.find(cat => cat._id === categoryId);
+    // Search in both categories and subcategories
+    const category = categories.find(cat => cat._id === categoryId) ||
+      subcategories.find(cat => cat._id === categoryId);
+
     if (category && category.attributes) {
       setSpecFields(category.attributes);
       setSelectedCategory(category);
@@ -101,11 +130,11 @@ const EditProductPage = () => {
     const newErrors = {};
 
     if (!formData.name?.trim()) newErrors.name = 'Product name is required';
-    if (!formData.description?.trim()) newErrors.description = 'Description is required';
+    if (!formData.description) newErrors.description = 'Description is required';
     if (!formData.price || formData.price <= 0) newErrors.price = 'Valid price is required';
     if (!formData.stock || formData.stock < 0) newErrors.stock = 'Valid stock quantity is required';
     if (!formData.categoryId) newErrors.categoryId = 'Category is required';
-    
+
     if (formData.compareAtPrice && Number(formData.compareAtPrice) <= Number(formData.price)) {
       newErrors.compareAtPrice = 'Compare price must be higher than regular price';
     }
@@ -138,6 +167,41 @@ const EditProductPage = () => {
     }
   };
 
+  const handleDescriptionChange = (index, field, value) => {
+    const newDescription = [...formData.description];
+    newDescription[index] = {
+      ...newDescription[index],
+      [field]: value
+    };
+    setFormData(prev => ({ ...prev, description: newDescription }));
+    if (errors.description) setErrors(prev => ({ ...prev, description: '' }));
+  };
+
+  const addDescriptionBlock = () => {
+    setFormData(prev => ({
+      ...prev,
+      description: [
+        ...prev.description,
+        {
+          type: 'text',
+          title: '',
+          content: '',
+          order: prev.description.length
+        }
+      ]
+    }));
+  };
+
+  const removeDescriptionBlock = (index) => {
+    if (formData.description.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        description: prev.description.filter((_, i) => i !== index)
+          .map((desc, i) => ({ ...desc, order: i }))
+      }));
+    }
+  };
+
   const handleSpecificationChange = (fieldName, value) => {
     setFormData(prev => ({
       ...prev,
@@ -154,7 +218,7 @@ const EditProductPage = () => {
       const newValues = currentValues.includes(option)
         ? currentValues.filter(v => v !== option)
         : [...currentValues, option];
-      
+
       return {
         ...prev,
         specifications: {
@@ -224,11 +288,11 @@ const EditProductPage = () => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
-    const files = Array.from(e.dataTransfer.files).filter(file => 
+
+    const files = Array.from(e.dataTransfer.files).filter(file =>
       file.type.startsWith('image/')
     );
-    
+
     if (files.length > 0) {
       addNewImages(files);
     }
@@ -241,7 +305,7 @@ const EditProductPage = () => {
 
   const addNewImages = (files) => {
     const currentTotal = (formData.images?.length || 0) + newImages.length;
-    
+
     if (files.length + currentTotal > 5) {
       setMessage({ type: 'error', text: 'Maximum 5 images allowed' });
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
@@ -266,23 +330,24 @@ const EditProductPage = () => {
 
   const removeExistingImage = async (imageId) => {
     if (!window.confirm('Are you sure you want to delete this image?')) return;
-    
+
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = import.meta.env.VITE_API_URL 
-      const response = await axios.delete(`${apiUrl}/products/${productId}/image/${imageId}`, {
+      const apiUrl = import.meta.env.VITE_API_URL
+      const response = await axios.delete(`${apiUrl}/products/${id}/images/${imageId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      if (!response.ok) throw new Error('Failed to delete image');
+      // Axios throws on non-2xx by default, so if we get here it's success.
+      // response.ok is for fetch, not axios.
 
       setFormData(prev => ({
         ...prev,
         images: prev.images.filter(img => img._id !== imageId)
       }));
-      
+
       setMessage({ type: 'success', text: 'Image deleted successfully' });
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     } catch (error) {
@@ -301,7 +366,7 @@ const EditProductPage = () => {
 
     try {
       const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, uploadData 
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, uploadData
       );
       return {
         url: response.data.secure_url,
@@ -316,7 +381,7 @@ const EditProductPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       setMessage({ type: 'error', text: 'Please fix the errors before submitting' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -339,17 +404,55 @@ const EditProductPage = () => {
       }
 
       // Prepare update data
+      // Map specifications from UI object to model array format
+      const mappedSpecifications = (specFields || []).map((field, idx) => {
+        const key = field.key;
+        if (!key) return null;
+        const rawValue = formData.specifications[key];
+        const type = (field.type || '').toLowerCase();
+
+        // Skip empty values except booleans
+        const isEmptyArray = Array.isArray(rawValue) && rawValue.length === 0;
+        const isEmptyString = rawValue === '' || rawValue === undefined || rawValue === null;
+
+        if ((isEmptyString || isEmptyArray) && type !== 'boolean') {
+          return null;
+        }
+
+        return {
+          group: field.group || 'General',
+          key,
+          value: rawValue,
+          unit: field.unit || '',
+          order: field.order ?? idx
+        };
+      }).filter(Boolean);
+
+      // Clean description array - remove empty blocks
+      const cleanedDescription = formData.description
+        .filter(desc => desc.content && desc.content.toString().trim() !== '')
+        .map((desc, index) => ({
+          type: desc.type || 'text',
+          title: desc.title || '',
+          content: desc.content,
+          order: index
+        }));
+
+      // Prepare update data
       const updateData = {
         name: formData.name,
-        description: formData.description,
+        description: cleanedDescription,
         shortDescription: formData.shortDescription,
         price: Number(formData.price),
         compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined,
         categoryId: formData.categoryId,
         subcategoryId: formData.subcategoryId || undefined,
-        specifications: formData.specifications,
+        specifications: mappedSpecifications,
         stock: Number(formData.stock),
         stockQuantity: Number(formData.stock),
+        lowStockThreshold: Number(formData.lowStockThreshold || 5),
+        metaTitle: formData.metaTitle,
+        metaDescription: formData.metaDescription,
         origin: formData.origin,
         features: formData.features.filter(f => f.trim() !== ''),
         careInstructions: formData.careInstructions,
@@ -365,7 +468,7 @@ const EditProductPage = () => {
       console.log('Update data:', updateData);
 
       const token = localStorage.getItem('token');
-      const apiUrl = import.meta.env.VITE_API_URL 
+      const apiUrl = import.meta.env.VITE_API_URL
       const response = await axios.put(`${apiUrl}/products/${productId}`, updateData, {
         headers: {
           'Content-Type': 'application/json',
@@ -376,16 +479,22 @@ const EditProductPage = () => {
       console.log('Product updated:', response.data);
 
       setMessage({ type: 'success', text: 'Product updated successfully!' });
-      
+
       setTimeout(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        window.location.href = `/${user.role || 'vendor'}`;
+        if (user.role === 'vendor') {
+          window.location.href = '/vendor/product/list';
+        } else if (user.role === 'admin') {
+          window.location.href = '/admin/product/list';
+        } else {
+          window.location.href = '/';
+        }
       }, 2000);
     } catch (error) {
       console.error('Update error:', error);
-      setMessage({ 
-        type: 'error', 
-        text: error.message || 'Failed to update product. Please try again.' 
+      setMessage({
+        type: 'error',
+        text: error.message || 'Failed to update product. Please try again.'
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
@@ -397,24 +506,30 @@ const EditProductPage = () => {
   const handleCancel = () => {
     if (window.confirm('Are you sure you want to cancel? All changes will be lost.')) {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      window.location.href = `/${user.role || 'vendor'}`;
+      if (user.role === 'vendor') {
+        window.location.href = '/vendor/product/list';
+      } else if (user.role === 'admin') {
+        window.location.href = '/admin/product/list';
+      } else {
+        window.location.href = '/';
+      }
     }
   };
 
   const renderSpecificationField = (field) => {
-    const value = formData.specifications[field.name];
+    const value = formData.specifications[field.key];
 
     switch (field.type) {
       case 'text':
         return (
-          <div key={field.name}>
+          <div key={field.key}>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               {field.label}
             </label>
             <input
               type="text"
               value={value || ''}
-              onChange={(e) => handleSpecificationChange(field.name, e.target.value)}
+              onChange={(e) => handleSpecificationChange(field.key, e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
               placeholder={`Enter ${field.label.toLowerCase()}`}
             />
@@ -423,13 +538,13 @@ const EditProductPage = () => {
 
       case 'select':
         return (
-          <div key={field.name}>
+          <div key={field.key}>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               {field.label}
             </label>
             <select
               value={value || ''}
-              onChange={(e) => handleSpecificationChange(field.name, e.target.value)}
+              onChange={(e) => handleSpecificationChange(field.key, e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
             >
               <option value="">Select {field.label}</option>
@@ -442,7 +557,7 @@ const EditProductPage = () => {
 
       case 'multiselect':
         return (
-          <div key={field.name}>
+          <div key={field.key}>
             <label className="block text-sm font-semibold text-gray-700 mb-3">
               {field.label}
             </label>
@@ -453,12 +568,11 @@ const EditProductPage = () => {
                   <button
                     key={option}
                     type="button"
-                    onClick={() => handleMultiSelectToggle(field.name, option)}
-                    className={`px-4 py-2 rounded-lg border-2 transition-all font-medium ${
-                      isSelected
-                        ? 'bg-orange-500 text-white border-orange-500 shadow-md transform scale-105'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-orange-400 hover:text-orange-600'
-                    }`}
+                    onClick={() => handleMultiSelectToggle(field.key, option)}
+                    className={`px-4 py-2 rounded-lg border-2 transition-all font-medium ${isSelected
+                      ? 'bg-orange-500 text-white border-orange-500 shadow-md transform scale-105'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-orange-400 hover:text-orange-600'
+                      }`}
                   >
                     {option}
                   </button>
@@ -470,7 +584,7 @@ const EditProductPage = () => {
 
       case 'dimensions':
         return (
-          <div key={field.name}>
+          <div key={field.key}>
             <label className="block text-sm font-semibold text-gray-700 mb-3">
               {field.label}
             </label>
@@ -480,7 +594,7 @@ const EditProductPage = () => {
                 <input
                   type="number"
                   value={value?.height || ''}
-                  onChange={(e) => handleDimensionChange(field.name, 'height', e.target.value)}
+                  onChange={(e) => handleDimensionChange(field.key, 'height', e.target.value)}
                   min="0"
                   step="0.1"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -492,7 +606,7 @@ const EditProductPage = () => {
                 <input
                   type="number"
                   value={value?.width || ''}
-                  onChange={(e) => handleDimensionChange(field.name, 'width', e.target.value)}
+                  onChange={(e) => handleDimensionChange(field.key, 'width', e.target.value)}
                   min="0"
                   step="0.1"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -504,7 +618,7 @@ const EditProductPage = () => {
                 <input
                   type="number"
                   value={value?.depth || ''}
-                  onChange={(e) => handleDimensionChange(field.name, 'depth', e.target.value)}
+                  onChange={(e) => handleDimensionChange(field.key, 'depth', e.target.value)}
                   min="0"
                   step="0.1"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -516,7 +630,7 @@ const EditProductPage = () => {
                 <input
                   type="number"
                   value={value?.weight || ''}
-                  onChange={(e) => handleDimensionChange(field.name, 'weight', e.target.value)}
+                  onChange={(e) => handleDimensionChange(field.key, 'weight', e.target.value)}
                   min="0"
                   step="0.1"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -529,11 +643,11 @@ const EditProductPage = () => {
 
       case 'checkbox':
         return (
-          <div key={field.name} className="flex items-center gap-2">
+          <div key={field.key} className="flex items-center gap-2">
             <input
               type="checkbox"
               checked={value || false}
-              onChange={(e) => handleSpecificationChange(field.name, e.target.checked)}
+              onChange={(e) => handleSpecificationChange(field.key, e.target.checked)}
               className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
             />
             <label className="text-sm font-semibold text-gray-700">
@@ -595,11 +709,10 @@ const EditProductPage = () => {
 
         {/* Alert Messages */}
         {message.text && (
-          <div className={`p-4 mb-6 rounded-lg flex items-center gap-3 animate-in slide-in-from-top ${
-            message.type === 'success' 
-              ? 'bg-green-50 text-green-800 border border-green-200' 
-              : 'bg-red-50 text-red-800 border border-red-200'
-          }`}>
+          <div className={`p-4 mb-6 rounded-lg flex items-center gap-3 animate-in slide-in-from-top ${message.type === 'success'
+            ? 'bg-green-50 text-green-800 border border-green-200'
+            : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
             {message.type === 'success' ? (
               <CheckCircle className="w-5 h-5 flex-shrink-0" />
             ) : (
@@ -616,7 +729,7 @@ const EditProductPage = () => {
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">1</div>
               Basic Information
             </h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -627,9 +740,8 @@ const EditProductPage = () => {
                   name="name"
                   value={formData.name || ''}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                    errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                   placeholder="e.g., Premium Gangan Talking Drum"
                 />
                 {errors.name && (
@@ -659,18 +771,62 @@ const EditProductPage = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Full Description <span className="text-red-500">*</span>
                 </label>
-                <textarea
-                  name="description"
-                  value={formData.description || ''}
-                  onChange={handleInputChange}
-                  rows="6"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                    errors.description ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
-                  placeholder="Detailed product description..."
-                />
+                <p className="text-xs text-gray-500 mb-3">Add multiple sections to structure your product description</p>
+
+                {formData.description.map((desc, index) => (
+                  <div key={index} className="mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-gray-700">Section {index + 1}</span>
+                        <select
+                          value={desc.type}
+                          onChange={(e) => handleDescriptionChange(index, 'type', e.target.value)}
+                          className="text-sm px-2 py-1 border border-gray-300 rounded"
+                        >
+                          <option value="text">Text</option>
+                          <option value="list">List</option>
+                        </select>
+                      </div>
+                      {formData.description.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeDescriptionBlock(index)}
+                          className="text-red-600 hover:bg-red-50 p-1 rounded"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+
+                    <input
+                      type="text"
+                      value={desc.title}
+                      onChange={(e) => handleDescriptionChange(index, 'title', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2 text-sm"
+                      placeholder="Section title (optional)"
+                    />
+
+                    <textarea
+                      value={desc.content}
+                      onChange={(e) => handleDescriptionChange(index, 'content', e.target.value)}
+                      rows="4"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      placeholder={desc.type === 'list' ? 'Enter list items separated by newlines' : 'Enter description text...'}
+                    />
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addDescriptionBlock}
+                  className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold text-sm"
+                >
+                  <Plus size={16} />
+                  Add Section
+                </button>
+
                 {errors.description && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                  <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
                     <AlertCircle size={14} /> {errors.description}
                   </p>
                 )}
@@ -684,7 +840,7 @@ const EditProductPage = () => {
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">2</div>
               Category
             </h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -694,9 +850,8 @@ const EditProductPage = () => {
                   name="categoryId"
                   value={formData.categoryId || ''}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                    errors.categoryId ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.categoryId ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select Category</option>
                   {categories.map(cat => (
@@ -738,7 +893,7 @@ const EditProductPage = () => {
                 <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">3</div>
                 {selectedCategory?.name} Specifications
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {specFields.map(field => renderSpecificationField(field))}
               </div>
@@ -751,7 +906,7 @@ const EditProductPage = () => {
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{specFields.length > 0 ? '4' : '3'}</div>
               Pricing & Inventory
             </h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -764,9 +919,8 @@ const EditProductPage = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="100"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                    errors.price ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.price ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                   placeholder="0"
                 />
                 {errors.price && (
@@ -787,9 +941,8 @@ const EditProductPage = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="100"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                    errors.compareAtPrice ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.compareAtPrice ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                   placeholder="0"
                 />
                 {errors.compareAtPrice && (
@@ -810,9 +963,8 @@ const EditProductPage = () => {
                   value={formData.stock || ''}
                   onChange={handleInputChange}
                   min="0"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                    errors.stock ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.stock ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                   placeholder="0"
                 />
                 {errors.stock && (
@@ -824,13 +976,131 @@ const EditProductPage = () => {
             </div>
           </div>
 
-          {/* Origin & Cultural Story */}
+          {/* Images */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{specFields.length > 0 ? '5' : '4'}</div>
+              Product Images
+            </h2>
+
+            <div
+              onDragEnter={handleDrag}
+              onDragOver={handleDrag}
+              onDragLeave={handleDrag}
+              onDrop={handleDrop}
+              className={`relative flex items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${dragActive ? 'border-orange-400 bg-orange-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
+                }`}
+            >
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleNewImageChange}
+                className="absolute w-full h-full opacity-0 cursor-pointer"
+              />
+              {uploading ? (
+                <Loader className="animate-spin text-orange-600" />
+              ) : (
+                <div className="text-center">
+                  <Upload className="mx-auto text-gray-400 mb-2" size={24} />
+                  <p className="text-gray-500">Drag & drop images here, or click to select</p>
+                  <p className="text-xs text-gray-400 mt-1">Max 5 images total</p>
+                </div>
+              )}
+            </div>
+
+            {(formData.images?.length > 0 || newImages.length > 0) && (
+              <div className="mt-6 flex flex-wrap gap-4">
+                {/* Existing Images */}
+                {formData.images?.map((img) => (
+                  <div key={img._id} className="relative group w-32 h-32 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                    <img src={img.url} alt="Product" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingImage(img._id)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity transform hover:scale-110 shadow-md"
+                    >
+                      <X size={14} />
+                    </button>
+                    {img.isPrimary && (
+                      <span className="absolute bottom-1 left-1 bg-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium shadow-sm">
+                        Primary
+                      </span>
+                    )}
+                  </div>
+                ))}
+
+                {/* New Images */}
+                {imagePreviews.map((src, i) => (
+                  <div key={i} className="relative group w-32 h-32 rounded-lg overflow-hidden border border-gray-200 shadow-sm ring-2 ring-orange-100">
+                    <img src={src} alt={`Preview ${i}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeNewImage(i)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity transform hover:scale-110 shadow-md"
+                    >
+                      <X size={14} />
+                    </button>
+                    <div className="absolute inset-0 bg-orange-500 bg-opacity-10 pointer-events-none" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* SEO Settings */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{specFields.length > 0 ? '6' : '5'}</div>
+              SEO Settings
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Meta Title
+                </label>
+                <input
+                  type="text"
+                  name="metaTitle"
+                  value={formData.metaTitle || ''}
+                  onChange={handleInputChange}
+                  maxLength="60"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  placeholder="SEO Title (max 60 chars)"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {(formData.metaTitle || '').length}/60 characters
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Meta Description
+                </label>
+                <textarea
+                  name="metaDescription"
+                  value={formData.metaDescription || ''}
+                  onChange={handleInputChange}
+                  maxLength="160"
+                  rows="3"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  placeholder="SEO Description (max 160 chars)"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {(formData.metaDescription || '').length}/160 characters
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Origin & Cultural Story */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{specFields.length > 0 ? '7' : '6'}</div>
               Origin & Cultural Story
             </h2>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -897,7 +1167,7 @@ const EditProductPage = () => {
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{specFields.length > 0 ? '6' : '5'}</div>
               Product Features
             </h2>
-            
+
             <div className="space-y-3">
               {formData.features?.map((feature, index) => (
                 <div key={index} className="flex gap-2">
@@ -929,107 +1199,7 @@ const EditProductPage = () => {
             </div>
           </div>
 
-          {/* Images Management */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{specFields.length > 0 ? '7' : '6'}</div>
-              Product Images
-            </h2>
-            
-            {/* Existing Images */}
-            {formData.images && formData.images.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3 text-gray-700">Current Images</h3>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  {formData.images.map((image, index) => (
-                    <div key={image._id || index} className="relative group">
-                      <img
-                        src={image.url}
-                        alt={image.alt || `Product ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
-                      />
-                      {image.isPrimary && (
-                        <span className="absolute top-2 left-2 bg-orange-600 text-white text-xs px-2 py-1 rounded font-semibold">
-                          Primary
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => removeExistingImage(image._id)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {/* Upload New Images */}
-            {(formData.images?.length || 0) + newImages.length < 5 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 text-gray-700">Add New Images</h3>
-                <label
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
-                  className={`flex items-center justify-center w-full h-40 px-4 border-2 border-dashed rounded-lg cursor-pointer transition-all ${
-                    dragActive 
-                      ? 'border-orange-500 bg-orange-50' 
-                      : 'border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex flex-col items-center">
-                    <Upload className={`w-10 h-10 ${dragActive ? 'text-orange-500' : 'text-gray-400'}`} />
-                    <p className="mt-2 text-sm text-gray-600">
-                      {dragActive ? 'Drop images here' : 'Click to upload or drag and drop'}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
-                  </div>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleNewImageChange}
-                    className="hidden"
-                  />
-                </label>
-
-                {imagePreviews.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
-                    {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={preview}
-                          alt={`New ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg border-2 border-green-300"
-                        />
-                        <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded font-semibold">
-                          New
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeNewImage(index)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {(formData.images?.length || 0) + newImages.length >= 5 && (
-              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg flex items-center gap-2">
-                <AlertCircle size={20} />
-                <span className="text-sm font-medium">Maximum of 5 images reached</span>
-              </div>
-            )}
-          </div>
 
           {/* Additional Info */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -1037,7 +1207,7 @@ const EditProductPage = () => {
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{specFields.length > 0 ? '8' : '7'}</div>
               Additional Information
             </h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -1064,9 +1234,8 @@ const EditProductPage = () => {
                   name="videoUrl"
                   value={formData.videoUrl || ''}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                    errors.videoUrl ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.videoUrl ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                   placeholder="https://youtube.com/..."
                 />
                 {errors.videoUrl && (
@@ -1140,7 +1309,7 @@ const EditProductPage = () => {
                 </>
               )}
             </button>
-            
+
             <button
               type="button"
               onClick={handleCancel}

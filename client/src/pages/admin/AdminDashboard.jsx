@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { 
-    Package, 
-    Layers, 
-    Plus, 
-    Users, 
+import {
+    Package,
+    Layers,
+    Plus,
+    Users,
     AlertTriangle,
     TrendingUp,
     DollarSign,
-    ShoppingBag
+    ShoppingBag,
+    Store
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -26,16 +27,26 @@ const AdminDashboard = () => {
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
-            
+
+            const token = localStorage.getItem('token')
+
             // Fetch statistics
             const statsResponse = await axios.get(
-                `${import.meta.env.VITE_API_URL}/admin/products/stats`
+                `${import.meta.env.VITE_API_URL}/admin/products/stats`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
             );
             setStats(statsResponse.data.data);
 
             // Fetch recent products (top 5)
             const productsResponse = await axios.get(
-                `${import.meta.env.VITE_API_URL}/admin/products?limit=5&sort=-createdAt`
+                `${import.meta.env.VITE_API_URL}/admin/products?limit=5&sort=-createdAt`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
             );
             setProducts(productsResponse.data.data);
 
@@ -186,8 +197,7 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Quick Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                     <Link
                         to="/admin/product/add"
                         className="bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all hover:scale-105"
@@ -247,6 +257,21 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     </Link>
+
+                    <Link
+                        to="/admin/vendors"
+                        className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all hover:scale-105"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="bg-green-100 p-4 rounded-lg">
+                                <Store size={32} className="text-green-600" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-lg text-gray-900">Vendors</h3>
+                                <p className="text-gray-600 text-sm">Manage sellers</p>
+                            </div>
+                        </div>
+                    </Link>
                 </div>
 
                 {/* Products by Category */}
@@ -254,8 +279,8 @@ const AdminDashboard = () => {
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-bold text-gray-900">Products by Category</h2>
-                            <Link 
-                                to="/admin/categories" 
+                            <Link
+                                to="/admin/categories"
                                 className="text-orange-600 hover:text-orange-700 font-medium text-sm"
                             >
                                 View All →
@@ -263,7 +288,7 @@ const AdminDashboard = () => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {stats.byCategory.slice(0, 6).map((cat) => (
-                                <div 
+                                <div
                                     key={cat.categoryId}
                                     className="border border-gray-200 rounded-lg p-4 hover:border-orange-500 transition-colors"
                                 >
@@ -294,8 +319,8 @@ const AdminDashboard = () => {
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-bold text-gray-900">Top Vendors</h2>
-                            <Link 
-                                to="/admin/vendors" 
+                            <Link
+                                to="/admin/vendors"
                                 className="text-orange-600 hover:text-orange-700 font-medium text-sm"
                             >
                                 View All →
@@ -337,8 +362,8 @@ const AdminDashboard = () => {
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-bold text-gray-900">Recent Products</h2>
-                            <Link 
-                                to="/admin/product/list" 
+                            <Link
+                                to="/admin/product/list"
                                 className="text-orange-600 hover:text-orange-700 font-medium text-sm"
                             >
                                 View All →
@@ -353,8 +378,8 @@ const AdminDashboard = () => {
                                 >
                                     <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                                         {product.images?.[0]?.url ? (
-                                            <img 
-                                                src={product.images[0].url} 
+                                            <img
+                                                src={product.images[0].url}
                                                 alt={product.name}
                                                 className="w-full h-full object-cover"
                                             />
@@ -373,15 +398,14 @@ const AdminDashboard = () => {
                                     </div>
                                     <div className="text-right">
                                         <p className="font-bold text-gray-900">{formatPrice(product.price)}</p>
-                                        <p className={`text-sm mt-1 ${
-                                            product.stockQuantity === 0 
-                                                ? 'text-red-600' 
-                                                : product.stockQuantity <= 5 
-                                                ? 'text-yellow-600' 
+                                        <p className={`text-sm mt-1 ${product.stockQuantity === 0
+                                            ? 'text-red-600'
+                                            : product.stockQuantity <= 5
+                                                ? 'text-yellow-600'
                                                 : 'text-green-600'
-                                        }`}>
-                                            {product.stockQuantity === 0 
-                                                ? 'Out of Stock' 
+                                            }`}>
+                                            {product.stockQuantity === 0
+                                                ? 'Out of Stock'
                                                 : `${product.stockQuantity} in stock`
                                             }
                                         </p>

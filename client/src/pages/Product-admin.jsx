@@ -29,6 +29,9 @@ const AddProductPage = () => {
     culturalStory: '',
     videoUrl: '',
     tags: '',
+    metaTitle: '',
+    metaDescription: '',
+    lowStockThreshold: 5,
     featured: false,
     customizable: false,
     customizationOptions: []
@@ -112,14 +115,14 @@ const AddProductPage = () => {
     if (category && category.attributes && category.attributes.length > 0) {
       setSpecFields(category.attributes);
       setSelectedCategory(category);
-      
+
       // Initialize specifications based on attribute types
       const specs = {};
       category.attributes.forEach(attr => {
         const key = attr.key;
         if (!key) return;
         const type = (attr.type || 'text').toLowerCase();
-        
+
         if (type === 'multi-select') {
           specs[key] = [];
         } else if (type === 'number') {
@@ -141,12 +144,12 @@ const AddProductPage = () => {
     const newErrors = {};
 
     if (!formData.name.trim()) newErrors.name = 'Product name is required';
-    
-    const hasValidDescription = formData.description.some(desc => 
+
+    const hasValidDescription = formData.description.some(desc =>
       desc.content && desc.content.toString().trim() !== ''
     );
     if (!hasValidDescription) newErrors.description = 'At least one description block with content is required';
-    
+
     if (!formData.price || Number(formData.price) <= 0) newErrors.price = 'Valid price is required';
     if (!formData.stock || Number(formData.stock) < 0) newErrors.stock = 'Valid stock quantity is required';
     if (!formData.categoryId) newErrors.categoryId = 'Category is required';
@@ -164,8 +167,8 @@ const AddProductPage = () => {
     specFields.forEach(field => {
       if (field.required) {
         const value = formData.specifications[field.key];
-        const isEmpty = value === '' || value === null || value === undefined || 
-                       (Array.isArray(value) && value.length === 0);
+        const isEmpty = value === '' || value === null || value === undefined ||
+          (Array.isArray(value) && value.length === 0);
         if (isEmpty) {
           newErrors[`spec_${field.key}`] = `${field.label || field.group || field.key} is required`;
         }
@@ -209,11 +212,11 @@ const AddProductPage = () => {
       ...prev,
       description: [
         ...prev.description,
-        { 
-          type: 'text', 
-          title: '', 
-          content: '', 
-          order: prev.description.length 
+        {
+          type: 'text',
+          title: '',
+          content: '',
+          order: prev.description.length
         }
       ]
     }));
@@ -345,7 +348,7 @@ const AddProductPage = () => {
         `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
         uploadData
       );
-      
+
       return {
         url: data.secure_url,
         publicId: data.public_id,
@@ -429,6 +432,7 @@ const AddProductPage = () => {
         specifications: mappedSpecifications,
         stock: Number(formData.stock),
         stockQuantity: Number(formData.stock),
+        lowStockThreshold: Number(formData.lowStockThreshold || 5), // Default to 5 if not set
         origin: {
           state: formData.origin.state.trim(),
           city: formData.origin.city.trim(),
@@ -439,6 +443,11 @@ const AddProductPage = () => {
         culturalStory: formData.culturalStory.trim(),
         videoUrl: formData.videoUrl.trim(),
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+
+        // SEO Fields
+        metaTitle: formData.metaTitle?.trim(),
+        metaDescription: formData.metaDescription?.trim(),
+
         featured: formData.featured,
         customizable: formData.customizable,
         customizationOptions: formData.customizationOptions || [],
@@ -462,7 +471,13 @@ const AddProductPage = () => {
 
       setTimeout(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        window.location.href = `/${user.role || 'vendor'}`;
+        if (user.role === 'vendor') {
+          window.location.href = '/vendor/product/list';
+        } else if (user.role === 'admin') {
+          window.location.href = '/admin/product/list';
+        } else {
+          window.location.href = '/';
+        }
       }, 2000);
     } catch (error) {
       console.error('Submit error:', error);
@@ -481,7 +496,11 @@ const AddProductPage = () => {
   const handleCancel = () => {
     if (window.confirm('Are you sure you want to cancel? All changes will be lost.')) {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      window.location.href = `/${user.role || 'vendor'}`;
+      if (user.role === 'vendor') {
+        window.location.href = '/vendor/product/list';
+      } else {
+        window.location.href = '/admin/product/list';
+      }
     }
   };
 
@@ -504,9 +523,8 @@ const AddProductPage = () => {
               type="text"
               value={value || ''}
               onChange={(e) => handleSpecificationChange(key, e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
-                error ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${error ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
               placeholder={`Enter ${label}`}
             />
             {error && (
@@ -528,9 +546,8 @@ const AddProductPage = () => {
               type="number"
               value={value || ''}
               onChange={(e) => handleSpecificationChange(key, e.target.value ? Number(e.target.value) : '')}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
-                error ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${error ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
               min="0"
               step="0.01"
               placeholder="0"
@@ -552,9 +569,8 @@ const AddProductPage = () => {
             <select
               value={value || ''}
               onChange={(e) => handleSpecificationChange(key, e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
-                error ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${error ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
             >
               <option value="">Select {label}</option>
               {(field.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -581,11 +597,10 @@ const AddProductPage = () => {
                     key={option}
                     type="button"
                     onClick={() => handleMultiSelectToggle(key, option)}
-                    className={`px-4 py-2 rounded-lg border-2 transition-all font-medium ${
-                      isSelected
-                        ? 'bg-orange-500 text-white border-orange-500 shadow-md'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-orange-400'
-                    }`}
+                    className={`px-4 py-2 rounded-lg border-2 transition-all font-medium ${isSelected
+                      ? 'bg-orange-500 text-white border-orange-500 shadow-md'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-orange-400'
+                      }`}
                   >
                     {option}
                   </button>
@@ -637,11 +652,10 @@ const AddProductPage = () => {
         </div>
 
         {message.text && (
-          <div className={`p-4 mb-6 rounded-lg flex items-center gap-3 ${
-            message.type === 'success' 
-              ? 'bg-green-50 text-green-800 border border-green-200' 
-              : 'bg-red-50 text-red-800 border border-red-200'
-          }`}>
+          <div className={`p-4 mb-6 rounded-lg flex items-center gap-3 ${message.type === 'success'
+            ? 'bg-green-50 text-green-800 border border-green-200'
+            : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
             {message.type === 'success' ? (
               <CheckCircle className="w-5 h-5 flex-shrink-0" />
             ) : (
@@ -669,9 +683,8 @@ const AddProductPage = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
-                    errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                   placeholder="e.g., Premium Gangan Talking Drum"
                 />
                 {errors.name && (
@@ -703,7 +716,7 @@ const AddProductPage = () => {
                   Full Description <span className="text-red-500">*</span>
                 </label>
                 <p className="text-xs text-gray-500 mb-3">Add multiple sections to structure your product description</p>
-                
+
                 {formData.description.map((desc, index) => (
                   <div key={index} className="mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
                     <div className="flex items-center justify-between mb-3">
@@ -728,7 +741,7 @@ const AddProductPage = () => {
                         </button>
                       )}
                     </div>
-                    
+
                     <input
                       type="text"
                       value={desc.title}
@@ -736,7 +749,7 @@ const AddProductPage = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2 text-sm"
                       placeholder="Section title (optional)"
                     />
-                    
+
                     <textarea
                       value={desc.content}
                       onChange={(e) => handleDescriptionChange(index, 'content', e.target.value)}
@@ -746,7 +759,7 @@ const AddProductPage = () => {
                     />
                   </div>
                 ))}
-                
+
                 <button
                   type="button"
                   onClick={addDescriptionBlock}
@@ -755,7 +768,7 @@ const AddProductPage = () => {
                   <Plus size={16} />
                   Add Section
                 </button>
-                
+
                 {errors.description && (
                   <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
                     <AlertCircle size={14} /> {errors.description}
@@ -781,9 +794,8 @@ const AddProductPage = () => {
                   name="categoryId"
                   value={formData.categoryId}
                   onChange={handleInputChange}
-                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
-                    errors.categoryId ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${errors.categoryId ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select Category</option>
                   {categories.map(cat => (
@@ -848,10 +860,97 @@ const AddProductPage = () => {
             </div>
           )}
 
+          {/* Pricing & Inventory */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{specFields.length > 0 ? '4' : '3'}</div>
+              Pricing & Inventory
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Price (₦) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="100"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${errors.price ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
+                  placeholder="0"
+                />
+                {errors.price && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle size={14} /> {errors.price}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Compare At Price (₦)
+                </label>
+                <input
+                  type="number"
+                  name="compareAtPrice"
+                  value={formData.compareAtPrice}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="100"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${errors.compareAtPrice ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
+                  placeholder="0"
+                />
+                <p className="mt-1 text-xs text-gray-500">Original price (for showing discounts)</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Stock Quantity <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="stock"
+                  value={formData.stock}
+                  onChange={handleInputChange}
+                  min="0"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${errors.stock ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
+                  placeholder="0"
+                />
+                {errors.stock && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle size={14} /> {errors.stock}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Low Stock Threshold
+                </label>
+                <input
+                  type="number"
+                  name="lowStockThreshold"
+                  value={formData.lowStockThreshold}
+                  onChange={handleInputChange}
+                  min="0"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  placeholder="5"
+                />
+                <p className="mt-1 text-xs text-gray-500">Alert when stock reaches this level</p>
+              </div>
+            </div>
+          </div>
+
           {/* Images */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">4</div>
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{specFields.length > 0 ? '5' : '4'}</div>
               Product Images
             </h2>
 
@@ -860,9 +959,8 @@ const AddProductPage = () => {
               onDragOver={handleDrag}
               onDragLeave={handleDrag}
               onDrop={handleDrop}
-              className={`relative flex items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer ${
-                dragActive ? 'border-orange-400 bg-orange-50' : 'border-gray-300 bg-gray-50'
-              }`}
+              className={`relative flex items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer ${dragActive ? 'border-orange-400 bg-orange-50' : 'border-gray-300 bg-gray-50'
+                }`}
             >
               <input
                 type="file"
@@ -902,10 +1000,56 @@ const AddProductPage = () => {
             )}
           </div>
 
+          {/* SEO Settings */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{specFields.length > 0 ? '6' : '5'}</div>
+              SEO Settings
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Meta Title
+                </label>
+                <input
+                  type="text"
+                  name="metaTitle"
+                  value={formData.metaTitle}
+                  onChange={handleInputChange}
+                  maxLength="60"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  placeholder="SEO Title (max 60 chars)"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {formData.metaTitle?.length || 0}/60 characters
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Meta Description
+                </label>
+                <textarea
+                  name="metaDescription"
+                  value={formData.metaDescription}
+                  onChange={handleInputChange}
+                  maxLength="160"
+                  rows="3"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  placeholder="SEO Description (max 160 chars)"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {formData.metaDescription?.length || 0}/160 characters
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Features & Other Fields */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">5</div>
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{specFields.length > 0 ? '7' : '6'}</div>
               Additional Details
             </h2>
 
@@ -975,9 +1119,8 @@ const AddProductPage = () => {
                 name="videoUrl"
                 value={formData.videoUrl}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
-                  errors.videoUrl ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                }`}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 ${errors.videoUrl ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  }`}
                 placeholder="https://"
               />
             </div>
@@ -1019,9 +1162,8 @@ const AddProductPage = () => {
             <button
               type="submit"
               disabled={loading || uploading}
-              className={`px-6 py-3 rounded-lg text-white font-semibold ${
-                loading || uploading ? 'bg-orange-300 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700'
-              }`}
+              className={`px-6 py-3 rounded-lg text-white font-semibold ${loading || uploading ? 'bg-orange-300 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700'
+                }`}
             >
               {loading ? 'Submitting...' : 'Add Product'}
             </button>
