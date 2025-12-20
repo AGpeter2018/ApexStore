@@ -5,15 +5,18 @@ import Product from '../../models/Product.model.js';
 // Get all orders (filtered by vendor)
 export const getOrders = async (req, res) => {
     try {
-        const { status, paymentStatus, page = 1, limit = 10 } = req.query;
+        const { status, paymentStatus, vendorId, page = 1, limit = 10 } = req.query;
 
         const filter = {};
         if (status) filter.orderStatus = status;
         if (paymentStatus) filter.paymentStatus = paymentStatus;
 
         // CRITICAL: If user is a vendor, only show orders containing their products
+        // If user is admin and vendorId is provided, filter by that vendor
         if (req.user.role === 'vendor') {
             filter['items.vendor'] = req.user._id;
+        } else if (req.user.role === 'admin' && vendorId) {
+            filter['items.vendor'] = vendorId;
         }
 
         const orders = await Order.find(filter)

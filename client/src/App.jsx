@@ -27,6 +27,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage"
 import EditCategoryPage from "./pages/admin/EditCategoryPage"
 import CategoriesListPage from "./pages/admin/CategoriesListPage"
 import VendorsManagementPage from "./pages/admin/VendorsManagementPage"
+import VendorAccountDetailPage from "./pages/admin/VendorAccountDetailPage"
 
 // Protected Route Component
 
@@ -232,6 +233,16 @@ function App() {
             <NavBar />
             <ProtectedRoute allowedRoles={['admin']}>
               <VendorsManagementPage />
+              <Footer />
+            </ProtectedRoute>
+          </>
+        }
+        />
+        <Route path="/admin/vendors/:id" element={
+          <>
+            <NavBar />
+            <ProtectedRoute allowedRoles={['admin']}>
+              <VendorAccountDetailPage />
               <Footer />
             </ProtectedRoute>
           </>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import {Link} from 'react-router-dom'
 import axios from 'axios';
 import {
     Store,
@@ -14,7 +15,8 @@ import {
     MapPin,
     Calendar,
     AlertCircle,
-    Star
+    Star,
+    Eye
 } from 'lucide-react';
 
 const VendorsManagementPage = () => {
@@ -293,13 +295,20 @@ const VendorsManagementPage = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
+                                                <Link
+                                                    to={`/admin/vendors/${vendor._id}`}
+                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    title="View Details"
+                                                >
+                                                    <Eye size={20} />
+                                                </Link>
                                                 <button
                                                     onClick={() => {
                                                         setSelectedVendor(vendor);
                                                         setShowStatusModal(true);
                                                     }}
                                                     className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                                                    title="Manage Vendor"
+                                                    title="Manage Status"
                                                 >
                                                     <Edit size={18} />
                                                 </button>
@@ -336,8 +345,8 @@ const VendorsManagementPage = () => {
                                         <button
                                             onClick={() => handleUpdateStatus(selectedVendor._id, { isApproved: true })}
                                             className={`py-2 px-4 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${selectedVendor.isApproved
-                                                    ? 'bg-green-50 border-green-600 text-green-700'
-                                                    : 'border-gray-200 hover:border-green-600'
+                                                ? 'bg-green-50 border-green-600 text-green-700'
+                                                : 'border-gray-200 hover:border-green-600'
                                                 }`}
                                         >
                                             <CheckCircle size={18} /> Approved
@@ -345,8 +354,8 @@ const VendorsManagementPage = () => {
                                         <button
                                             onClick={() => handleUpdateStatus(selectedVendor._id, { isApproved: false })}
                                             className={`py-2 px-4 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${!selectedVendor.isApproved
-                                                    ? 'bg-yellow-50 border-yellow-600 text-yellow-700'
-                                                    : 'border-gray-200 hover:border-yellow-600'
+                                                ? 'bg-yellow-50 border-yellow-600 text-yellow-700'
+                                                : 'border-gray-200 hover:border-yellow-600'
                                                 }`}
                                         >
                                             <AlertCircle size={18} /> Pending
@@ -360,8 +369,8 @@ const VendorsManagementPage = () => {
                                         <button
                                             onClick={() => handleUpdateStatus(selectedVendor._id, { isActive: true })}
                                             className={`py-2 px-4 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${selectedVendor.isActive
-                                                    ? 'bg-blue-50 border-blue-600 text-blue-700'
-                                                    : 'border-gray-200 hover:border-blue-600'
+                                                ? 'bg-blue-50 border-blue-600 text-blue-700'
+                                                : 'border-gray-200 hover:border-blue-600'
                                                 }`}
                                         >
                                             <CheckCircle size={18} /> Active
@@ -369,8 +378,8 @@ const VendorsManagementPage = () => {
                                         <button
                                             onClick={() => handleUpdateStatus(selectedVendor._id, { isActive: false })}
                                             className={`py-2 px-4 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${!selectedVendor.isActive
-                                                    ? 'bg-red-50 border-red-600 text-red-700'
-                                                    : 'border-gray-200 hover:border-red-600'
+                                                ? 'bg-red-50 border-red-600 text-red-700'
+                                                : 'border-gray-200 hover:border-red-600'
                                                 }`}
                                         >
                                             <Ban size={18} /> Suspended

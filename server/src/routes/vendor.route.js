@@ -6,7 +6,8 @@ import {
   getVendors,
   getVendorProducts,
   updateVendorStatus,
-  getVendorStats
+  getVendorStats,
+  getVendorDetail
 } from "../controller/vendor.controller.js";
 import { protect, authorize } from "../../middleware/auth.js";
 import { requireVendor } from "../../middleware/vendorAuth.js";
@@ -47,6 +48,7 @@ vendorRouter.get('/stats', protect, authorize('admin'), getVendorStats)
 
 // Admin: Update status
 vendorRouter.put('/:id/status', protect, authorize('admin'), updateVendorStatus)
+vendorRouter.get('/:id', protect, authorize('admin'), getVendorDetail)
 
 // Vendor products
 vendorRouter.get(
