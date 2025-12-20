@@ -1,5 +1,6 @@
 import Vendor from "../../models/Vendor.js";
 import Product from "../../models/Product.model.js";
+import Order from "../../models/Order.model.js";
 
 
 /**
@@ -256,6 +257,62 @@ export const getVendorStats = async (req, res) => {
         pendingApprovals,
         totalRevenue: salesData[0]?.totalRevenue || 0,
         totalOrders: salesData[0]?.totalOrders || 0
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Admin: Get specific vendor detail
+ * @route   GET /api/vendors/:id
+ * @access  Admin
+ */
+export const getVendorDetail = async (req, res) => {
+  try {
+    const vendor = await Vendor.findById(req.params.id)
+      .populate("owner", "name email phone role isActive createdAt");
+
+    if (!vendor) {
+      return res.status(404).json({
+        success: false,
+        message: "Vendor not found"
+      });
+    }
+
+    // Get product count
+    const productCount = await Product.countDocuments({ vendorId: vendor._id });
+
+    // Get latest products
+    const latestProducts = await Product.find({ vendorId: vendor._id })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("categoryId", "name");
+
+    // Get latest orders containing this vendor's products
+    // We filter orders by items.vendor. Note: items.vendor in Order model points to User ID (vendor owner)
+    const latestOrders = await Order.find({ "items.vendor": vendor.owner._id })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate("customer", "name email");
+
+    res.status(200).json({
+      success: true,
+      data: {
+        vendor,
+        stats: {
+          productCount,
+          totalSales: vendor.totalSales,
+          totalOrders: vendor.totalOrders,
+          rating: vendor.rating
+        },
+        latestProducts,
+        latestOrders
       }
     });
 
