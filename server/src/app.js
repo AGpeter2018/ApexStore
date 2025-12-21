@@ -7,6 +7,7 @@ import orderRouter from './routes/order.routes.js';
 import userRouter from './routes/user.routes.js';
 import authRouter from './routes/authRoutes.js';
 import vendorRouter from './routes/vendor.route.js';
+import aiRouter from './routes/ai.routes.js';
 
 const app = express()
 // Middleware
@@ -14,10 +15,10 @@ app.use(express.json())
 
 app.use(cors({
     origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Vite frontend
-    credentials: true  
+    credentials: true
 }));
 
-app.use(express.urlencoded({extended: true}))
+app.use(express.urlencoded({ extended: true }))
 
 // Routes
 
@@ -41,6 +42,9 @@ app.use('/api/vendors', vendorRouter)
 
 // Admin Route
 app.use('/api/admin/products', adminRouter);
+
+// AI Route
+app.use('/api/ai', aiRouter);
 
 
 
