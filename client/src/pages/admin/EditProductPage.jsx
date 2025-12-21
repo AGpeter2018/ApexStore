@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'
-import { Upload, X, Plus, Loader, AlertCircle, CheckCircle, Package, ArrowLeft, Trash2 } from 'lucide-react';
+import { Upload, X, Plus, Loader, AlertCircle, CheckCircle, Package, ArrowLeft, Trash2, Sparkles } from 'lucide-react';
 import axios from 'axios';
+import AIAssistantModal from '../../components/AIAssistantModal';
 
 const EditProductPage = () => {
   const { id } = useParams()
@@ -19,6 +20,7 @@ const EditProductPage = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [errors, setErrors] = useState({});
   const [dragActive, setDragActive] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   const [specFields, setSpecFields] = useState([]);
 
@@ -503,6 +505,43 @@ const EditProductPage = () => {
     }
   };
 
+  const handleAIApply = (field, value) => {
+    setFormData(prev => {
+      const newData = { ...prev };
+
+      switch (field) {
+        case 'shortDescription':
+          newData.shortDescription = value;
+          break;
+        case 'description':
+          // value is expected to be an array of sections
+          newData.description = value;
+          break;
+        case 'culturalStory':
+          newData.culturalStory = value;
+          break;
+        case 'careInstructions':
+          newData.careInstructions = value;
+          break;
+        case 'metaTitle':
+          newData.metaTitle = value;
+          break;
+        case 'metaDescription':
+          newData.metaDescription = value;
+          break;
+        default:
+          break;
+      }
+
+      return newData;
+    });
+
+    // Clear related errors
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
   const handleCancel = () => {
     if (window.confirm('Are you sure you want to cancel? All changes will be lost.')) {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -700,11 +739,23 @@ const EditProductPage = () => {
             <ArrowLeft size={20} />
             Back
           </button>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-            <Package className="text-orange-600" size={40} />
-            Edit Product
-          </h1>
-          <p className="text-gray-600">Update product information and details</p>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+                <Package className="text-orange-600" size={40} />
+                Edit Product
+              </h1>
+              <p className="text-gray-600">Update product information and details</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAIModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-orange-200 active:scale-95"
+            >
+              <Sparkles size={20} />
+              AI Assistant
+            </button>
+          </div>
         </div>
 
         {/* Alert Messages */}
@@ -1320,9 +1371,17 @@ const EditProductPage = () => {
             </button>
           </div>
         </form>
+
+        <AIAssistantModal
+          isOpen={isAIModalOpen}
+          onClose={() => setIsAIModalOpen(false)}
+          productName={formData.name}
+          categoryName={selectedCategory?.name}
+          onApply={handleAIApply}
+        />
       </div>
     </div>
   );
-}
+};
 
 export default EditProductPage;

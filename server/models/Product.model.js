@@ -241,11 +241,11 @@ const productSchema = new mongoose.Schema({
     // ===== SEO =====
     metaTitle: {
         type: String,
-        maxlength: [60, 'Meta title cannot exceed 60 characters']
+        maxlength: [500, 'Meta title cannot exceed 200 characters']
     },
     metaDescription: {
         type: String,
-        maxlength: [160, 'Meta description cannot exceed 160 characters']
+        maxlength: [500, 'Meta description cannot exceed 160 characters']
     },
 
     // ===== CUSTOMIZATION =====
