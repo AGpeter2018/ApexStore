@@ -1,12 +1,8 @@
-
-
-
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import {
-    ChevronLeft, ShoppingCart, Heart, Share2, Truck, Shield,
-    RotateCcw, Star, MapPin, User, Package, TrendingUp
+    RotateCcw, Star, MapPin, User, Package, TrendingUp, Sparkles, Wand2, ShoppingCart, Heart, Share2, Truck, Shield
 } from 'lucide-react';
 
 const ProductItem = () => {
@@ -20,6 +16,32 @@ const ProductItem = () => {
     useEffect(() => {
         fetchProduct();
     }, [slug]);
+
+    const [recommendations, setRecommendations] = useState([]);
+    const [recLoading, setRecLoading] = useState(false);
+
+    useEffect(() => {
+        if (product?._id) {
+            fetchAIRecommendations();
+        }
+    }, [product?._id]);
+
+    const fetchAIRecommendations = async () => {
+        try {
+            setRecLoading(true);
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/ai/recommendations/${product._id}`);
+            if (data.success) {
+                setRecommendations(data.data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch AI recommendations:", err);
+            if (err.response?.status === 429) {
+                console.log("AI Recommendations: Rate limited. Showing regular products.");
+            }
+        } finally {
+            setRecLoading(false);
+        }
+    };
 
     const fetchProduct = async () => {
         try {
@@ -597,6 +619,59 @@ const ProductItem = () => {
                         )}
                     </div>
                 </div>
+
+                {/* AI Recommendations Section */}
+                {(recommendations.length > 0 || recLoading) && (
+                    <div className="mt-16">
+                        <div className="flex items-center gap-2 mb-8">
+                            <Sparkles className="text-orange-500" />
+                            <h2 className="text-3xl font-bold text-gray-900">Complete Your Collection</h2>
+                            <span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold uppercase tracking-wider">AI Powered</span>
+                        </div>
+
+                        {recLoading ? (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 animate-pulse">
+                                {[...Array(4)].map((_, i) => (
+                                    <div key={i} className="aspect-square bg-gray-200 rounded-xl"></div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                {recommendations.map((rec) => (
+                                    <Link
+                                        key={rec._id}
+                                        to={`/products/${rec.slug}`}
+                                        className="group"
+                                        onClick={() => window.scrollTo(0, 0)}
+                                    >
+                                        <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300">
+                                            <div className="relative aspect-square overflow-hidden bg-gray-100">
+                                                <img
+                                                    src={rec.images?.[0]?.url || 'https://via.placeholder.com/300x300?text=Product'}
+                                                    alt={rec.name}
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                />
+                                                <div className="absolute top-2 right-2">
+                                                    <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm">
+                                                        <Wand2 size={12} className="text-orange-500" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="p-3">
+                                                <h3 className="font-semibold text-gray-900 text-sm line-clamp-1 group-hover:text-orange-600 transition-colors">
+                                                    {rec.name}
+                                                </h3>
+                                                <p className="text-orange-600 font-bold mt-1 text-sm">
+                                                    {formatPrice(rec.price)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
