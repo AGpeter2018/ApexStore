@@ -9,15 +9,25 @@ const AIAssistantModal = ({ isOpen, onClose, productName, categoryName, onApply 
 
     if (!isOpen) return null;
 
+    const token = localStorage.getItem('token')
+
     const generateSuggestions = async () => {
         setLoading(true);
         setError(null);
         try {
             const apiUrl = import.meta.env.VITE_API_URL;
-            const response = await axios.post(`${apiUrl}/ai/suggest-product-content`, {
-                productName,
-                categoryName
-            });
+            const response = await axios.post(`${apiUrl}/ai/suggest-product-content`,
+                {
+                    productName,
+                    categoryName
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
             setSuggestions(response.data.data);
         } catch (err) {
             console.error('AI Generation Error:', err);

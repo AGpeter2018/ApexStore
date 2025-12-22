@@ -1,18 +1,28 @@
 import { ChevronDown, ChevronUp, Menu, Search, User, X } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import AnchorLink from 'react-anchor-link-smooth-scroll'
 import ProductAdminFilterAndSearch from './ProductAdminFilterAndSearch'
 
 
 const NavBar = ({ scrolled }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [searchQuery, setSearchQuery] = useState('')
+    const navigate = useNavigate()
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
+    };
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+            setMobileMenuOpen(false);
+        }
     };
 
     return (
@@ -52,6 +62,20 @@ const NavBar = ({ scrolled }) => {
                             </span>
                         </div>
                     </Link>
+
+                    {/* Search Bar */}
+                    <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-md mx-8 relative group">
+                        <input
+                            type="text"
+                            placeholder="Search with AI... (e.g. 'drum for wedding')"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-gray-100 border-none rounded-full py-2.5 pl-12 pr-4 text-sm focus:ring-2 focus:ring-orange-500 transition-all outline-none"
+                        />
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors">
+                            <Search size={18} />
+                        </div>
+                    </form>
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-8">
                         <Link to="/" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
@@ -88,17 +112,32 @@ const NavBar = ({ scrolled }) => {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <button
-                        className="md:hidden"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                        {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button className="lg:hidden text-gray-700" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                            <Search size={24} />
+                        </button>
+                        <button
+                            className="md:hidden"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        >
+                            {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
                     <div className="md:hidden pb-4">
+                        <form onSubmit={handleSearch} className="mb-4 relative">
+                            <input
+                                type="text"
+                                placeholder="AI Search..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-gray-100 border-none rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                            />
+                            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                        </form>
                         <div className="flex flex-col gap-4">
                             <Link to="/" className="text-gray-700 hover:text-orange-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Home</Link>
                             <Link to="/collections" className="text-gray-700 hover:text-orange-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Collections</Link>

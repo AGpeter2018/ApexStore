@@ -28,6 +28,8 @@ import EditCategoryPage from "./pages/admin/EditCategoryPage"
 import CategoriesListPage from "./pages/admin/CategoriesListPage"
 import VendorsManagementPage from "./pages/admin/VendorsManagementPage"
 import VendorAccountDetailPage from "./pages/admin/VendorAccountDetailPage"
+import CustomerAIAssistant from "./components/CustomerAIAssistant"
+import SearchPage from "./pages/SearchPage"
 
 // Protected Route Component
 
@@ -113,6 +115,8 @@ function App() {
           </>
         }
         />
+
+        <Route path="/search" element={<SearchPage />} />
 
         {/* Admin Route */}
 
@@ -319,6 +323,7 @@ function App() {
         />
 
       </Routes>
+      <CustomerAIAssistant />
     </div>
   )
 }

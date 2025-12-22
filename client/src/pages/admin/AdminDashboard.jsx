@@ -10,7 +10,10 @@ import {
     TrendingUp,
     DollarSign,
     ShoppingBag,
-    Store
+    Store,
+    Brain,
+    Sparkles,
+    Zap
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -19,6 +22,8 @@ const AdminDashboard = () => {
     const [products, setProducts] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
+    const [aiInsights, setAiInsights] = useState([]);
+    const [loadingAI, setLoadingAI] = useState(false);
 
     useEffect(() => {
         fetchDashboardData();
@@ -50,11 +55,28 @@ const AdminDashboard = () => {
             );
             setProducts(productsResponse.data.data);
 
+            // Fetch AI Insights
+            fetchAIInsights(token);
+
             setLoading(false);
         } catch (err) {
             console.error('Dashboard error:', err);
             setError(err.response?.data?.message || 'Failed to fetch dashboard data');
             setLoading(false);
+        }
+    };
+
+    const fetchAIInsights = async (token) => {
+        try {
+            setLoadingAI(true);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/ai/admin-insights`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setAiInsights(response.data.data);
+            setLoadingAI(false);
+        } catch (err) {
+            console.error('AI Insights error:', err);
+            setLoadingAI(false);
         }
     };
 
@@ -272,6 +294,58 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     </Link>
+                </div>
+
+                {/* AI Market Intel Panel */}
+                <div className="bg-slate-900 rounded-2xl shadow-2xl p-8 mb-8 border border-slate-800 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Brain size={120} className="text-orange-500" />
+                    </div>
+
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="bg-orange-500/20 p-2 rounded-lg">
+                                <Sparkles className="text-orange-500" size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-white">Market Intel</h2>
+                                <p className="text-slate-400 text-sm">AI-Powered Strategic Analytics</p>
+                            </div>
+                            <span className="ml-auto bg-orange-500/10 text-orange-500 px-3 py-1 rounded-full text-xs font-bold tracking-wider border border-orange-500/20">
+                                LIVE INTEL
+                            </span>
+                        </div>
+
+                        {loadingAI ? (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="animate-pulse bg-slate-800/50 rounded-xl p-6 h-32"></div>
+                                ))}
+                            </div>
+                        ) : aiInsights.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {aiInsights.map((insight, idx) => (
+                                    <div key={idx} className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6 hover:border-orange-500/50 transition-all hover:translate-y-[-4px]">
+                                        <div className="flex items-start gap-4 mb-3">
+                                            <div className="mt-1">
+                                                <Zap className={`${insight.type === 'marketing' ? 'text-blue-400' : insight.type === 'inventory' ? 'text-orange-400' : 'text-purple-400'}`} size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-slate-200 font-bold mb-1">{insight.title}</h3>
+                                                <p className="text-slate-400 text-sm leading-relaxed">
+                                                    {insight.content}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <p className="text-slate-500 italic">No strategic data available at this time.</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Products by Category */}
