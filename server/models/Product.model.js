@@ -256,6 +256,10 @@ const productSchema = new mongoose.Schema({
     customizationOptions: [{
         type: String,
         trim: true
+    }],
+    aiPairingIntents: [{
+        type: String,
+        trim: true
     }]
 }, {
     timestamps: true,
