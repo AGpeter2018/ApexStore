@@ -30,9 +30,17 @@ import VendorsManagementPage from "./pages/admin/VendorsManagementPage"
 import VendorAccountDetailPage from "./pages/admin/VendorAccountDetailPage"
 import CustomerAIAssistant from "./components/CustomerAIAssistant"
 import SearchPage from "./pages/SearchPage"
+import CartPage from "./pages/CartPage"
+import CheckoutPage from "./pages/CheckoutPage"
+import OrderConfirmationPage from "./pages/OrderConfirmationPage"
+import MyOrdersPage from "./pages/customer/MyOrdersPage"
+import CustomerOrderDetailPage from "./pages/customer/CustomerOrderDetailPage"
+
+import { useDispatch } from "react-redux"
+import { fetchCart } from "./redux/slices/cartSlice"
+import PaymentVerificationPage from "./pages/PaymentVerificationPage"
 
 // Protected Route Component
-
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   console.log(user)
@@ -48,6 +56,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.token && user.role === 'customer') {
+      dispatch(fetchCart());
+    }
+  }, [dispatch]);
 
   return (
     <div>
@@ -117,6 +133,59 @@ function App() {
         />
 
         <Route path="/search" element={<SearchPage />} />
+
+        {/* Cart and Checkout Routes */}
+        <Route path="/cart" element={<CartPage />} />
+
+        <Route path="/checkout" element={
+          <>
+            <NavBar />
+            <ProtectedRoute allowedRoles={['customer']}>
+              <CheckoutPage />
+            </ProtectedRoute>
+            <Footer />
+          </>
+        } />
+
+        <Route path="/order-confirmation/:orderId" element={
+          <>
+            <NavBar />
+            <ProtectedRoute allowedRoles={['customer']}>
+              <OrderConfirmationPage />
+            </ProtectedRoute>
+            <Footer />
+          </>
+        } />
+
+        <Route path="/my-orders" element={
+          <>
+            <NavBar />
+            <ProtectedRoute allowedRoles={['customer']}>
+              <MyOrdersPage />
+            </ProtectedRoute>
+            <Footer />
+          </>
+        } />
+
+        <Route path="/my-orders/:id" element={
+          <>
+            <NavBar />
+            <ProtectedRoute allowedRoles={['customer']}>
+              <CustomerOrderDetailPage />
+            </ProtectedRoute>
+            <Footer />
+          </>
+        } />
+
+        <Route path="/payment/verify" element={
+          <>
+            <NavBar />
+            <ProtectedRoute allowedRoles={['customer']}>
+              <PaymentVerificationPage />
+            </ProtectedRoute>
+            <Footer />
+          </>
+        } />
 
         {/* Admin Route */}
 
@@ -247,6 +316,17 @@ function App() {
             <NavBar />
             <ProtectedRoute allowedRoles={['admin']}>
               <VendorAccountDetailPage />
+              <Footer />
+            </ProtectedRoute>
+          </>
+        }
+        />
+
+        <Route path="/order-details/:id" element={
+          <>
+            <NavBar />
+            <ProtectedRoute allowedRoles={['admin']}>
+              <OrderDetailPage/>
               <Footer />
             </ProtectedRoute>
           </>
