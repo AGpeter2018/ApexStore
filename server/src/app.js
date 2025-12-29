@@ -8,6 +8,8 @@ import userRouter from './routes/user.routes.js';
 import authRouter from './routes/authRoutes.js';
 import vendorRouter from './routes/vendor.route.js';
 import aiRouter from './routes/ai.routes.js';
+import cartRouter from './routes/cart.routes.js';
+
 
 const app = express()
 // Middleware
@@ -45,6 +47,10 @@ app.use('/api/admin/products', adminRouter);
 
 // AI Route
 app.use('/api/ai', aiRouter);
+
+// Cart Route
+app.use('/api/cart', cartRouter);
+
 
 
 

@@ -5,14 +5,18 @@ import {
     updateOrderStatus,
     getOrderStats,
     createOrder,
-    getMyOrders
+    getMyOrders,
+    checkout,
+    verifyOrderPayment
 } from '../controller/order.controller.js';
 import { protect, authorize } from '../../middleware/auth.js';
 
 const orderRouter = express.Router();
 
 // Customer routes
-orderRouter.post('/', protect, authorize('customer'), createOrder),
+orderRouter.post('/', protect, authorize('customer'), createOrder);
+orderRouter.post('/checkout', protect, authorize('customer'), checkout);
+orderRouter.post('/:id/verify-payment', protect, authorize('customer'), verifyOrderPayment);
 orderRouter.get('/my-orders', protect, authorize('customer'), getMyOrders);
 
 // Admin/vendor routes
@@ -20,7 +24,7 @@ orderRouter.get('/', protect, authorize('vendor', 'admin'), getOrders);
 orderRouter.get('/stats', protect, authorize('vendor', 'admin'), getOrderStats);
 
 // Single order (accessible by customer, vendor, or admin)
-orderRouter.get('/:id',protect, authorize('customer','vendor', 'admin'), getOrder);
+orderRouter.get('/:id', protect, authorize('customer', 'vendor', 'admin'), getOrder);
 
 // Update status (vendor/admin only)
 orderRouter.put('/:id/status', protect, authorize('vendor', 'admin'), updateOrderStatus);

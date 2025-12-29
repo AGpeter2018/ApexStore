@@ -32,7 +32,10 @@ const VendorDashboard = () => {
 
             setStats(statsRes.data.data);
             setRecentOrders(ordersRes.data.data);
+            console.log(statsRes.data.data)
+            console.log(ordersRes.data.data)
             const vendorData = vendorRes.data.data;
+            console.log(vendorData)
             setVendor(vendorData);
             setLoading(false);
 

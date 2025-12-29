@@ -1,17 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '../redux/slices/cartSlice';
 import axios from 'axios';
 import {
     RotateCcw, Star, MapPin, User, Package, TrendingUp, Sparkles, Wand2, ShoppingCart, Heart, Share2, Truck, Shield
 } from 'lucide-react';
 
+
 const ProductItem = () => {
     const { slug } = useParams();
+    const dispatch = useDispatch();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
+    const [adding, setAdding] = useState(false);
+
 
     useEffect(() => {
         fetchProduct();
@@ -72,6 +78,39 @@ const ProductItem = () => {
         }
         return 0;
     };
+
+    const handleAddToCart = async () => {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const isLoggedIn = !!user.token;
+
+        setAdding(true);
+        try {
+            if (isLoggedIn) {
+                // For logged in users, save to server
+                await dispatch(addToCart({
+                    productId: product._id,
+                    quantity
+                })).unwrap();
+            } else {
+                // For guest users, save locally in Redux
+                const { addItemLocally } = await import('../redux/slices/cartSlice');
+                dispatch(addItemLocally({
+                    product,
+                    quantity
+                }));
+            }
+
+            // Show success message
+            alert('✅ Added to cart successfully!');
+            // Reset quantity
+            setQuantity(1);
+        } catch (error) {
+            alert('❌ ' + (error || 'Failed to add to cart'));
+        } finally {
+            setAdding(false);
+        }
+    };
+
 
     // NEW: Get stock quantity (supports both old and new field names)
     const getStockQuantity = () => {
@@ -472,11 +511,12 @@ const ProductItem = () => {
                         {/* Action Buttons */}
                         <div className="flex gap-4 mb-8">
                             <button
-                                disabled={stockQuantity === 0}
+                                onClick={handleAddToCart}
+                                disabled={stockQuantity === 0 || adding}
                                 className="flex-1 bg-amber-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-amber-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                             >
                                 <ShoppingCart size={24} />
-                                {stockQuantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                                {adding ? 'Adding...' : stockQuantity === 0 ? 'Out of Stock' : 'Add to Cart'}
                             </button>
                             <button className="border border-gray-300 p-4 rounded-lg hover:bg-gray-50 transition-colors">
                                 <Heart size={24} />

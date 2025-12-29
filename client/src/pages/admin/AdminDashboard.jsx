@@ -10,7 +10,9 @@ import {
     TrendingUp,
     DollarSign,
     ShoppingBag,
+    ShoppingCart,
     Store,
+    ArrowRight,
     Brain,
     Sparkles,
     Zap
@@ -19,7 +21,9 @@ import {
 const AdminDashboard = () => {
     const user = JSON.parse(localStorage.getItem('user'))
     const [stats, setStats] = useState(null);
+    const [orderStats, setOrderStats] = useState(null);
     const [products, setProducts] = useState([]);
+    const [recentOrders, setRecentOrders] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
     const [aiInsights, setAiInsights] = useState([]);
@@ -36,24 +40,24 @@ const AdminDashboard = () => {
             const token = localStorage.getItem('token')
 
             // Fetch statistics
-            const statsResponse = await axios.get(
-                `${import.meta.env.VITE_API_URL}/admin/products/stats`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-            );
-            setStats(statsResponse.data.data);
+            const [statsResponse, orderStatsResponse, productsResponse] = await Promise.all([
+                axios.get(`${import.meta.env.VITE_API_URL}/admin/products/stats`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get(`${import.meta.env.VITE_API_URL}/orders/stats`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get(`${import.meta.env.VITE_API_URL}/admin/products?limit=5&sort=-createdAt`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ]);
 
-            // Fetch recent products (top 5)
-            const productsResponse = await axios.get(
-                `${import.meta.env.VITE_API_URL}/admin/products?limit=5&sort=-createdAt`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-            );
+            setStats(statsResponse.data.data);
+            setOrderStats(orderStatsResponse.data.data);
             setProducts(productsResponse.data.data);
+            setRecentOrders(orderStatsResponse.data.data.recentOrders || []);
+            console.log(orderStatsResponse.data.data)
+
 
             // Fetch AI Insights
             fetchAIInsights(token);
@@ -96,6 +100,17 @@ const AdminDashboard = () => {
             return (num / 1000).toFixed(1) + 'K';
         }
         return num;
+    };
+
+    const getStatusColor = (status) => {
+        const colors = {
+            pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+            processing: 'bg-blue-100 text-blue-800 border-blue-200',
+            shipped: 'bg-purple-100 text-purple-800 border-purple-200',
+            delivered: 'bg-green-100 text-green-800 border-green-200',
+            cancelled: 'bg-red-100 text-red-800 border-red-200'
+        };
+        return colors[status] || 'bg-gray-100 text-gray-800 border-gray-200';
     };
 
     if (loading) {
@@ -143,36 +158,19 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Quick Stats Cards */}
+                {/* Quick Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    {/* Total Products */}
-                    <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-orange-500">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-gray-600 text-sm font-medium">Total Products</p>
-                                <p className="text-3xl font-bold text-gray-900 mt-2">
-                                    {stats?.overview?.total || 0}
-                                </p>
-                                <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
-                                    <TrendingUp size={16} />
-                                    {stats?.overview?.active || 0} active
-                                </p>
-                            </div>
-                            <div className="bg-orange-100 p-4 rounded-lg">
-                                <Package className="text-orange-600" size={32} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Total Inventory Value */}
+                    {/* Total Revenue */}
                     <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-600 text-sm font-medium">Inventory Value</p>
+                                <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
                                 <p className="text-3xl font-bold text-gray-900 mt-2">
-                                    ₦{formatNumber(stats?.pricing?.totalInventoryValue || 0)}
+                                    {formatPrice(orderStats?.totalRevenue || 0)}
                                 </p>
-                                <p className="text-gray-600 text-sm mt-2">
-                                    Avg: {formatPrice(stats?.pricing?.avgPrice || 0)}
+                                <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
+                                    <TrendingUp size={16} />
+                                    Processed Sales
                                 </p>
                             </div>
                             <div className="bg-green-100 p-4 rounded-lg">
@@ -181,20 +179,40 @@ const AdminDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Featured Products */}
+                    {/* Total Orders */}
                     <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-600 text-sm font-medium">Featured</p>
+                                <p className="text-gray-600 text-sm font-medium">Total Orders</p>
                                 <p className="text-3xl font-bold text-gray-900 mt-2">
-                                    {stats?.overview?.featured || 0}
+                                    {orderStats?.totalOrders || 0}
                                 </p>
-                                <p className="text-blue-600 text-sm mt-2">
-                                    Active promotions
+                                <p className="text-blue-600 text-sm mt-2 flex items-center gap-1">
+                                    <ShoppingCart size={16} />
+                                    {orderStats?.pendingOrders || 0} pending
                                 </p>
                             </div>
                             <div className="bg-blue-100 p-4 rounded-lg">
-                                <ShoppingBag className="text-blue-600" size={32} />
+                                <ShoppingCart className="text-blue-600" size={32} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Total Products */}
+                    <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-orange-500">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-gray-600 text-sm font-medium">Total Products</p>
+                                <p className="text-3xl font-bold text-gray-900 mt-2">
+                                    {stats?.overview?.total || 0}
+                                </p>
+                                <p className="text-orange-600 text-sm mt-2 flex items-center gap-1">
+                                    <Package size={16} />
+                                    {stats?.overview?.active || 0} active
+                                </p>
+                            </div>
+                            <div className="bg-orange-100 p-4 rounded-lg">
+                                <Package className="text-orange-600" size={32} />
                             </div>
                         </div>
                     </div>
@@ -276,6 +294,21 @@ const AdminDashboard = () => {
                             <div>
                                 <h3 className="font-bold text-lg text-gray-900">Users</h3>
                                 <p className="text-gray-600 text-sm">Manage accounts</p>
+                            </div>
+                        </div>
+                    </Link>
+
+                    <Link
+                        to="/vendor/orders"
+                        className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all hover:scale-105"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="bg-orange-100 p-4 rounded-lg">
+                                <ShoppingCart size={32} className="text-orange-600" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-lg text-gray-900">Orders</h3>
+                                <p className="text-gray-600 text-sm">Manage sales</p>
                             </div>
                         </div>
                     </Link>
@@ -388,40 +421,53 @@ const AdminDashboard = () => {
                     </div>
                 )}
 
-                {/* Top Vendors */}
-                {stats?.byVendor && stats.byVendor.length > 0 && (
+                {/* Recent Orders */}
+                {recentOrders.length > 0 && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900">Top Vendors</h2>
-                            <Link
-                                to="/admin/vendors"
-                                className="text-orange-600 hover:text-orange-700 font-medium text-sm"
-                            >
-                                View All →
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-gray-900">Recent Orders</h2>
+                            <Link to="/vendor/orders" className="text-orange-600 hover:text-orange-700 font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all">
+                                View All <ArrowRight size={16} />
                             </Link>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead>
-                                    <tr className="border-b border-gray-200">
-                                        <th className="text-left py-3 px-4 text-gray-600 font-medium text-sm">Vendor</th>
-                                        <th className="text-right py-3 px-4 text-gray-600 font-medium text-sm">Products</th>
-                                        <th className="text-right py-3 px-4 text-gray-600 font-medium text-sm">Inventory Value</th>
+                                <thead className="bg-gray-50/50">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider rounded-l-lg">Order #</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                                        <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider rounded-r-lg">Date</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    {stats.byVendor.slice(0, 5).map((vendor) => (
-                                        <tr key={vendor.vendorId} className="border-b border-gray-100 hover:bg-gray-50">
-                                            <td className="py-3 px-4">
-                                                <span className="font-medium text-gray-900">
-                                                    {vendor.vendorName || user.name || 'Unknown Vendor'}
+                                <tbody className="divide-y divide-gray-100">
+                                    {recentOrders.map((order) => (
+                                        <tr key={order._id} className="hover:bg-gray-50/50 transition-colors group">
+                                            <td className="px-4 py-4">
+                                                <Link
+                                                    to={`/vendor/orders/${order._id}`}
+                                                    className="text-orange-600 font-semibold hover:underline"
+                                                >
+                                                    #{order.orderNumber}
+                                                </Link>
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium text-gray-900">{order.customer?.name}</span>
+                                                    <span className="text-xs text-gray-500">{order.customer?.email}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.orderStatus)}`}>
+                                                    {order.orderStatus}
                                                 </span>
                                             </td>
-                                            <td className="py-3 px-4 text-right text-gray-600">
-                                                {vendor.count}
+                                            <td className="px-4 py-4 font-bold text-gray-900">
+                                                {formatPrice(order.total)}
                                             </td>
-                                            <td className="py-3 px-4 text-right font-medium text-gray-900">
-                                                {formatPrice(vendor.totalValue || 0)}
+                                            <td className="px-4 py-4 text-right text-gray-500 text-sm">
+                                                {new Date(order.createdAt).toLocaleDateString()}
                                             </td>
                                         </tr>
                                     ))}

@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import AnchorLink from 'react-anchor-link-smooth-scroll'
 import ProductAdminFilterAndSearch from './ProductAdminFilterAndSearch'
+import CartIcon from './CartIcon'
+
 
 
 const NavBar = ({ scrolled }) => {
@@ -82,8 +84,19 @@ const NavBar = ({ scrolled }) => {
                             Home
                         </Link>
                         <Link to="/categories" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
-                            Collections
+                            Categories
                         </Link>
+
+                        {/* Cart & Orders for Customer */}
+                        {user.email && user.role === 'customer' && (
+                            <div className="flex items-center gap-6">
+                                <Link to="/my-orders" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
+                                    My Orders
+                                </Link>
+                                <CartIcon />
+                            </div>
+                        )}
+
                         {user.role === 'vendor' && (
                             <Link to="/vendor/dashboard" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
                                 Vendor Dashboard
@@ -140,7 +153,13 @@ const NavBar = ({ scrolled }) => {
                         </form>
                         <div className="flex flex-col gap-4">
                             <Link to="/" className="text-gray-700 hover:text-orange-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-                            <Link to="/collections" className="text-gray-700 hover:text-orange-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Collections</Link>
+                            <Link to="/categories" className="text-gray-700 hover:text-orange-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Collections</Link>
+                            {user.email && user.role === 'customer' && (
+                                <>
+                                    <Link to="/cart" className="text-gray-700 hover:text-orange-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Cart</Link>
+                                    <Link to="/my-orders" className="text-gray-700 hover:text-orange-600 font-medium" onClick={() => setMobileMenuOpen(false)}>My Orders</Link>
+                                </>
+                            )}
                             {user.role === 'vendor' && (
                                 <Link to="/vendor/dashboard" className="text-blue-600 hover:text-blue-700 font-medium" onClick={() => setMobileMenuOpen(false)}>Vendor Dashboard</Link>
                             )}
