@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { syncCart, selectCartItems } from '../redux/slices/cartSlice';
 import axios from 'axios';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const localCartItems = useSelector(selectCartItems);
+
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -32,11 +37,18 @@ const LoginPage = () => {
                 formData
             );
 
-            console.log(data.data)
-
             // Store token and user data
             localStorage.setItem('token', data.data.token);
             localStorage.setItem('user', JSON.stringify(data.data));
+
+            // Sync cart if user is a customer
+            if (data.data.role === 'customer' && localCartItems.length > 0) {
+                const itemsToSync = localCartItems.map(item => ({
+                    productId: item.product._id,
+                    quantity: item.quantity
+                }));
+                await dispatch(syncCart(itemsToSync));
+            }
 
             setSuccessMessage('SignIn successfully')
             // Redirect based on role
@@ -48,7 +60,7 @@ const LoginPage = () => {
                 } else {
                     navigate('/categories');
                 }
-            }, 2500)
+            }, 2000)
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again.');
         } finally {
