@@ -162,7 +162,7 @@ export const getProduct = async (req, res) => {
 
 
         // ===== OWNERSHIP CHECK (for sellers) =====
-        if (req.user?.user.role === 'vendor' && req.vendor) {
+        if (req.user?.role === 'vendor' && req.vendor) {
             const vendorId = product.vendorId?._id;
             if (vendorId.toString() !== req.vendor._id.toString()) {
                 return res.status(403).json({

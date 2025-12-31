@@ -98,7 +98,7 @@ const NavBar = ({ scrolled }) => {
                         )}
 
                         {user.role === 'vendor' && (
-                            <Link to="/vendor/dashboard" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                            <Link to="/vendor" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
                                 Vendor Dashboard
                             </Link>
                         )}
@@ -161,7 +161,7 @@ const NavBar = ({ scrolled }) => {
                                 </>
                             )}
                             {user.role === 'vendor' && (
-                                <Link to="/vendor/dashboard" className="text-blue-600 hover:text-blue-700 font-medium" onClick={() => setMobileMenuOpen(false)}>Vendor Dashboard</Link>
+                                <Link to="/vendor" className="text-blue-600 hover:text-blue-700 font-medium" onClick={() => setMobileMenuOpen(false)}>Vendor Dashboard</Link>
                             )}
                             {user.role === 'admin' && (
                                 <Link to="/admin" className="text-red-600 hover:text-red-700 font-medium" onClick={() => setMobileMenuOpen(false)}>Admin Panel</Link>

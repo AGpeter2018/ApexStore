@@ -9,6 +9,7 @@ import authRouter from './routes/authRoutes.js';
 import vendorRouter from './routes/vendor.route.js';
 import aiRouter from './routes/ai.routes.js';
 import cartRouter from './routes/cart.routes.js';
+import webhookRouter from './routes/webhook.routes.js';
 
 
 const app = express()
@@ -50,6 +51,9 @@ app.use('/api/ai', aiRouter);
 
 // Cart Route
 app.use('/api/cart', cartRouter);
+
+// Webhook Route
+app.use('/api/webhooks', webhookRouter);
 
 
 

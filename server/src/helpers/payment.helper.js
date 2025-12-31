@@ -240,3 +240,74 @@ export const verifyPayment = async (paymentMethod, reference) => {
             };
     }
 };
+/**
+ * Refund Paystack payment
+ * @param {String} reference - Transaction reference
+ * @param {Number} amount - Amount to refund (optional, defaults to full)
+ * @returns {Object} Refund response
+ */
+export const refundPaystackPayment = async (reference, amount) => {
+    try {
+        const payload = { transaction: reference };
+        if (amount) payload.amount = Math.round(amount * 100);
+
+        const response = await axios.post(
+            `${PAYSTACK_BASE_URL}/refund`,
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        return { success: true, data: response.data.data };
+    } catch (error) {
+        console.error('Paystack refund error:', error.response?.data || error.message);
+        return { success: false, error: error.response?.data?.message || 'Refund failed' };
+    }
+};
+
+/**
+ * Refund Flutterwave payment
+ * @param {String} transactionId - Transaction ID
+ * @param {Number} amount - Amount to refund
+ * @returns {Object} Refund response
+ */
+export const refundFlutterwavePayment = async (transactionId, amount) => {
+    try {
+        const payload = {};
+        if (amount) payload.amount = amount;
+
+        const response = await axios.post(
+            `${FLUTTERWAVE_BASE_URL}/transactions/${transactionId}/refund`,
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        return { success: true, data: response.data.data };
+    } catch (error) {
+        console.error('Flutterwave refund error:', error.response?.data || error.message);
+        return { success: false, error: error.response?.data?.message || 'Refund failed' };
+    }
+};
+
+/**
+ * Unified refund helper
+ */
+export const refundPayment = async (paymentMethod, reference, amount) => {
+    switch (paymentMethod) {
+        case 'paystack':
+            return await refundPaystackPayment(reference, amount);
+        case 'flutterwave':
+            return await refundFlutterwavePayment(reference, amount);
+        default:
+            return { success: false, error: 'Refund not supported for this method' };
+    }
+};

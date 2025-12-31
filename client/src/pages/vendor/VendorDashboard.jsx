@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { orderAPI, vendorAPI, aiAPI } from '../../utils/api';
 import { Package, ShoppingCart, DollarSign, TrendingUp, Clock, CheckCircle, XCircle, Truck, ArrowRight, LayoutGrid, CreditCard, Sparkles, AlertCircle, Zap, BarChart3 } from 'lucide-react';
 
 const VendorDashboard = () => {
@@ -17,31 +17,22 @@ const VendorDashboard = () => {
 
     const fetchDashboardData = async () => {
         try {
-            const token = localStorage.getItem('token');
             const [statsRes, ordersRes, vendorRes] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/orders/stats`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                }),
-                axios.get(`${import.meta.env.VITE_API_URL}/orders?limit=5`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                }),
-                axios.get(`${import.meta.env.VITE_API_URL}/vendors/me`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                })
+                orderAPI.getOrderStats(),
+                orderAPI.getOrders({ limit: 5 }),
+                vendorAPI.getMyVendor()
             ]);
 
             setStats(statsRes.data.data);
             setRecentOrders(ordersRes.data.data);
-            console.log(statsRes.data.data)
-            console.log(ordersRes.data.data)
+
             const vendorData = vendorRes.data.data;
-            console.log(vendorData)
             setVendor(vendorData);
             setLoading(false);
 
             // Fetch AI Insights once vendor ID is available
             if (vendorData?._id) {
-                fetchAIInsights(vendorData._id, token);
+                fetchAIInsights(vendorData._id);
             }
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
@@ -49,12 +40,10 @@ const VendorDashboard = () => {
         }
     };
 
-    const fetchAIInsights = async (vendorId, token) => {
+    const fetchAIInsights = async (vendorId) => {
         try {
             setInsightsLoading(true);
-            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/ai/vendor-insights/${vendorId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const { data } = await aiAPI.getVendorInsights(vendorId);
             if (data.success) {
                 setAiInsights(data.data);
             }
@@ -276,8 +265,8 @@ const VendorDashboard = () => {
                                     aiInsights.map((insight, idx) => (
                                         <div key={idx} className="flex gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all group">
                                             <div className={`p-2 rounded-lg h-fit ${insight.type === 'stock' ? 'bg-orange-100 text-orange-600' :
-                                                    insight.type === 'marketing' ? 'bg-blue-100 text-blue-600' :
-                                                        'bg-green-100 text-green-600'
+                                                insight.type === 'marketing' ? 'bg-blue-100 text-blue-600' :
+                                                    'bg-green-100 text-green-600'
                                                 }`}>
                                                 {insight.type === 'stock' ? <BarChart3 size={20} /> :
                                                     insight.type === 'marketing' ? <TrendingUp size={20} /> :

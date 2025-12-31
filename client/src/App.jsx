@@ -18,6 +18,7 @@ import AnalyticsPage from "./pages/admin/AnalyticsPage"
 import VendorDashboard from "./pages/vendor/VendorDashboard"
 import OrdersPage from "./pages/vendor/OrdersPage"
 import OrderDetailPage from "./pages/vendor/OrderDetailPage"
+import PaymentsPage from "./pages/vendor/PaymentsPage"
 import UsersManagementPage from "./pages/admin/UsersManagementPage"
 import ReportsPage from "./pages/admin/ReportsPage"
 import LoginPage from "./pages/LoginPage"
@@ -326,7 +327,7 @@ function App() {
           <>
             <NavBar />
             <ProtectedRoute allowedRoles={['admin']}>
-              <OrderDetailPage/>
+              <OrderDetailPage />
               <Footer />
             </ProtectedRoute>
           </>
@@ -363,6 +364,17 @@ function App() {
             <NavBar />
             <ProtectedRoute allowedRoles={['vendor', 'admin']}>
               <OrderDetailPage />
+              <Footer />
+            </ProtectedRoute>
+          </>
+        }
+        />
+
+        <Route path="/vendor/payments" element={
+          <>
+            <NavBar />
+            <ProtectedRoute allowedRoles={['vendor']}>
+              <PaymentsPage />
               <Footer />
             </ProtectedRoute>
           </>

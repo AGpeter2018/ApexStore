@@ -1,4 +1,5 @@
 import Groq from "groq-sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import Product from '../../models/Product.model.js';
 import Category from '../../models/Category.model.js';
 import Order from '../../models/Order.model.js';
@@ -11,6 +12,49 @@ const getGroqClient = () => {
         throw new Error("GROQ_API_KEY is missing from environment variables");
     }
     return new Groq({ apiKey });
+};
+
+// Lazy initialization of Gemini client
+const getGeminiClient = () => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        throw new Error("GEMINI_API_KEY is missing from environment variables");
+    }
+    return new GoogleGenerativeAI(apiKey);
+};
+
+/**
+ * Generic AI helper that tries Groq first and falls back to Gemini
+ */
+const callAI = async (prompt, modelOptions = {}) => {
+    try {
+        // Try Groq First
+        const groq = getGroqClient();
+        const completion = await groq.chat.completions.create({
+            messages: [{ role: "user", content: prompt }],
+            model: modelOptions.groqModel || "llama-3.3-70b-versatile",
+            temperature: modelOptions.temperature || 0.7,
+            max_tokens: modelOptions.maxTokens || 2000
+        });
+        return completion.choices[0]?.message?.content || "";
+    } catch (groqError) {
+        console.warn("Groq AI failed, falling back to Gemini:", groqError.message);
+
+        try {
+            // Fallback to Gemini
+            const genAI = getGeminiClient();
+            const model = genAI.getGenerativeModel({
+                model: modelOptions.geminiModel || "gemini-1.5-flash"
+            });
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            return response.text();
+        } catch (geminiError) {
+            console.error("Both AI providers failed:", geminiError.message);
+            throw new Error("AI services unavailable");
+        }
+    }
 };
 
 export const generateProductSuggestions = async (req, res) => {
@@ -54,14 +98,9 @@ export const generateProductSuggestions = async (req, res) => {
             Ensure the JSON is valid and only return the JSON object.
         `;
 
-        const completion = await getGroqClient().chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
-            model: "llama-3.3-70b-versatile",
-            temperature: 0.7,
-            max_tokens: 2000
-        });
+        const text = await callAI(prompt, { maxTokens: 2000 });
 
-        const text = completion.choices[0]?.message?.content || "";
+
 
         // Extract JSON from the response text
         const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -143,14 +182,7 @@ export const expandSearchQuery = async (req, res) => {
             }
         `;
 
-        const completion = await getGroqClient().chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
-            model: "llama-3.3-70b-versatile",
-            temperature: 0.5,
-            max_tokens: 500
-        });
-
-        const text = completion.choices[0]?.message?.content || "";
+        const text = await callAI(prompt, { temperature: 0.5, maxTokens: 500 });
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         const suggestions = JSON.parse(jsonMatch ? jsonMatch[0] : text);
 
@@ -206,14 +238,7 @@ export const getAIRecommendations = async (req, res) => {
                 Return ONLY a JSON array of strings: ["Pairing 1", "Pairing 2", "Pairing 3"]
             `;
 
-            const completion = await getGroqClient().chat.completions.create({
-                messages: [{ role: "user", content: prompt }],
-                model: "llama-3.3-70b-versatile",
-                temperature: 0.6,
-                max_tokens: 200
-            });
-
-            const text = completion.choices[0]?.message?.content || "";
+            const text = await callAI(prompt, { temperature: 0.6, maxTokens: 200 });
             const jsonMatch = text.match(/\[[\s\S]*\]/);
             pairingSuggestions = JSON.parse(jsonMatch ? jsonMatch[0] : text);
 
@@ -296,14 +321,7 @@ export const getVendorAIInsights = async (req, res) => {
             [{"type": "stock"|"marketing"|"trend", "title": "...", "content": "..."}]
         `;
 
-        const completion = await getGroqClient().chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
-            model: "llama-3.3-70b-versatile",
-            temperature: 0.7,
-            max_tokens: 800
-        });
-
-        const text = completion.choices[0]?.message?.content || "";
+        const text = await callAI(prompt, { maxTokens: 800 });
         const jsonMatch = text.match(/\[[\s\S]*\]/);
         const insights = JSON.parse(jsonMatch ? jsonMatch[0] : text);
 
@@ -335,24 +353,18 @@ export const handleCustomerChat = async (req, res) => {
             Keep responses concise (max 3-4 sentences unless explaining history).
         `;
 
-        // Format history for Groq
-        const messages = [
-            { role: "system", content: systemPrompt },
-            ...history.map(h => ({
-                role: h.role === 'user' ? 'user' : 'assistant',
-                content: h.content
-            })),
-            { role: "user", content: message }
-        ];
-
-        const completion = await getGroqClient().chat.completions.create({
-            messages,
-            model: "llama-3.3-70b-versatile",
+        const reply = await callAI(message, {
             temperature: 0.8,
-            max_tokens: 500
+            maxTokens: 500,
+            // Custom messages for chat
+            messages: [
+                { role: "system", content: systemPrompt },
+                ...history.map(h => ({
+                    role: h.role === 'user' ? 'user' : 'assistant',
+                    content: h.content
+                }))
+            ]
         });
-
-        const reply = completion.choices[0]?.message?.content || "I'm sorry, I couldn't process that.";
 
         res.status(200).json({
             success: true,
@@ -436,14 +448,7 @@ export const getAdminAIInsights = async (req, res) => {
             Keep insights professional, data-driven, and focused on platform growth.
         `;
 
-        const completion = await getGroqClient().chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
-            model: "llama-3.3-70b-versatile",
-            temperature: 0.7,
-            max_tokens: 1000
-        });
-
-        const text = completion.choices[0]?.message?.content || "";
+        const text = await callAI(prompt, { maxTokens: 1000 });
         const jsonMatch = text.match(/\[[\s\S]*\]/);
         const insights = JSON.parse(jsonMatch ? jsonMatch[0] : text);
 

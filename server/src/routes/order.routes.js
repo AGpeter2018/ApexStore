@@ -7,7 +7,10 @@ import {
     createOrder,
     getMyOrders,
     checkout,
-    verifyOrderPayment
+    verifyOrderPayment,
+    deleteOrder,
+    getVendorPayments,
+    processRefund
 } from '../controller/order.controller.js';
 import { protect, authorize } from '../../middleware/auth.js';
 
@@ -21,6 +24,7 @@ orderRouter.get('/my-orders', protect, authorize('customer'), getMyOrders);
 
 // Admin/vendor routes
 orderRouter.get('/', protect, authorize('vendor', 'admin'), getOrders);
+orderRouter.get('/vendor/payments', protect, authorize('vendor'), getVendorPayments);
 orderRouter.get('/stats', protect, authorize('vendor', 'admin'), getOrderStats);
 
 // Single order (accessible by customer, vendor, or admin)
@@ -28,5 +32,11 @@ orderRouter.get('/:id', protect, authorize('customer', 'vendor', 'admin'), getOr
 
 // Update status (vendor/admin only)
 orderRouter.put('/:id/status', protect, authorize('vendor', 'admin'), updateOrderStatus);
+
+// Delete order (admin/customer)
+orderRouter.delete('/:id', protect, authorize('admin', 'customer'), deleteOrder);
+
+// Refund order (admin only)
+orderRouter.post('/:id/refund', protect, authorize('admin'), processRefund);
 
 export default orderRouter;

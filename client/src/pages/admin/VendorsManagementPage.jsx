@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import {Link} from 'react-router-dom'
-import axios from 'axios';
+import { Link } from 'react-router-dom'
+import { vendorAPI } from '../../utils/api';
 import {
     Store,
     Search,
@@ -38,11 +38,7 @@ const VendorsManagementPage = () => {
 
     const fetchVendors = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const { data } = await axios.get(
-                `${import.meta.env.VITE_API_URL}/vendors`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const { data } = await vendorAPI.getAllVendors();
             setVendors(data.data);
             setLoading(false);
         } catch (error) {
@@ -53,11 +49,7 @@ const VendorsManagementPage = () => {
 
     const fetchStats = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const { data } = await axios.get(
-                `${import.meta.env.VITE_API_URL}/vendors/stats`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const { data } = await vendorAPI.getVendorStats();
             setStats(data.data);
         } catch (error) {
             console.error('Error fetching vendor stats:', error);
@@ -66,12 +58,7 @@ const VendorsManagementPage = () => {
 
     const handleUpdateStatus = async (vendorId, status) => {
         try {
-            const token = localStorage.getItem('token');
-            await axios.put(
-                `${import.meta.env.VITE_API_URL}/vendors/${vendorId}/status`,
-                status,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await vendorAPI.updateVendorStatus(vendorId, status);
             alert('Vendor status updated successfully!');
             fetchVendors();
             fetchStats();

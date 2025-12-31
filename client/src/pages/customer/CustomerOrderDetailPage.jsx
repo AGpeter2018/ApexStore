@@ -17,6 +17,19 @@ const CustomerOrderDetailPage = () => {
         }
     }, [id, dispatch]);
 
+    const handleDeleteOrder = async () => {
+        if (window.confirm('Are you sure you want to cancel and delete this order? This action cannot be undone.')) {
+            try {
+                await orderAPI.deleteOrder(id);
+                alert('Order deleted successfully');
+                navigate('/my-orders');
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert(error.response?.data?.message || 'Failed to delete order');
+            }
+        }
+    };
+
     const getStatusColor = (status) => {
         const colors = {
             pending: '#ffc107',
@@ -93,6 +106,14 @@ const CustomerOrderDetailPage = () => {
                     >
                         {order.orderStatus?.toUpperCase()}
                     </span>
+                    {order.orderStatus === 'pending' && order.paymentStatus === 'unpaid' && (
+                        <button
+                            onClick={handleDeleteOrder}
+                            className="delete-order-btn"
+                        >
+                            Cancel Order
+                        </button>
+                    )}
                 </div>
 
                 {/* Order Timeline */}
@@ -295,6 +316,23 @@ const CustomerOrderDetailPage = () => {
                     color: white;
                     font-size: 14px;
                     font-weight: 700;
+                }
+
+                .delete-order-btn {
+                    padding: 10px 20px;
+                    border-radius: 10px;
+                    background: #fee2e2;
+                    color: #dc2626;
+                    border: 1px solid #fecaca;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    margin-left: 15px;
+                }
+
+                .delete-order-btn:hover {
+                    background: #fecaca;
                 }
 
                 .timeline-card {

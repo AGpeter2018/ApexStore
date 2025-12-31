@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { ArrowLeft, Package, MapPin, AlertCircle } from 'lucide-react';
+import { orderAPI } from '../../utils/api';
+import { ArrowLeft, Package, MapPin, AlertCircle, Trash2, RefreshCcw } from 'lucide-react';
 
 const OrderDetailPage = () => {
     const { id } = useParams();
@@ -25,19 +25,8 @@ const OrderDetailPage = () => {
         setError('');
 
         try {
-            const token = localStorage.getItem('token');
+            const { data } = await orderAPI.getOrderById(id);
 
-            const { data } = await axios.get(
-                `${import.meta.env.VITE_API_URL}/orders/${id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            console.log('Order data:', data);
             setOrder(data.data);
             setUpdateData({
                 orderStatus: data.data.orderStatus,
@@ -47,11 +36,9 @@ const OrderDetailPage = () => {
             setLoading(false);
         } catch (error) {
             console.error('Error fetching order:', error);
-            console.error('Error response:', error.response?.data);
 
             if (error.response?.status === 401) {
                 setError('Unauthorized. Please login again.');
-                localStorage.removeItem('token');
             } else if (error.response?.status === 403) {
                 setError('You do not have permission to view this order.');
             } else if (error.response?.status === 404) {
@@ -63,23 +50,40 @@ const OrderDetailPage = () => {
         }
     };
 
+    const handleDeleteOrder = async () => {
+        if (window.confirm('Are you sure you want to delete this order as an Admin? This action cannot be undone.')) {
+            try {
+                await orderAPI.deleteOrder(id);
+                alert('Order deleted successfully');
+                navigate('/vendor/orders');
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert(error.response?.data?.message || 'Failed to delete order');
+            }
+        }
+    };
+
+
+    const handleRefundOrder = async () => {
+        const amount = prompt('Enter refund amount (optional, leave blank for full refund):');
+        const reason = prompt('Enter refund reason:');
+
+        if (window.confirm(`Are you sure you want to refund ${amount || 'the full amount'}?`)) {
+            try {
+                await orderAPI.refundOrder(id, { amount: amount ? parseFloat(amount) : undefined, reason });
+                alert('Refund initiated successfully');
+                fetchOrder();
+            } catch (error) {
+                console.error('Refund error:', error);
+                alert(error.response?.data?.message || 'Failed to initiate refund');
+            }
+        }
+    };
+
     const handleUpdateOrder = async () => {
         setUpdating(true);
         try {
-            const token = localStorage.getItem('token');
-
-            const { data } = await axios.put(
-                `${import.meta.env.VITE_API_URL}/orders/${id}/status`,
-                updateData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            console.log('Update response:', data);
+            await orderAPI.updateOrderStatus(id, updateData);
             alert('Order updated successfully!');
             fetchOrder();
         } catch (error) {
@@ -166,9 +170,30 @@ const OrderDetailPage = () => {
                                 Placed on {new Date(order.createdAt).toLocaleString()}
                             </p>
                         </div>
-                        <div className="text-right">
-                            <p className="text-sm text-gray-600">Total Amount</p>
-                            <p className="text-3xl font-bold text-gray-900">{formatPrice(order.total)}</p>
+                        <div className="text-right flex flex-col items-end gap-3">
+                            <div>
+                                <p className="text-sm text-gray-600">Total Amount</p>
+                                <p className="text-3xl font-bold text-gray-900">{formatPrice(order.total)}</p>
+                            </div>
+                            {JSON.parse(localStorage.getItem('user') || '{}').role === 'admin' && (
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleRefundOrder}
+                                        disabled={order.paymentStatus !== 'paid'}
+                                        className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <RefreshCcw size={16} />
+                                        Refund
+                                    </button>
+                                    <button
+                                        onClick={handleDeleteOrder}
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg hover:bg-red-100 transition-colors text-sm font-semibold"
+                                    >
+                                        <Trash2 size={16} />
+                                        Delete
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
