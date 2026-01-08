@@ -15,7 +15,16 @@ const RegisterPage = () => {
         phone: '',
         role: 'customer',
         storeName: '',
-        storeDescription: ''
+        storeDescription: '',
+        location: '',
+        businessAddress: '',
+        socials: {
+            facebook: '',
+            twitter: '',
+            instagram: '',
+            linkedin: ''
+        }
+        
     });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -74,12 +83,22 @@ const RegisterPage = () => {
                     name: formData.name,
                     email: formData.email,
                     password: formData.password,
-                    phone: formData.phone,
+                    phone: formData.role === 'vendor' ? formData.phone : undefined,
                     role: formData.role,
                     storeName: formData.role === 'vendor' ? formData.storeName : undefined,
-                    storeDescription: formData.role === 'vendor' ? formData.storeDescription : undefined
+                    storeDescription: formData.role === 'vendor' ? formData.storeDescription : undefined,
+                    location: formData.role === 'vendor' ? formData.location : undefined,
+                    businessAddress: formData.role === 'vendor' ? formData.businessAddress : undefined,
+                    socials: {
+                        facebook: formData.facebook,
+                        twitter: formData.twitter,
+                        instagram: formData.instagram,
+                        linkedin: formData.linkedin
+                    }
                 }
             );
+
+            console.log(data.data)
 
             // Store token and user data
             localStorage.setItem('token', data.data.token);
@@ -91,9 +110,9 @@ const RegisterPage = () => {
                 if (data.data.role === 'admin') {
                     navigate('/admin')
                 } else if (data.data.role === 'vendor') {
-                    navigate('/vendor/dashboard');
+                    navigate('/vendor/');
                 } else {
-                    navigate('/collections');
+                    navigate('/categories');
                 }
             }, 2500)
         } catch (err) {
@@ -102,6 +121,8 @@ const RegisterPage = () => {
             setLoading(false);
         }
     };
+
+   
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 flex items-center justify-center py-12 px-4">
@@ -163,7 +184,7 @@ const RegisterPage = () => {
                     )}
 
                     {successMessage && (
-                        <div className="bg-green-100 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6">
+                        <div className="bg-green-100 border-l-4 border-green-500 text-red-700 p-4 rounded mb-6">
                             {successMessage}
                         </div>
                     )}
@@ -301,7 +322,7 @@ const RegisterPage = () => {
                                             <User size={32} className={`mx-auto mb-3 ${formData.role === 'customer' ? 'text-orange-600' : 'text-gray-400'
                                                 }`} />
                                             <h3 className="font-bold text-lg mb-2">Customer</h3>
-                                            <p className="text-sm text-gray-600">Browse and purchase drums</p>
+                                            <p className="text-sm text-gray-600">Browse and purchase products</p>
                                         </button>
 
                                         <button
@@ -315,7 +336,7 @@ const RegisterPage = () => {
                                             <Store size={32} className={`mx-auto mb-3 ${formData.role === 'vendor' ? 'text-blue-600' : 'text-gray-400'
                                                 }`} />
                                             <h3 className="font-bold text-lg mb-2">Vendor</h3>
-                                            <p className="text-sm text-gray-600">Sell your drums online</p>
+                                            <p className="text-sm text-gray-600">Sell your products online</p>
                                         </button>
                                     </div>
                                 </div>
@@ -353,7 +374,7 @@ const RegisterPage = () => {
                                                     onChange={handleChange}
                                                     required={formData.role === 'vendor'}
                                                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                                    placeholder="My Drum Store"
+                                                    placeholder="My Product Store"
                                                 />
                                             </div>
                                         </div>
@@ -369,6 +390,88 @@ const RegisterPage = () => {
                                                 rows="3"
                                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                                 placeholder="Tell us about your store..."
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                Store Location
+                                            </label>
+                                            <textarea
+                                                name="location"
+                                                value={formData.location}
+                                                onChange={handleChange}
+                                                rows="3"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                placeholder="Tell us about your location..."
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                Store Address
+                                            </label>
+                                            <textarea
+                                                name="businessAddress"
+                                                value={formData.businessAddress}
+                                                onChange={handleChange}
+                                                rows="3"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                placeholder="Tell us about your store address..."
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                Facebook
+                                            </label>
+                                            <input
+                                                type='url'
+                                                name="facebook"
+                                                value={formData.socials.facebook}
+                                                onChange={handleChange}
+                                                rows="3"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                placeholder="https://facebook.com/yourhandle"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                Twitter
+                                            </label>
+                                            <input
+                                                type='url'
+                                                name="twitter"
+                                                value={formData.socials.twitter}
+                                                onChange={handleChange}
+                                                rows="3"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                placeholder="https://twitter.com/yourhandle"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                Instagram
+                                            </label>
+                                            <input
+                                                type='url'
+                                                name="instagram"
+                                                value={formData.socials.instagram}
+                                                onChange={handleChange}
+                                                rows="3"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                placeholder="https://instagram.com/yourhandle"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                Linkedin
+                                            </label>
+                                            <input
+                                                type='url'
+                                                name="linkedin"
+                                                value={formData.socials.linkedin}
+                                                onChange={handleChange}
+                                                rows="3"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                placeholder="https://linkedin.com/yourhandle"
                                             />
                                         </div>
                                     </>

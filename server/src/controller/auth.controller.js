@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import User from '../../models/User.model.js'
 import PasswordReset from '../../models/PasswordReset.model.js';
-import nodemailer from 'nodemailer'; 
+import nodemailer from 'nodemailer';
 
 // Request password reset
 export const forgotPassword = async (req, res) => {
@@ -19,7 +19,6 @@ export const forgotPassword = async (req, res) => {
         const user = await User.findOne({ email });
 
         if (!user) {
-            console.log("⚠ No user found with email:", email);
             return res.status(200).json({
                 success: true,
                 message:
@@ -43,7 +42,6 @@ export const forgotPassword = async (req, res) => {
 
         // Build reset link
         const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-        console.log("🔗 Reset URL:", resetUrl);
 
         // Configure SendGrid SMTP
         const transporter = nodemailer.createTransport({
@@ -74,15 +72,10 @@ export const forgotPassword = async (req, res) => {
         };
 
 
-        console.log("📨 Reset request received for:", email);
-console.log("📌 Using email host:", process.env.EMAIL_HOST);
-console.log("📌 Using email user:", process.env.EMAIL_USER);
-console.log("📌 Reset URL:", resetUrl);
 
 
         // Send the email
         const info = await transporter.sendMail(mailOptions);
-        console.log("✅ Email sent successfully:", info.response);
 
         return res.status(200).json({
             success: true,

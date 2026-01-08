@@ -10,6 +10,8 @@ import vendorRouter from './routes/vendor.route.js';
 import aiRouter from './routes/ai.routes.js';
 import cartRouter from './routes/cart.routes.js';
 import webhookRouter from './routes/webhook.routes.js';
+import payoutRouter from './routes/payout.routes.js';
+import analyticsRouter from './routes/analytics.routes.js';
 
 
 const app = express()
@@ -54,6 +56,12 @@ app.use('/api/cart', cartRouter);
 
 // Webhook Route
 app.use('/api/webhooks', webhookRouter);
+
+// Payout Route
+app.use('/api/payouts', payoutRouter);
+
+// Analytics Route
+app.use('/api/analytics', analyticsRouter);
 
 
 

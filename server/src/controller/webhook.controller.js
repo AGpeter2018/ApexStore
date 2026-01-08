@@ -44,7 +44,7 @@ export const handleFlutterwaveWebhook = async (req, res) => {
         }
 
         const event = req.body;
-        console.log('📬 Flutterwave Webhook received:', event.event);
+        console.log('Flutterwave Webhook received:', event.event);
 
         if (event.event === 'charge.completed' && event.data.status === 'successful') {
             const { tx_ref, meta } = event.data;

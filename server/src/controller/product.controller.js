@@ -158,7 +158,6 @@ export const getProduct = async (req, res) => {
             });
         }
 
-        console.log('Product ID:', req.params.id);
 
 
         // ===== OWNERSHIP CHECK (for sellers) =====
@@ -268,11 +267,14 @@ export const createProduct = async (req, res) => {
 
         // If vendor → force attach their own vendor profile
         if (req.user.role === 'vendor') {
-            const vendor = await Vendor.findOne({ owner: req.user._id });
+            let vendor = await Vendor.findOne({ owner: req.user._id });
             if (!vendor) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Vendor profile not found'
+                // Fail-safe: Create missing vendor profile
+                vendor = await Vendor.create({
+                    owner: req.user._id,
+                    storeName: `${req.user.name}'s Store`,
+                    storeDescription: "Premium African products and craftsmanship.",
+                    location: "Lagos",
                 });
             }
             vendorId = vendor._id;

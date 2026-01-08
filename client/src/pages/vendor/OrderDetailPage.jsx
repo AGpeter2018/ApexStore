@@ -55,7 +55,8 @@ const OrderDetailPage = () => {
             try {
                 await orderAPI.deleteOrder(id);
                 alert('Order deleted successfully');
-                navigate('/vendor/orders');
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                navigate(`/${user.role}/orders`);
             } catch (error) {
                 console.error('Delete error:', error);
                 alert(error.response?.data?.message || 'Failed to delete order');
@@ -115,11 +116,11 @@ const OrderDetailPage = () => {
             <div className="min-h-screen bg-gray-50 py-20">
                 <div className="max-w-7xl mx-auto px-4">
                     <button
-                        onClick={() => navigate('/vendor/orders')}
+                        onClick={() => navigate(-1)}
                         className="flex items-center gap-2 text-orange-600 hover:text-orange-700 mb-4"
                     >
                         <ArrowLeft size={20} />
-                        Back to Orders
+                        Back
                     </button>
                     <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded flex items-start gap-3">
                         <AlertCircle className="flex-shrink-0 mt-1" />
@@ -157,11 +158,11 @@ const OrderDetailPage = () => {
                 {/* Header */}
                 <div className="mb-8">
                     <button
-                        onClick={() => navigate('/vendor/orders')}
+                        onClick={() => navigate(-1)}
                         className="flex items-center gap-2 text-orange-600 hover:text-orange-700 mb-4"
                     >
                         <ArrowLeft size={20} />
-                        Back to Orders
+                        Back
                     </button>
                     <div className="flex justify-between items-start">
                         <div>

@@ -37,6 +37,8 @@ const LoginPage = () => {
                 formData
             );
 
+            console.log(data.data)
+
             // Store token and user data
             localStorage.setItem('token', data.data.token);
             localStorage.setItem('user', JSON.stringify(data.data));

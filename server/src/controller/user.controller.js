@@ -12,7 +12,7 @@ const generateToken = (id) => {
 // Register user
 export const register = async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, phone, role, storeDescription, location, businessAddress, logo, socials, storeName } = req.body;
 
         const userExists = await User.findOne({ email });
         if (userExists) {
@@ -26,8 +26,23 @@ export const register = async (req, res) => {
             name,
             email,
             password,
+            phone,
             role: role || 'customer'
         });
+
+        let vendorProfile = null
+        // Auto-create Vendor profile for new vendors
+        if (user.role === 'vendor') {
+           vendorProfile = await Vendor.create({
+                owner: user._id,
+                storeName,
+                storeDescription,
+                location,
+                businessAddress,
+                socials,
+                logo
+            });
+        }
 
         res.status(201).json({
             success: true,
@@ -35,12 +50,21 @@ export const register = async (req, res) => {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
+                phone: user.phone,
                 role: user.role,
-                token: generateToken(user._id)
+                token: generateToken(user._id),
+                vendor: vendorProfile ? {
+                owner: user._id,
+                storeName,
+                storeDescription,
+                location,
+                businessAddress,
+                socials,
+                logo
+                } : null
             }
         });
     } catch (error) {
-        console.log("REGISTER ERROR:", error);
         res.status(400).json({
             success: false,
             message: 'Internal server error',
@@ -70,22 +94,21 @@ export const login = async (req, res) => {
             });
         }
 
-        // Auto-migrate legacy 'seller' role to 'vendor'
-        if (user.role === 'seller') {
-            user.role = 'vendor';
-            await user.save();
-        }
 
+        let vendorProfile = null
         // Ensure Vendor profile exists for all vendors
         if (user.role === 'vendor') {
             const vendorProfile = await Vendor.findOne({ owner: user._id });
             if (!vendorProfile) {
                 console.log(`Creating missing vendor profile for user: ${user.email}`);
                 await Vendor.create({
-                    owner: user._id,
-                    storeName: `${user.name}'s Store`,
-                    storeDescription: "Premium African products and craftsmanship.",
-                    location: user.address?.state || "Lagos",
+                owner: user._id,
+                storeName: req.body.storeName||`${user.name}'s Store`,
+                storeDescription: req.body.storeDescription,
+                location: req.body.location, 
+                businessAddress: req.body.businessAddress,
+                socials: req.body.socials,
+                logo: req.body.logo
                 });
             }
         }
@@ -97,7 +120,17 @@ export const login = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                token: generateToken(user._id)
+                phone: user.phone,
+                token: generateToken(user._id),
+                vendor: vendorProfile ? {
+                owner: user._id,
+                storeName: req.body.storeName||`${user.name}'s Store`,
+                storeDescription: req.body.storeDescription,
+                location: req.body.location, 
+                businessAddress: req.body.businessAddress,
+                socials: req.body.socials,
+                logo: req.body.logo
+                } : null
             }
         });
     } catch (error) {

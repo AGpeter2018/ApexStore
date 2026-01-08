@@ -97,7 +97,8 @@ const orderSchema = new mongoose.Schema({
 orderSchema.pre('validate', async function () {
     if (!this.orderNumber) {
         const count = await mongoose.model('Order').countDocuments();
-        this.orderNumber = `ORD-${Date.now()}-${count + 1}`;
+        const random = Math.floor(1000 + Math.random() * 9000);
+        this.orderNumber = `ORD-${Date.now()}-${count + 1}-${random}`;
     }
 
 });

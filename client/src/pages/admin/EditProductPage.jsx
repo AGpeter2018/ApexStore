@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Upload, X, Plus, Loader, AlertCircle, CheckCircle, Package, ArrowLeft, Trash2, Sparkles } from 'lucide-react';
-import axios from 'axios';
+import { adminAPI, categoryAPI, productAPI } from '../../utils/api';
 import AIAssistantModal from '../../components/AIAssistantModal';
 
 const EditProductPage = () => {
   const { id } = useParams()
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -25,16 +26,10 @@ const EditProductPage = () => {
   const [specFields, setSpecFields] = useState([]);
 
   useEffect(() => {
-    // In real app, get productId from useParams()
-    // const { id } = useParams();
     setProductId(id);
-
-    // For demo, use a mock ID
-    // setProductId('mock-product-id');
-
-    fetchCategories();
-    fetchProduct(id);
-  }, []);
+    fetchInitialData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   useEffect(() => {
     if (formData?.categoryId) {
@@ -49,10 +44,20 @@ const EditProductPage = () => {
     }
   }, [formData?.categoryId, formData?.subcategoryId, categories, subcategories]);
 
+  const fetchInitialData = async () => {
+    try {
+      await Promise.all([
+        fetchCategories(),
+        fetchProduct(id)
+      ]);
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+    }
+  };
+
   const fetchCategories = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL;
-      const response = await axios.get(`${apiUrl}/categories?parentId=null&isActive=true`);
+      const response = await categoryAPI.getCategories({ parentId: 'null', isActive: 'true' });
 
       setCategories(response.data.data || []);
     } catch (error) {
@@ -63,8 +68,7 @@ const EditProductPage = () => {
 
   const fetchSubcategories = async (categoryId) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL
-      const response = await axios.get(`${apiUrl}/categories?parentId=${categoryId}&isActive=true`);
+      const response = await categoryAPI.getCategories({ parentId: categoryId, isActive: 'true' });
 
       setSubcategories(response.data.data || []);
     } catch (error) {
@@ -73,10 +77,9 @@ const EditProductPage = () => {
     }
   };
 
-  const fetchProduct = async (id) => {
+  const fetchProduct = async (productId) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL
-      const response = await axios.get(`${apiUrl}/products/${id}`);
+      const response = await productAPI.getProductById(productId);
       const product = response.data.data;
       console.log(product)
 
@@ -334,16 +337,7 @@ const EditProductPage = () => {
     if (!window.confirm('Are you sure you want to delete this image?')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const apiUrl = import.meta.env.VITE_API_URL
-      const response = await axios.delete(`${apiUrl}/products/${id}/images/${imageId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      // Axios throws on non-2xx by default, so if we get here it's success.
-      // response.ok is for fetch, not axios.
+      await adminAPI.deleteProductImage(id, imageId);
 
       setFormData(prev => ({
         ...prev,
@@ -406,14 +400,12 @@ const EditProductPage = () => {
       }
 
       // Prepare update data
-      // Map specifications from UI object to model array format
       const mappedSpecifications = (specFields || []).map((field, idx) => {
         const key = field.key;
         if (!key) return null;
         const rawValue = formData.specifications[key];
         const type = (field.type || '').toLowerCase();
 
-        // Skip empty values except booleans
         const isEmptyArray = Array.isArray(rawValue) && rawValue.length === 0;
         const isEmptyString = rawValue === '' || rawValue === undefined || rawValue === null;
 
@@ -430,7 +422,6 @@ const EditProductPage = () => {
         };
       }).filter(Boolean);
 
-      // Clean description array - remove empty blocks
       const cleanedDescription = formData.description
         .filter(desc => desc.content && desc.content.toString().trim() !== '')
         .map((desc, index) => ({
@@ -440,7 +431,6 @@ const EditProductPage = () => {
           order: index
         }));
 
-      // Prepare update data
       const updateData = {
         name: formData.name,
         description: cleanedDescription,
@@ -467,36 +457,25 @@ const EditProductPage = () => {
         images: [...formData.images, ...uploadedImages]
       };
 
-      console.log('Update data:', updateData);
-
-      const token = localStorage.getItem('token');
-      const apiUrl = import.meta.env.VITE_API_URL
-      const response = await axios.put(`${apiUrl}/products/${productId}`, updateData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      })
-
-      console.log('Product updated:', response.data);
+      await adminAPI.updateProduct(productId, updateData);
 
       setMessage({ type: 'success', text: 'Product updated successfully!' });
 
       setTimeout(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (user.role === 'vendor') {
-          window.location.href = '/vendor/product/list';
+          navigate('/vendor/product/list');
         } else if (user.role === 'admin') {
-          window.location.href = '/admin/product/list';
+          navigate('/admin/product/list');
         } else {
-          window.location.href = '/';
+          navigate('/');
         }
       }, 2000);
     } catch (error) {
       console.error('Update error:', error);
       setMessage({
         type: 'error',
-        text: error.message || 'Failed to update product. Please try again.'
+        text: error.response?.data?.message || error.message || 'Failed to update product. Please try again.'
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
@@ -544,14 +523,7 @@ const EditProductPage = () => {
 
   const handleCancel = () => {
     if (window.confirm('Are you sure you want to cancel? All changes will be lost.')) {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user.role === 'vendor') {
-        window.location.href = '/vendor/product/list';
-      } else if (user.role === 'admin') {
-        window.location.href = '/admin/product/list';
-      } else {
-        window.location.href = '/';
-      }
+      navigate(-1);
     }
   };
 

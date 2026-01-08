@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { userAPI } from '../../utils/api';
 import { Users, Search, Filter, UserPlus, Edit, Ban, CheckCircle, XCircle } from 'lucide-react';
 
 const UsersManagementPage = () => {
@@ -21,15 +21,11 @@ const UsersManagementPage = () => {
 
     const fetchUsers = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const params = new URLSearchParams();
-            if (filters.role) params.append('role', filters.role);
-            if (filters.isActive) params.append('isActive', filters.isActive);
+            const params = {};
+            if (filters.role) params.role = filters.role;
+            if (filters.isActive) params.isActive = filters.isActive;
 
-            const { data } = await axios.get(
-                `${import.meta.env.VITE_API_URL}/users?${params.toString()}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const { data } = await userAPI.getUsers(params);
             setUsers(data.data);
             setLoading(false);
         } catch (error) {
@@ -40,11 +36,7 @@ const UsersManagementPage = () => {
 
     const fetchStats = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const { data } = await axios.get(
-                `${import.meta.env.VITE_API_URL}/users/stats`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const { data } = await userAPI.getUserStats();
             setStats(data.data);
         } catch (error) {
             console.error('Error fetching stats:', error);
@@ -53,12 +45,7 @@ const UsersManagementPage = () => {
 
     const handleUpdateRole = async (userId, newRole) => {
         try {
-            const token = localStorage.getItem('token');
-            await axios.put(
-                `${import.meta.env.VITE_API_URL}/users/${userId}/role`,
-                { role: newRole },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await userAPI.updateUserRole(userId, newRole);
             alert('User role updated successfully!');
             fetchUsers();
             setShowEditModal(false);
@@ -71,12 +58,7 @@ const UsersManagementPage = () => {
         if (!confirm('Are you sure you want to deactivate this user?')) return;
 
         try {
-            const token = localStorage.getItem('token');
-            await axios.put(
-                `${import.meta.env.VITE_API_URL}/users/${userId}/deactivate`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await userAPI.deactivateUser(userId);
             alert('User deactivated successfully!');
             fetchUsers();
         } catch (error) {
@@ -88,12 +70,7 @@ const UsersManagementPage = () => {
         if (!confirm('Are you sure you want to verify this user?')) return;
 
         try {
-            const token = localStorage.getItem('token');
-            await axios.put(
-                `${import.meta.env.VITE_API_URL}/users/${userId}/verify`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await userAPI.verifyUser(userId);
             alert('User verified successfully!');
             fetchUsers();
         } catch (error) {
@@ -141,38 +118,56 @@ const UsersManagementPage = () => {
                 {/* Stats Cards */}
                 {stats && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div className="bg-white rounded-xl shadow-md p-6">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-blue-100 p-3 rounded-lg">
-                                    <Users size={24} className="text-blue-600" />
-                                </div>
+                        {/* Total Users */}
+                        <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-600">
+                            <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-600 text-sm">Total Users</p>
-                                    <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
+                                    <p className="text-gray-600 text-sm font-medium">Total Users</p>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalUsers}</p>
+                                </div>
+                                <div className="bg-blue-100 p-4 rounded-lg">
+                                    <Users size={32} className="text-blue-600" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-md p-6">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-green-100 p-3 rounded-lg">
-                                    <CheckCircle size={24} className="text-green-600" />
-                                </div>
+                        {/* Active Users */}
+                        <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                            <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-600 text-sm">Active Users</p>
-                                    <p className="text-3xl font-bold text-gray-900">{stats.activeUsers}</p>
+                                    <p className="text-gray-600 text-sm font-medium">Active Users</p>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">{stats.activeUsers}</p>
+                                </div>
+                                <div className="bg-green-100 p-4 rounded-lg">
+                                    <CheckCircle size={32} className="text-green-600" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md p-6 text-white">
-                            <p className="text-blue-100 text-sm mb-2">Vendors</p>
-                            <p className="text-4xl font-bold">{stats.vendors}</p>
+                        {/* Vendors */}
+                        <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-orange-500">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-gray-600 text-sm font-medium">Total Vendors</p>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">{stats.vendors || 0}</p>
+                                </div>
+                                <div className="bg-orange-100 p-4 rounded-lg">
+                                    <UserPlus size={32} className="text-orange-600" />
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-md p-6 text-white">
-                            <p className="text-green-100 text-sm mb-2">Customers</p>
-                            <p className="text-4xl font-bold">{stats.customers}</p>
+                        {/* Customers */}
+                        <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-600">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-gray-600 text-sm font-medium">Total Customers</p>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">{stats.customers || 0}</p>
+                                </div>
+                                <div className="bg-purple-100 p-4 rounded-lg">
+                                    <Users size={32} className="text-purple-600" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

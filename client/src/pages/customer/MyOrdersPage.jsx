@@ -13,10 +13,11 @@ const MyOrdersPage = () => {
 
     const [statusFilter, setStatusFilter] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [page, setPage] = useState(1);
 
     useEffect(() => {
-        dispatch(fetchMyOrders({ page: 1, limit: 10, status: statusFilter }));
-    }, [dispatch, statusFilter]);
+        dispatch(fetchMyOrders({ page, limit: 10, status: statusFilter }));
+    }, [dispatch, statusFilter, page]);
 
     const getStatusColor = (status) => {
         const colors = {
@@ -70,8 +71,10 @@ const MyOrdersPage = () => {
                     </div>
                 </div>
 
-                {loading ? (
-                    <div className="loading">Loading orders...</div>
+                {loading ? (          
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+            </div>     
                 ) : filteredOrders.length === 0 ? (
                     <div className="empty-state">
                         <Package size={80} />
@@ -129,6 +132,29 @@ const MyOrdersPage = () => {
                                 </div>
                             </div>
                         ))}
+
+                        {/* Pagination */}
+                        {pagination.pages > 1 && (
+                            <div className="pagination">
+                                <button
+                                    disabled={page === 1}
+                                    onClick={() => setPage(page - 1)}
+                                    className="page-btn"
+                                >
+                                    Previous
+                                </button>
+                                <span className="page-info">
+                                    Page {page} of {pagination.pages}
+                                </span>
+                                <button
+                                    disabled={page === pagination.pages}
+                                    onClick={() => setPage(page + 1)}
+                                    className="page-btn"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -358,6 +384,40 @@ const MyOrdersPage = () => {
                     padding: 100px 20px;
                     font-size: 20px;
                     color: #667eea;
+                }
+ 
+                .pagination {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 20px;
+                    margin-top: 30px;
+                }
+ 
+                .page-btn {
+                    padding: 10px 20px;
+                    background: white;
+                    border: 2px solid #667eea;
+                    color: #667eea;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+ 
+                .page-btn:hover:not(:disabled) {
+                    background: #667eea;
+                    color: white;
+                }
+ 
+                .page-btn:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+ 
+                .page-info {
+                    font-weight: 600;
+                    color: #333;
                 }
 
                 @media (max-width: 768px) {

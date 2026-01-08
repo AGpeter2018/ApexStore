@@ -1,119 +1,111 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { adminAPI, categoryAPI, productAPI } from '../../utils/api';
 import {
     Plus,
     Edit,
     Trash2,
     Eye,
-    Package,
     Search,
     Filter,
-    AlertCircle,
     ChevronLeft,
     ChevronRight,
+    MoreVertical,
+    Star,
+    AlertCircle,
+    Package,
+    ArrowUpRight,
+    ArrowDownRight,
+    TrendingUp,
     Download,
-    Star
+    RefreshCcw,
+    LayoutGrid,
+    List as ListIcon,
+    Camera,
+    FolderTree
 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const ProductsListPage = () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    const token = localStorage.getItem('token');
-
+    const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-    // Filters
+    const [user] = useState(() => JSON.parse(localStorage.getItem('user') || '{}'));
+    const itemsPerPage = 10;
+
+    // Filter and Pagination State
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all'); // all, active, inactive, draft
-    const [stockFilter, setStockFilter] = useState('all'); // all, in-stock, low-stock, out-of-stock
-    const [featuredFilter, setFeaturedFilter] = useState('all'); // all, featured, not-featured
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [stockFilter, setStockFilter] = useState('all');
+    const [featuredFilter, setFeaturedFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('-createdAt');
 
-    // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalProducts, setTotalProducts] = useState(0);
-    const itemsPerPage = 20;
-
-    // Sort
-    const [sortBy, setSortBy] = useState('-createdAt'); // -createdAt, name, price, -price
+    const [stats, setStats] = useState({
+        total: 0,
+        active: 0,
+        outOfStock: 0,
+        lowStock: 0
+    });
 
     useEffect(() => {
-        fetchCategories();
+        fetchInitialData();
     }, []);
 
     useEffect(() => {
         fetchProducts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, searchTerm, selectedCategory, statusFilter, stockFilter, featuredFilter, sortBy]);
 
-    const fetchCategories = async () => {
+    const fetchInitialData = async () => {
         try {
-            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/categories`);
-            setCategories(data.data || []);
-            // console.log(data.data)
+            const [catRes, statsRes] = await Promise.all([
+                categoryAPI.getCategories(),
+                adminAPI.getProductStats()
+            ]);
+            setCategories(catRes.data.data || []);
+            setStats(statsRes.data.data || stats);
         } catch (err) {
-            console.error('Failed to fetch categories:', err);
+            console.error('Failed to fetch initial data:', err);
         }
     };
 
     const fetchProducts = async () => {
         try {
             setLoading(true);
-
-            // Build query parameters
-            const params = new URLSearchParams({
+            const params = {
                 page: currentPage,
                 limit: itemsPerPage,
+                search: searchTerm,
+                category: selectedCategory,
                 sort: sortBy
-            });
+            };
 
-            if (searchTerm) params.append('search', searchTerm);
-            if (selectedCategory) params.append('categoryId', selectedCategory);
-
-            // Status filtering
-            if (statusFilter === 'active') {
-                params.append('status', 'active');
-                params.append('isActive', 'true');
-            } else if (statusFilter === 'inactive') {
-                params.append('isActive', 'false');
-            } else if (statusFilter === 'draft') {
-                params.append('status', 'draft');
+            if (statusFilter !== 'all') {
+                params.status = statusFilter;
             }
 
-            // Stock filtering
-            if (stockFilter === 'in-stock') {
-                params.append('inStock', 'true');
-            } else if (stockFilter === 'out-of-stock') {
-                params.append('inStock', 'false');
+            if (stockFilter === 'out-of-stock') {
+                params.inStock = 'false';
             } else if (stockFilter === 'low-stock') {
-                params.append('lowStock', 'true');
+                params.lowStock = 'true';
             }
 
-            // Featured filtering
             if (featuredFilter === 'featured') {
-                params.append('featured', 'true');
+                params.featured = 'true';
             } else if (featuredFilter === 'not-featured') {
-                params.append('featured', 'false');
+                params.featured = 'false';
             }
 
-            const { data } = await axios.get(
-                `${import.meta.env.VITE_API_URL}/admin/products?${params.toString()}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
-
+            const { data } = await adminAPI.getProducts(params);
             setProducts(data.data || []);
-            setTotalPages(data.pages || 1);
-            setTotalProducts(data.total || 0);
+            setTotalPages(data.totalPages || 1);
             setLoading(false);
-            console.log(data.data)
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to fetch products');
             setLoading(false);
@@ -122,22 +114,15 @@ const ProductsListPage = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/admin/products/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            setProducts(products.filter(p => p._id !== id));
+            await adminAPI.deleteProduct(id);
             setDeleteConfirm(null);
 
-            // Refresh if current page is empty
-            if (products.length === 1 && currentPage > 1) {
-                setCurrentPage(currentPage - 1);
-            } else {
-                fetchProducts();
-            }
-        } catch (error) {
-            alert(error.response?.data?.message || 'Failed to delete product');
+            // Refresh products and stats
+            fetchProducts();
+            const statsRes = await adminAPI.getProductStats();
+            setStats(statsRes.data.data);
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to delete product');
         }
     };
 
@@ -186,7 +171,7 @@ const ProductsListPage = () => {
                     <div>
                         <h1 className="text-4xl font-bold text-gray-900">Products</h1>
                         <p className="text-gray-600 mt-2">
-                            {totalProducts} total products
+                            {stats.total} total products
                         </p>
                     </div>
                     <div className="flex gap-3">
@@ -484,7 +469,7 @@ const ProductsListPage = () => {
                         {totalPages > 1 && (
                             <div className="bg-white rounded-xl shadow-md p-4 flex items-center justify-between">
                                 <div className="text-sm text-gray-600">
-                                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalProducts)} of {totalProducts} products
+                                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, stats.total)} of {stats.total} products
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
