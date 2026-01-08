@@ -98,9 +98,14 @@ const NavBar = ({ scrolled }) => {
                         )}
 
                         {user.role === 'vendor' && (
-                            <Link to="/vendor" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
-                                Vendor Dashboard
-                            </Link>
+                            <div className="flex items-center gap-6">
+                                <Link to="/vendor" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                                    Vendor Dashboard
+                                </Link>
+                                <Link to="/vendor/settings" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
+                                    Settings
+                                </Link>
+                            </div>
                         )}
                         {user.role === 'admin' && (
                             <Link to="/admin" className="text-red-600 hover:text-red-700 font-medium transition-colors">

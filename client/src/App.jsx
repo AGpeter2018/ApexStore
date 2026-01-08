@@ -16,6 +16,7 @@ import ProductsListPage from "./pages/admin/ProductsListPage"
 import EditProductPage from "./pages/admin/EditProductPage"
 import AnalyticsPage from "./pages/admin/AnalyticsPage"
 import VendorDashboard from "./pages/vendor/VendorDashboard"
+import VendorSettingsPage from "./pages/vendor/VendorSettingsPage"
 import OrdersPage from "./pages/vendor/OrdersPage"
 import OrderDetailPage from "./pages/vendor/OrderDetailPage"
 import PaymentsPage from "./pages/vendor/PaymentsPage"
@@ -374,6 +375,17 @@ function App() {
             <NavBar />
             <ProtectedRoute allowedRoles={['vendor']}>
               <AnalyticsDashboard />
+              <Footer />
+            </ProtectedRoute>
+          </>
+        }
+        />
+
+        <Route path="/vendor/settings" element={
+          <>
+            <NavBar />
+            <ProtectedRoute allowedRoles={['vendor']}>
+              <VendorSettingsPage />
               <Footer />
             </ProtectedRoute>
           </>

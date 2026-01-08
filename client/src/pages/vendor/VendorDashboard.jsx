@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { orderAPI, vendorAPI, aiAPI } from '../../utils/api';
-import { Package, ShoppingCart, DollarSign, TrendingUp, Clock, CheckCircle, XCircle, Truck, ArrowRight, LayoutGrid, CreditCard, Sparkles, AlertCircle, Zap, BarChart3 } from 'lucide-react';
+import { Package, ShoppingCart, DollarSign, TrendingUp, Clock, CheckCircle, XCircle, Truck, ArrowRight, LayoutGrid, CreditCard, Sparkles, AlertCircle, Zap, BarChart3, Store } from 'lucide-react';
 
 const VendorDashboard = () => {
     const [stats, setStats] = useState(null);
@@ -261,6 +261,19 @@ const VendorDashboard = () => {
                                         <span className="font-medium text-gray-700 group-hover:text-purple-700">Analytics</span>
                                     </div>
                                     <ArrowRight size={18} className="text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+                                </Link>
+
+                                <Link
+                                    to="/vendor/settings"
+                                    className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-orange-50 hover:text-orange-700 group transition-all"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-white p-2 rounded-lg shadow-sm group-hover:shadow text-gray-500 group-hover:text-orange-600 transition-colors">
+                                            <Store size={20} />
+                                        </div>
+                                        <span className="font-medium text-gray-700 group-hover:text-orange-700">Store Settings</span>
+                                    </div>
+                                    <ArrowRight size={18} className="text-gray-400 group-hover:text-orange-600 group-hover:translate-x-1 transition-all" />
                                 </Link>
                             </div>
                         </div>

@@ -799,13 +799,14 @@ export const getVendorPayments = async (req, res) => {
             );
 
             const vendorSubtotal = vendorItems.reduce((sum, item) => sum + item.subtotal, 0);
+            const vendorShare = vendorSubtotal * 0.90; // 90% of items subtotal
 
             return {
                 _id: order._id,
                 orderNumber: order.orderNumber,
                 customer: order.customer,
                 paidAt: order.paidAt,
-                amount: vendorSubtotal,
+                amount: vendorShare,
                 status: order.orderStatus,
                 paymentMethod: order.paymentMethod
             };

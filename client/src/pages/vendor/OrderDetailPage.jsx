@@ -174,7 +174,24 @@ const OrderDetailPage = () => {
                         <div className="text-right flex flex-col items-end gap-3">
                             <div>
                                 <p className="text-sm text-gray-600">Total Amount</p>
-                                <p className="text-3xl font-bold text-gray-900">{formatPrice(order.total)}</p>
+                                <p className="text-3xl font-bold text-gray-900 border-b border-dashed border-gray-100 pb-1 mb-1">{formatPrice(order.total)}</p>
+                                <div className="text-right">
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Your Share</p>
+                                    <p className="text-lg font-bold text-orange-600">
+                                        {formatPrice(
+                                            order.items.reduce((sum, item) => {
+                                                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                                                const itemAmount = item.subtotal || (item.price * item.quantity);
+                                                if (user.role === 'admin') {
+                                                    return sum + (itemAmount * 0.10);
+                                                } else {
+                                                    // Backend already filters items for vendors, so we just sum 90%
+                                                    return sum + (itemAmount * 0.90);
+                                                }
+                                            }, 0)
+                                        )}
+                                    </p>
+                                </div>
                             </div>
                             {JSON.parse(localStorage.getItem('user') || '{}').role === 'admin' && (
                                 <div className="flex gap-2">
