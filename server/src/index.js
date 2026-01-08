@@ -13,9 +13,6 @@ dotenv.config({ path: envPath });
 import connectDB from './config/db.js';
 import app from './app.js';
 
-console.log('Environment loaded from:', envPath);
-console.log('MongoDB URL exists:', !!process.env.MONGODB_URL);
-console.log('PORT:', process.env.PORT);
 
 const startServer = async () => {
     try {

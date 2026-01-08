@@ -5,7 +5,7 @@ const vendorSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
-    unique: true // 🔥 One vendor per user
+    unique: true //  One vendor per user
   },
 
   storeName: {
@@ -20,28 +20,45 @@ const vendorSchema = new mongoose.Schema({
     lowercase: true
   },
 
-    storeDescription: {
-        type: String,
-        trim: true,
-        maxlength: 1000
-    },
-    // businessLicense: {
-    //     type: String,
-    //     trim: true
-    // },
-    location: {
-      type: String,
-      trim: true
-    },
+  storeDescription: {
+    type: String,
+    trim: true,
+    maxlength: 1000
+  },
+  // businessLicense: {
+  //     type: String,
+  //     trim: true
+  // },
+  location: {
+    type: String,
+    trim: true
+  },
+  businessAddress: {
+    type: String,
+    trim: true,
+    maxlength: 1000
+  },
 
-    totalSales: {
-        type: Number,
-        default: 0
-    },
-    totalOrders: {
-        type: Number,
-        default: 0
-    },
+  socials: {
+    facebook: String,
+    twitter: String,
+    instagram: String,
+    linkedin: String
+  },
+
+  logo: {
+    type: String,
+    trim: true
+  },
+
+  totalSales: {
+    type: Number,
+    default: 0
+  },
+  totalOrders: {
+    type: Number,
+    default: 0
+  },
   rating: {
     type: Number,
     default: 0
@@ -55,6 +72,16 @@ const vendorSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  balance: {
+    type: Number,
+    default: 0
+  },
+  bankDetails: {
+    accountName: String,
+    accountNumber: String,
+    bankCode: String,
+    bankName: String
   }
 }, { timestamps: true });
 
@@ -65,7 +92,7 @@ vendorSchema.pre("save", function () {
       .toLowerCase()
       .replace(/\s+/g, "-");
   }
-  
+
 });
 
 export default mongoose.model("Vendor", vendorSchema);

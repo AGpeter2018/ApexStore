@@ -150,7 +150,9 @@ export const adminAddProduct = async (req, res) => {
             price,
             categoryId,
             isActive: isActive !== undefined ? isActive : true,
-            status: status || 'active'
+            status: status || 'active',
+            createdBy: req.user._id,
+            createdByRole: req.user.role
         };
 
         // Add optional fields

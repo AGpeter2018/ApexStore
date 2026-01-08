@@ -1,24 +1,27 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { 
-    Plus, 
-    Edit, 
-    Trash2, 
-    Eye, 
-    Layers, 
-    Star, 
-    ChevronRight,
-    Package,
-    TrendingUp,
-    AlertCircle,
+import { Link, useNavigate } from 'react-router-dom';
+import { categoryAPI } from '../../utils/api';
+import {
+    Plus,
+    Edit,
+    Trash2,
+    Eye,
+    FolderTree,
     Search,
-    Filter
+    Filter,
+    AlertCircle,
+    ChevronLeft,
+    ChevronRight,
+    MoreVertical,
+    CheckCircle2,
+    XCircle,
+    Download,
+    Upload
 } from 'lucide-react';
 
 const CategoriesListPage = () => {
+    const navigate = useNavigate();
     const [categories, setCategories] = useState([]);
-    const [filteredCategories, setFilteredCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -27,7 +30,6 @@ const CategoriesListPage = () => {
     const [filterLevel, setFilterLevel] = useState('all'); // 'all', 'main', 'sub'
     const [showInactive, setShowInactive] = useState(false);
 
-    const token = localStorage.getItem('token');
 
     useEffect(() => {
         fetchCategories();
@@ -40,7 +42,7 @@ const CategoriesListPage = () => {
     const fetchCategories = async () => {
         try {
             setLoading(true);
-            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/categories`);
+            const { data } = await categoryAPI.getCategories();
             setCategories(data.data || []);
             setLoading(false);
         } catch (err) {
@@ -84,8 +86,8 @@ const CategoriesListPage = () => {
             const hasSubcategories = categories.some(c => String(c.parentId) === String(id));
 
             if (hasProducts) {
-                alert(`Cannot delete category with ${category.stats.productCount} products. Please move or delete products first.`);
-                setDeleteConfirm(null);
+                alert(`Cannot delete category with ${ category.stats.productCount } products.Please move or delete products first.`)
+                setDeleteConfirm(null)
                 return;
             }
 
@@ -95,9 +97,9 @@ const CategoriesListPage = () => {
                 return;
             }
 
-            await axios.delete(`${import.meta.env.VITE_API_URL}/categories/${id}`, {
+            await axios.delete(`${ import.meta.env.VITE_API_URL } /categories/${ id } `, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${ token } `,
                 }
             });
             
@@ -112,13 +114,13 @@ const CategoriesListPage = () => {
     const handleBulkDelete = async () => {
         if (selectedCategories.length === 0) return;
         
-        if (confirm(`Delete ${selectedCategories.length} category(ies)?`)) {
+        if (confirm(`Delete ${ selectedCategories.length } category(ies) ? `)) {
             try {
                 const results = await Promise.allSettled(
                     selectedCategories.map(id => 
-                        axios.delete(`${import.meta.env.VITE_API_URL}/categories/${id}`, {
+                        axios.delete(`${ import.meta.env.VITE_API_URL } /categories/${ id } `, {
                             headers: {
-                                Authorization: `Bearer ${token}`
+                                Authorization: `Bearer ${ token } `
                             }
                         })
                     )
@@ -127,7 +129,7 @@ const CategoriesListPage = () => {
                 const failed = results.filter(r => r.status === 'rejected').length;
                 
                 if (failed > 0) {
-                    alert(`${failed} categories could not be deleted (may have products or subcategories)`);
+                    alert(`${ failed } categories could not be deleted(may have products or subcategories)`);
                 }
 
                 await fetchCategories();
@@ -346,7 +348,7 @@ const CategoriesListPage = () => {
                                     <div
                                         className="h-48 overflow-hidden"
                                         style={{
-                                            background: `linear-gradient(135deg, ${category.colorTheme?.primary || '#FFEDD5'} 0%, ${category.colorTheme?.secondary || '#FEE2B3'} 100%)`
+                                            background: `linear - gradient(135deg, ${ category.colorTheme?.primary || '#FFEDD5' } 0 %, ${ category.colorTheme?.secondary || '#FEE2B3' } 100 %)`
                                         }}
                                     >
                                         {category.categoryImage?.url ? (
@@ -436,14 +438,14 @@ const CategoriesListPage = () => {
                                     {/* Actions */}
                                     <div className="flex items-center gap-2">
                                         <Link
-                                            to={`/categories/${category.slug}`}
+                                            to={`/ categories / ${ category.slug } `}
                                             className="flex-1 text-center py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-1 text-sm font-medium"
                                         >
                                             <Eye size={16} />
                                             View
                                         </Link>
                                         <Link
-                                            to={`/admin/categories/edit/${category._id}`}
+                                            to={`/ admin / categories / edit / ${ category._id } `}
                                             className="flex-1 text-center py-2 text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center gap-1 text-sm font-medium"
                                         >
                                             <Edit size={16} />

@@ -10,7 +10,8 @@ import {
     verifyOrderPayment,
     deleteOrder,
     getVendorPayments,
-    processRefund
+    processRefund,
+    cancelOrder
 } from '../controller/order.controller.js';
 import { protect, authorize } from '../../middleware/auth.js';
 
@@ -21,6 +22,7 @@ orderRouter.post('/', protect, authorize('customer'), createOrder);
 orderRouter.post('/checkout', protect, authorize('customer'), checkout);
 orderRouter.post('/:id/verify-payment', protect, authorize('customer'), verifyOrderPayment);
 orderRouter.get('/my-orders', protect, authorize('customer'), getMyOrders);
+orderRouter.patch('/:id/cancel', protect, authorize('customer'), cancelOrder);
 
 // Admin/vendor routes
 orderRouter.get('/', protect, authorize('vendor', 'admin'), getOrders);
@@ -31,7 +33,7 @@ orderRouter.get('/stats', protect, authorize('vendor', 'admin'), getOrderStats);
 orderRouter.get('/:id', protect, authorize('customer', 'vendor', 'admin'), getOrder);
 
 // Update status (vendor/admin only)
-orderRouter.put('/:id/status', protect, authorize('vendor', 'admin'), updateOrderStatus);
+orderRouter.patch('/:id/status', protect, authorize('vendor', 'admin'), updateOrderStatus);
 
 // Delete order (admin/customer)
 orderRouter.delete('/:id', protect, authorize('admin', 'customer'), deleteOrder);

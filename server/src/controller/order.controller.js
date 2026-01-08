@@ -3,6 +3,7 @@ import Product from '../../models/Product.model.js';
 import Cart from '../../models/Cart.model.js';
 import Vendor from '../../models/Vendor.js';
 import User from '../../models/User.model.js';
+import Payout from '../../models/Payout.model.js';
 import { processPayment, verifyPayment, refundPayment } from '../helpers/payment.helper.js';
 import { sendOrderConfirmationEmail, sendOrderStatusUpdateEmail, sendVendorOrderNotificationEmail } from '../helpers/email.helper.js';
 import { finalizeOrder } from '../helpers/order.helper.js';
@@ -226,26 +227,33 @@ export const getOrderStats = async (req, res) => {
         let lastMonthRevenue = 0;
 
         if (req.user.role === 'vendor') {
-            const allPaidOrders = await Order.find({ ...filter, paymentStatus: 'paid' });
+            const allPaidOrders = await Order.find({
+                'items.vendor': req.user._id,
+                paymentStatus: 'paid'
+            });
+
             allPaidOrders.forEach(order => {
                 order.items.forEach(item => {
                     if (item.vendor && item.vendor.toString() === req.user._id.toString()) {
-                        totalRevenue += item.subtotal;
+                        const amount = item.subtotal || (item.price * item.quantity);
+                        totalRevenue += amount;
                         if (order.createdAt >= startOfCurrentMonth) {
-                            currentMonthRevenue += item.subtotal;
+                            currentMonthRevenue += amount;
                         } else if (order.createdAt >= startOfLastMonth && order.createdAt <= endOfLastMonth) {
-                            lastMonthRevenue += item.subtotal;
+                            lastMonthRevenue += amount;
                         }
                     }
                 });
             });
-        } else {
+        }
+        else {
             const revenueStats = await Order.aggregate([
                 { $match: { paymentStatus: 'paid' } },
                 {
                     $group: {
                         _id: null,
                         total: { $sum: '$total' },
+                        subtotal: { $sum: '$subtotal' },
                         currentMonth: {
                             $sum: { $cond: [{ $gte: ['$createdAt', startOfCurrentMonth] }, '$total', 0] }
                         },
@@ -266,6 +274,22 @@ export const getOrderStats = async (req, res) => {
                 totalRevenue = revenueStats[0].total;
                 currentMonthRevenue = revenueStats[0].currentMonth;
                 lastMonthRevenue = revenueStats[0].lastMonth;
+                // Commission is strictly 10% of subtotal (items only, no tax/shipping)
+                var adminCommission = revenueStats[0].subtotal * 0.10;
+            }
+        }
+
+        const grossRevenue = totalRevenue;
+        let netRevenue = totalRevenue;
+
+        if (req.user.role === 'admin') {
+            const totalPayouts = await Payout.aggregate([
+                { $match: { status: 'processed' } },
+                { $group: { _id: null, total: { $sum: '$amount' } } }
+            ]);
+
+            if (totalPayouts.length > 0) {
+                netRevenue -= totalPayouts[0].total;
             }
         }
 
@@ -276,6 +300,8 @@ export const getOrderStats = async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(5);
 
+        const totalCommission = req.user.role === 'admin' ? (adminCommission || 0) : (grossRevenue * 0.10);
+
         res.status(200).json({
             success: true,
             data: {
@@ -285,7 +311,10 @@ export const getOrderStats = async (req, res) => {
                 shippedOrders,
                 deliveredOrders,
                 cancelledOrders,
-                totalRevenue,
+                totalRevenue: grossRevenue,
+                grossRevenue,
+                netRevenue,
+                totalCommission,
                 orderTrend,
                 revenueTrend,
                 recentOrders
@@ -319,16 +348,22 @@ export const createOrder = async (req, res) => {
         let subtotal = 0;
         const orderItems = await Promise.all(
             items.map(async item => {
-                const product = await Product.findById(item.product);
+                const product = await Product.findById(item.product).populate('vendorId', 'owner');
                 if (!product) throw new Error(`Product not found: ${item.product}`);
                 if (product.stockQuantity < item.quantity) throw new Error(`Insufficient stock for ${product.name}`);
 
                 const subtotalPerItem = product.price * item.quantity;
                 subtotal += subtotalPerItem;
 
+                // Robust vendor identification: fallback to vendorId.owner
+                const vendorPayoutId = product.createdBy || product.vendorId?.owner;
+                if (!vendorPayoutId) {
+                    console.warn(`Warning: No vendor/owner found for product ${product._id}`);
+                }
+
                 return {
                     product: product._id,
-                    vendor: product.createdBy,
+                    vendor: vendorPayoutId,
                     name: product.name,
                     image: product.images?.[0]?.url || '',
                     price: product.price,
@@ -433,7 +468,10 @@ export const checkout = async (req, res) => {
             });
         }
 
-        const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
+        const cart = await Cart.findOne({ user: req.user._id }).populate({
+            path: 'items.product',
+            populate: { path: 'vendorId', select: 'owner' }
+        });
         if (!cart || cart.items.length === 0) {
             return res.status(400).json({ success: false, message: 'Cart is empty' });
         }
@@ -454,9 +492,15 @@ export const checkout = async (req, res) => {
             const itemSubtotal = product.price * cartItem.quantity;
             subtotal += itemSubtotal;
 
+            // Robust vendor identification: fallback to vendorId.owner
+            const vendorPayoutId = product.createdBy || product.vendorId?.owner;
+            if (!vendorPayoutId) {
+                console.warn(`Warning: No vendor/owner found for product ${product._id}`);
+            }
+
             orderItems.push({
                 product: product._id,
-                vendor: product.createdBy,
+                vendor: vendorPayoutId,
                 name: product.name,
                 image: product.images?.[0]?.url || '',
                 price: product.price,
@@ -616,7 +660,7 @@ export const deleteOrder = async (req, res) => {
             });
         }
 
-        // If it's a customer deleting, we should probably restore stock
+        // Restore stock for customer or admin deletions
         if (req.user.role === 'customer' || req.user.role === 'admin') {
             // Restore stock if the order wasn't cancelled already
             if (order.orderStatus !== 'cancelled') {
@@ -635,7 +679,97 @@ export const deleteOrder = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Failed to delete order',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * Cancel order
+ * @route PATCH /api/orders/:id/cancel
+ * @access Private (Customer)
+ */
+export const cancelOrder = async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        // Check ownership
+        if (order.customer.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized access'
+            });
+        }
+
+        // Can only cancel if pending or processing (but if shipped, too late)
+        const nonCancellable = ['shipped', 'delivered', 'cancelled'];
+        if (nonCancellable.includes(order.orderStatus)) {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot cancel an order that is ${order.orderStatus}`
+            });
+        }
+
+        const wasPaid = order.paymentStatus === 'paid';
+
+        // Update status
+        order.orderStatus = 'cancelled';
+        if (reason) order.cancelReason = reason;
+
+        // If it was paid, we mark it as 'refunded'
+        if (wasPaid) {
+            order.paymentStatus = 'refunded';
+            order.notes = (order.notes || '') + `\nCustomer requested cancellation/refund. Moved to refunded/cancelled.`;
+        }
+
+        await order.save();
+
+        // Restore stock
+        await Promise.all(order.items.map(item =>
+            Product.findByIdAndUpdate(item.product, { $inc: { stockQuantity: item.quantity } })
+        ));
+
+        // If it was paid, decrement vendor stats
+        if (wasPaid) {
+            try {
+                const vendorUpdates = {};
+                order.items.forEach(item => {
+                    const vId = item.vendor?.toString();
+                    if (vId) {
+                        if (!vendorUpdates[vId]) vendorUpdates[vId] = { sales: 0, orders: 1 };
+                        vendorUpdates[vId].sales += (item.subtotal || (item.price * item.quantity));
+                    }
+                });
+
+                for (const [vOwnerId, data] of Object.entries(vendorUpdates)) {
+                    await Vendor.findOneAndUpdate(
+                        { owner: vOwnerId },
+                        { $inc: { totalSales: -data.sales, totalOrders: -data.orders, balance: -data.sales } }
+                    );
+                }
+            } catch (vErr) {
+                console.error('Vendor stats update failed in cancelOrder:', vErr);
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            message: wasPaid ? 'Order cancelled and refund processed' : 'Order cancelled successfully',
+            data: order
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to cancel order',
             error: error.message
         });
     }
@@ -679,9 +813,14 @@ export const getVendorPayments = async (req, res) => {
 
         // Summary stats
         const totalEarnings = payments.reduce((sum, p) => sum + p.amount, 0);
+
+        // Payouts requested but not processed
+        const pendingPayoutRequests = await Payout.find({ vendor: vendorId, status: 'pending' });
+        const requestedPendingAmount = pendingPayoutRequests.reduce((sum, p) => sum + p.amount, 0);
+
         const pendingPayouts = payments
             .filter(p => !['delivered', 'completed'].includes(p.status))
-            .reduce((sum, p) => sum + p.amount, 0);
+            .reduce((sum, p) => sum + p.amount, 0) + requestedPendingAmount;
 
         res.status(200).json({
             success: true,
@@ -763,7 +902,7 @@ export const processRefund = async (req, res) => {
             for (const [vOwnerId, data] of Object.entries(vendorUpdates)) {
                 await Vendor.findOneAndUpdate(
                     { owner: vOwnerId },
-                    { $inc: { totalSales: -data.sales, totalOrders: -data.orders } }
+                    { $inc: { totalSales: -data.sales, totalOrders: -data.orders, balance: -data.sales } }
                 );
             }
         } catch (vErr) {

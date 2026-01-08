@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import { vendorAPI } from '../../utils/api';
 import {
     Store,
     User,
@@ -20,10 +20,13 @@ import {
     XCircle,
     AlertCircle,
     ExternalLink,
-    RefreshCw
+    RefreshCw,
+    Facebook,
+    Instagram,
+    Linkedin,
+    Twitter
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const VendorAccountDetailPage = () => {
     const { id } = useParams();
@@ -41,16 +44,14 @@ const VendorAccountDetailPage = () => {
     const fetchVendorDetail = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`${API_URL}/vendors/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await vendorAPI.getVendorDetail(id);
 
             if (response.data.success) {
                 setVendorData(response.data.data);
                 // Pre-populate products and orders from the detail response for the overview
                 setProducts(response.data.data.latestProducts || []);
                 setOrders(response.data.data.latestOrders || []);
+                console.log(response.data.data)
             }
         } catch (err) {
             console.error('Error fetching vendor detail:', err);
@@ -62,10 +63,7 @@ const VendorAccountDetailPage = () => {
 
     const handleStatusUpdate = async (update) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.put(`${API_URL}/vendors/${id}/status`, update, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await vendorAPI.updateVendorStatus(id, update);
 
             if (response.data.success) {
                 // Update local state
@@ -127,8 +125,8 @@ const VendorAccountDetailPage = () => {
                         <button
                             onClick={() => handleStatusUpdate({ isApproved: !vendor.isApproved })}
                             className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${vendor.isApproved
-                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                    : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
                                 }`}
                         >
                             {vendor.isApproved ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
@@ -137,8 +135,8 @@ const VendorAccountDetailPage = () => {
                         <button
                             onClick={() => handleStatusUpdate({ isActive: !vendor.isActive })}
                             className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${vendor.isActive
-                                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                    : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                : 'bg-red-100 text-red-700 hover:bg-red-200'
                                 }`}
                         >
                             {vendor.isActive ? <RefreshCw size={18} /> : <XCircle size={18} />}
@@ -243,8 +241,45 @@ const VendorAccountDetailPage = () => {
                                 <div className="flex items-start gap-3">
                                     <MapPin className="text-gray-400 mt-1" size={20} />
                                     <div>
-                                        <p className="text-sm text-gray-500">Business Address</p>
-                                        <p className="font-medium">{vendor.address || 'Not provided'}</p>
+                                        <p className="text-sm text-gray-500">Store Address</p>
+                                        <p className="font-medium">{vendor.businessAddress || 'Not provided'}</p>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        {/* Social */}
+                        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-gray-100">
+                                <h3 className="text-lg font-bold text-gray-900">Social Handles</h3>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <Facebook className="text-gray-400" size={20} />
+                                    <div>
+                                        <p className="text-sm text-gray-500">Facebook</p>
+                                        <p className="font-medium">{vendor.socials?.facebook}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Instagram className="text-gray-400" size={20} />
+                                    <div>
+                                        <p className="text-sm text-gray-500">Instagram</p>
+                                        <p className="font-medium">{vendor.socials?.instagram || 'Not provided'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <Linkedin className="text-gray-400 mt-1" size={20} />
+                                    <div>
+                                        <p className="text-sm text-gray-500">Linkedin</p>
+                                        <p className="font-medium">{vendor.socials?.linkedin || 'Not provided'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <Twitter className="text-gray-400 mt-1" size={20} />
+                                    <div>
+                                        <p className="text-sm text-gray-500">Twitter</p>
+                                        <p className="font-medium">{vendor.socials?.twitter || 'Not provided'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -258,8 +293,8 @@ const VendorAccountDetailPage = () => {
                                 <button
                                     onClick={() => setActiveTab('overview')}
                                     className={`flex-1 py-4 px-6 text-sm font-bold transition-all ${activeTab === 'overview'
-                                            ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50/30'
-                                            : 'text-gray-600 hover:bg-gray-50'
+                                        ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50/30'
+                                        : 'text-gray-600 hover:bg-gray-50'
                                         }`}
                                 >
                                     Activity Overview
@@ -267,8 +302,8 @@ const VendorAccountDetailPage = () => {
                                 <button
                                     onClick={() => setActiveTab('products')}
                                     className={`flex-1 py-4 px-6 text-sm font-bold transition-all ${activeTab === 'products'
-                                            ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50/30'
-                                            : 'text-gray-600 hover:bg-gray-50'
+                                        ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50/30'
+                                        : 'text-gray-600 hover:bg-gray-50'
                                         }`}
                                 >
                                     Products ({stats.productCount})
@@ -276,8 +311,8 @@ const VendorAccountDetailPage = () => {
                                 <button
                                     onClick={() => setActiveTab('orders')}
                                     className={`flex-1 py-4 px-6 text-sm font-bold transition-all ${activeTab === 'orders'
-                                            ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50/30'
-                                            : 'text-gray-600 hover:bg-gray-50'
+                                        ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50/30'
+                                        : 'text-gray-600 hover:bg-gray-50'
                                         }`}
                                 >
                                     Recent Orders
@@ -337,8 +372,8 @@ const VendorAccountDetailPage = () => {
                                                                 <td className="py-3 pr-4 font-bold text-gray-900">₦{order.total.toLocaleString()}</td>
                                                                 <td className="py-3 pr-4">
                                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.orderStatus === 'delivered' ? 'bg-green-100 text-green-700' :
-                                                                            order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                                                                'bg-orange-100 text-orange-700'
+                                                                        order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                                                            'bg-orange-100 text-orange-700'
                                                                         }`}>
                                                                         {order.orderStatus}
                                                                     </span>
@@ -416,7 +451,7 @@ const VendorAccountDetailPage = () => {
                                                     {orders.length > 0 ? orders.map(order => (
                                                         <tr key={order._id} className="hover:bg-gray-50/50 transition-colors">
                                                             <td className="p-4">
-                                                                <Link to={`/order-details/${order._id}`} className="font-bold text-gray-900 hover:text-orange-600">
+                                                                <Link to={`/orders/${order._id}`} className="font-bold text-gray-900 hover:text-orange-600">
                                                                     #{order.orderNumber}
                                                                 </Link>
                                                                 <p className="text-xs text-gray-500 mt-1">
@@ -429,9 +464,9 @@ const VendorAccountDetailPage = () => {
                                                             </td>
                                                             <td className="p-4">
                                                                 <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${order.orderStatus === 'delivered' ? 'bg-green-100 text-green-700' :
-                                                                        order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                                                            order.orderStatus === 'processing' ? 'bg-blue-100 text-blue-700' :
-                                                                                'bg-orange-100 text-orange-700'
+                                                                    order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                                                        order.orderStatus === 'processing' ? 'bg-blue-100 text-blue-700' :
+                                                                            'bg-orange-100 text-orange-700'
                                                                     }`}>
                                                                     {order.orderStatus.toUpperCase()}
                                                                 </span>

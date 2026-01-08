@@ -7,7 +7,7 @@ const PAYSTACK_BASE_URL = 'https://api.paystack.co';
 const FLUTTERWAVE_BASE_URL = 'https://api.flutterwave.com/v3';
 
 // Ensure no trailing slash
-const RAW_FRONTEND_URL = process.env.FRONTEND_URL || 'http://127.0.0.1:5173';
+const RAW_FRONTEND_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const FRONTEND_URL = RAW_FRONTEND_URL.endsWith('/') ? RAW_FRONTEND_URL.slice(0, -1) : RAW_FRONTEND_URL;
 
 /**
@@ -23,7 +23,7 @@ export const initializePaystackPayment = async (paymentData) => {
             email,
             amount: Math.round(amount * 100), // Ensure integer kobo
             reference: `ORD-${orderId}-${Date.now()}`,
-            callback_url: 'http://localhost:5173/payment/verify',
+            callback_url: `${FRONTEND_URL}/payment/verify`,
             metadata: {
                 orderId,
                 ...metadata
@@ -109,7 +109,7 @@ export const initializeFlutterwavePayment = async (paymentData) => {
                 tx_ref: `ORD-${orderId}-${Date.now()}`,
                 amount,
                 currency: 'NGN',
-                redirect_url: 'http://localhost:5173/payment/verify',
+                redirect_url: `${FRONTEND_URL}/payment/verify`,
                 payment_options: 'card,banktransfer,ussd',
                 customer: {
                     email,
@@ -118,7 +118,7 @@ export const initializeFlutterwavePayment = async (paymentData) => {
                 customizations: {
                     title: 'ApexStore',
                     description: `Payment for order ${orderId}`,
-                    logo: `${process.env.FRONTEND_URL}/logo.png`
+                    logo: `${process.env.CLIENT_URL}/logo.png`
                 },
                 meta: {
                     orderId,

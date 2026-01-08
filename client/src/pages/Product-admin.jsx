@@ -1,9 +1,11 @@
-import {useEffect, useState} from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 import { Upload, X, Plus, Loader, AlertCircle, CheckCircle, Package, Trash2, Sparkles } from 'lucide-react';
 import axios from 'axios';
 import AIAssistantModal from '../components/AIAssistantModal';
 
 const AddProductPage = () => {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -473,13 +475,7 @@ const AddProductPage = () => {
 
       setTimeout(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (user.role === 'vendor') {
-          window.location.href = '/vendor/product/list';
-        } else if (user.role === 'admin') {
-          window.location.href = '/admin/product/list';
-        } else {
-          window.location.href = '/';
-        }
+        navigate(`/${user.role}/product/list`);
       }, 2000);
     } catch (error) {
       console.error('Submit error:', error);
@@ -532,12 +528,7 @@ const AddProductPage = () => {
 
   const handleCancel = () => {
     if (window.confirm('Are you sure you want to cancel? All changes will be lost.')) {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user.role === 'vendor') {
-        window.location.href = '/vendor/product/list';
-      } else {
-        window.location.href = '/admin/product/list';
-      }
+      navigate(-1);
     }
   };
 
