@@ -1,7 +1,7 @@
-// ...existing code...
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { categoryAPI } from '../../utils/api';
 import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 import { Upload, X, Loader, Plus, Minus, Info, AlertCircle } from 'lucide-react';
 
 const EditCategoryPage = () => {
@@ -23,8 +23,6 @@ const EditCategoryPage = () => {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
 
-    const token = localStorage.getItem('token');
-
     useEffect(() => {
         fetchCategories();
         fetchCategory();
@@ -33,7 +31,7 @@ const EditCategoryPage = () => {
 
     const fetchCategories = async () => {
         try {
-            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/categories`);
+            const { data } = await categoryAPI.getCategories();
             const list = data.data || [];
             const mainCategories = list.filter(cat => (!cat.parentId || cat.level === 1) && String(cat._id) !== String(id));
             setCategories(mainCategories);
@@ -44,7 +42,7 @@ const EditCategoryPage = () => {
 
     const fetchCategory = async () => {
         try {
-            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/categories/${id}`);
+            const { data } = await categoryAPI.getCategoryById(id);
             const category = data.data;
 
             setFormData({
@@ -254,12 +252,7 @@ const EditCategoryPage = () => {
                 }
             };
 
-            await axios.put(`${import.meta.env.VITE_API_URL}/categories/${id}`, payload, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            await categoryAPI.updateCategory(id, payload);
 
             setMessage({ type: 'success', text: 'Category updated successfully!' });
             setTimeout(() => navigate('/admin/categories'), 1200);

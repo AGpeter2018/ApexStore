@@ -10,6 +10,7 @@ const VendorDashboard = () => {
     const [aiInsights, setAiInsights] = useState([]);
     const [insightsLoading, setInsightsLoading] = useState(false);
     const [vendor, setVendor] = useState(null);
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     useEffect(() => {
         fetchDashboardData();
@@ -83,15 +84,29 @@ const VendorDashboard = () => {
 
     return (
         <div className="min-h-screen bg-gray-50/50">
-            {/* Hero Section */}
+            {/* Header / Welcome Banner */}
             <div className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 py-8">
-                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-                        Vendor Dashboard
-                    </h1>
-                    <p className="text-gray-500 mt-2 text-lg">
-                        Overview of your store's performance and recent activity.
-                    </p>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                        <div>
+                            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+                                Welcome, {user.name}
+                            </h1>
+                            <p className="text-gray-600 mt-2 text-lg">
+                                Overview of your store's performance and recent activity.
+                            </p>
+                        </div>
+                        <div className="bg-gray-50 px-4 py-2 rounded-full shadow-sm border border-gray-100 flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                <span className="text-xs font-bold text-green-600 uppercase tracking-wider">Store Online</span>
+                            </div>
+                            <div className="w-px h-4 bg-gray-200"></div>
+                            <p className="text-xs font-medium text-gray-500">
+                                {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -234,6 +249,19 @@ const VendorDashboard = () => {
                                     </div>
                                     <ArrowRight size={18} className="text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
                                 </Link>
+
+                                <Link
+                                    to="/vendor/analytics"
+                                    className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-purple-50 hover:text-purple-700 group transition-all"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-white p-2 rounded-lg shadow-sm group-hover:shadow text-gray-500 group-hover:text-purple-600 transition-colors">
+                                            <BarChart3 size={20} />
+                                        </div>
+                                        <span className="font-medium text-gray-700 group-hover:text-purple-700">Analytics</span>
+                                    </div>
+                                    <ArrowRight size={18} className="text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+                                </Link>
                             </div>
                         </div>
 
@@ -332,7 +360,7 @@ const VendorDashboard = () => {
                                                 <tr key={order._id} className="hover:bg-gray-50/50 transition-colors group">
                                                     <td className="px-4 py-4">
                                                         <Link
-                                                            to={`/vendor/orders/${order._id}`}
+                                                            to={`/orders/${order._id}`}
                                                             className="text-orange-600 font-semibold hover:underline"
                                                         >
                                                             #{order.orderNumber}
@@ -349,8 +377,15 @@ const VendorDashboard = () => {
                                                             {order.orderStatus}
                                                         </span>
                                                     </td>
-                                                    <td className="px-4 py-4 font-bold text-gray-900">
-                                                        {formatPrice(order.total)}
+                                                    <td className="px-4 py-4 font-bold text-gray-900 text-sm">
+                                                        {formatPrice(
+                                                            order.items.reduce((sum, item) => {
+                                                                if (vendor && item.vendor?.toString() === vendor.owner?._id?.toString()) {
+                                                                    return sum + item.subtotal;
+                                                                }
+                                                                return sum;
+                                                            }, 0)
+                                                        )}
                                                     </td>
                                                     <td className="px-4 py-4 text-right text-gray-500 text-sm">
                                                         {new Date(order.createdAt).toLocaleDateString()}

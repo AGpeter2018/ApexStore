@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { orderAPI } from '../../utils/api';
 import { Eye, Filter, Download, Search, AlertCircle } from 'lucide-react';
 
 const OrdersPage = () => {
@@ -12,6 +12,7 @@ const OrdersPage = () => {
         paymentStatus: '',
         search: ''
     });
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     useEffect(() => {
         fetchOrders();
@@ -20,44 +21,18 @@ const OrdersPage = () => {
     const fetchOrders = async () => {
         setLoading(true);
         setError('');
-
         try {
-            const token = localStorage.getItem('token');
+            const params = {};
+            if (filters.status) params.status = filters.status;
+            if (filters.paymentStatus) params.paymentStatus = filters.paymentStatus;
 
-            if (!token) {
-                setError('No authentication token found. Please login.');
-                setLoading(false);
-                return;
-            }
-
-            const params = new URLSearchParams();
-            if (filters.status) params.append('status', filters.status);
-            if (filters.paymentStatus) params.append('paymentStatus', filters.paymentStatus);
-
-            console.log('Fetching orders with URL:', `${import.meta.env.VITE_API_URL}/orders?${params.toString()}`);
-
-            const { data } = await axios.get(
-                `${import.meta.env.VITE_API_URL}/orders?${params.toString()}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            const { data } = await orderAPI.getOrders(params);
 
             setOrders(data.data || []);
+            console.log(data.data)
             setLoading(false);
         } catch (error) {
-
-            if (error.response?.status === 401) {
-                setError('Unauthorized. Please login again.');
-                localStorage.removeItem('token');
-            } else if (error.response?.status === 403) {
-                setError('You do not have permission to view orders.');
-            } else {
-                setError(error.response?.data?.message || 'Failed to fetch orders');
-            }
+            setError(error.response?.data?.message || 'Failed to fetch orders');
             setLoading(false);
         }
     };
@@ -247,7 +222,24 @@ const OrdersPage = () => {
                                                 <p className="text-gray-900">{order.items?.length || 0} item(s)</p>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <p className="font-bold text-gray-900">{formatPrice(order.total || 0)}</p>
+                                                <p className="font-bold text-gray-900 border-b border-dashed border-gray-100 pb-1 mb-1">
+                                                    {formatPrice(
+                                                        order.items.reduce((sum, item) => {
+                                                            const itemAmount = item.subtotal || (item.price * item.quantity);
+                                                            if (user.role === 'admin') {
+                                                                // Admin gets 10% commission of all items
+                                                                return sum + (itemAmount * 0.10);
+                                                            } else {
+                                                                // Vendor gets 90% share of their items
+                                                                if (item.vendor?.toString() === user._id) {
+                                                                    return sum + (itemAmount * 0.90);
+                                                                }
+                                                            }
+                                                            return sum;
+                                                        }, 0)
+                                                    )}
+                                                </p>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Your Share</p>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPaymentStatusColor(order.paymentStatus)}`}>
@@ -269,7 +261,7 @@ const OrdersPage = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <Link
-                                                    to={`/vendor/orders/${order._id}`}
+                                                    to={`/orders/${order._id}`}
                                                     className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold"
                                                 >
                                                     <Eye size={18} />

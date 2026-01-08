@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { orderAPI } from '../../utils/api';
 import { fetchOrderById, selectCurrentOrder, selectOrderLoading } from '../../redux/slices/orderSlice';
 import { ArrowLeft, Package, MapPin, CreditCard, Truck, Calendar } from 'lucide-react';
 
@@ -17,15 +18,21 @@ const CustomerOrderDetailPage = () => {
         }
     }, [id, dispatch]);
 
-    const handleDeleteOrder = async () => {
-        if (window.confirm('Are you sure you want to cancel and delete this order? This action cannot be undone.')) {
-            try {
-                await orderAPI.deleteOrder(id);
-                alert('Order deleted successfully');
-                navigate('/my-orders');
-            } catch (error) {
-                console.error('Delete error:', error);
-                alert(error.response?.data?.message || 'Failed to delete order');
+    const handleCancelOrder = async (isRefund = false) => {
+        const action = isRefund ? 'request a refund for' : 'cancel';
+        const reason = window.prompt(`Please provide a reason to ${action} this order:`);
+
+        if (reason !== null) { // User didn't click Cancel
+            if (window.confirm(`Are you sure you want to ${action} this order?`)) {
+                try {
+                    await orderAPI.cancelOrder(id, { reason });
+                    alert(`Order ${isRefund ? 'refund requested' : 'cancelled'} successfully`);
+                    // Refresh order logic by re-fetching
+                    dispatch(fetchOrderById(id));
+                } catch (error) {
+                    console.error('Cancel error:', error);
+                    alert(error.response?.data?.message || 'Failed to cancel order');
+                }
             }
         }
     };
@@ -106,12 +113,22 @@ const CustomerOrderDetailPage = () => {
                     >
                         {order.orderStatus?.toUpperCase()}
                     </span>
-                    {order.orderStatus === 'pending' && order.paymentStatus === 'unpaid' && (
+                    {order.orderStatus === 'pending' && order.paymentStatus !== 'paid' && (
                         <button
-                            onClick={handleDeleteOrder}
+                            onClick={() => handleCancelOrder(false)}
                             className="delete-order-btn"
                         >
                             Cancel Order
+                        </button>
+                    )}
+
+                    {order.paymentStatus === 'paid' && !['delivered', 'cancelled', 'refunded'].includes(order.orderStatus) && (
+                        <button
+                            onClick={() => handleCancelOrder(true)}
+                            className="delete-order-btn"
+                            style={{ backgroundColor: '#fff3cd', color: '#856404', borderColor: '#ffeeba' }}
+                        >
+                            Request Refund
                         </button>
                     )}
                 </div>

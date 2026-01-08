@@ -111,50 +111,54 @@ const VendorsManagementPage = () => {
                 {/* Stats Cards */}
                 {stats && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        {/* Total Vendors */}
                         <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-blue-100 p-3 rounded-lg">
-                                    <Store size={24} className="text-blue-600" />
-                                </div>
+                            <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-600 text-sm">Total Vendors</p>
-                                    <p className="text-3xl font-bold text-gray-900">{stats.totalVendors}</p>
+                                    <p className="text-gray-600 text-sm font-medium">Total Vendors</p>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalVendors}</p>
+                                </div>
+                                <div className="bg-blue-100 p-4 rounded-lg">
+                                    <Store size={32} className="text-blue-600" />
                                 </div>
                             </div>
                         </div>
 
+                        {/* Pending Approval */}
                         <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-yellow-500">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-yellow-100 p-3 rounded-lg">
-                                    <AlertCircle size={24} className="text-yellow-600" />
-                                </div>
+                            <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-600 text-sm">Pending Approval</p>
-                                    <p className="text-3xl font-bold text-gray-900">{stats.pendingApprovals}</p>
+                                    <p className="text-gray-600 text-sm font-medium">Pending Approval</p>
+                                    <p className="text-3xl font-bold text-yellow-600 mt-2">{stats.pendingApprovals}</p>
+                                </div>
+                                <div className="bg-yellow-100 p-4 rounded-lg">
+                                    <AlertCircle size={32} className="text-yellow-600" />
                                 </div>
                             </div>
                         </div>
 
+                        {/* Total Sales */}
                         <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-green-100 p-3 rounded-lg">
-                                    <TrendingUp size={24} className="text-green-600" />
-                                </div>
+                            <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-600 text-sm">Total Sales</p>
-                                    <p className="text-2xl font-bold text-gray-900">{formatPrice(stats.totalRevenue)}</p>
+                                    <p className="text-gray-600 text-sm font-medium">Total Sales</p>
+                                    <p className="text-2xl font-bold text-green-600 mt-2">{formatPrice(stats.totalRevenue)}</p>
+                                </div>
+                                <div className="bg-green-100 p-4 rounded-lg">
+                                    <TrendingUp size={32} className="text-green-600" />
                                 </div>
                             </div>
                         </div>
 
+                        {/* Total Orders */}
                         <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-purple-100 p-3 rounded-lg">
-                                    <Package size={24} className="text-purple-600" />
-                                </div>
+                            <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-600 text-sm">Total Orders</p>
-                                    <p className="text-3xl font-bold text-gray-900">{stats.totalOrders}</p>
+                                    <p className="text-gray-600 text-sm font-medium">Total Orders</p>
+                                    <p className="text-3xl font-bold text-purple-600 mt-2">{stats.totalOrders}</p>
+                                </div>
+                                <div className="bg-purple-100 p-4 rounded-lg">
+                                    <Package size={32} className="text-purple-600" />
                                 </div>
                             </div>
                         </div>

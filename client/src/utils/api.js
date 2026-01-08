@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 // Create axios instance
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -63,6 +62,38 @@ export const orderAPI = {
     deleteOrder: (orderId) => api.delete(`/orders/${orderId}`),
     getVendorPayments: () => api.get('/orders/vendor/payments'),
     refundOrder: (orderId, refundData) => api.post(`/orders/${orderId}/refund`, refundData),
+    cancelOrder: (orderId, data) => api.patch(`/orders/${orderId}/cancel`, data),
+};
+
+// User API
+export const userAPI = {
+    getUserStats: () => api.get('/users/stats'),
+    getUsers: (params) => api.get('/users', { params }),
+    updateUser: (userId, userData) => api.put(`/users/${userId}`, userData),
+    updateUserRole: (userId, role) => api.put(`/users/${userId}/role`, { role }),
+    deactivateUser: (userId) => api.put(`/users/${userId}/deactivate`, {}),
+    verifyUser: (userId) => api.put(`/users/${userId}/verify`, {}),
+};
+
+// Product API (Public)
+export const productAPI = {
+    getProducts: (params) => api.get('/products', { params }),
+    getProductBySlug: (slug) => api.get(`/products/slug/${slug}`),
+    getProductById: (productId) => api.get(`/products/${productId}`),
+};
+
+// Category API
+export const categoryAPI = {
+    getCategories: (params) => api.get('/categories', { params }),
+    getCategoryById: (id) => api.get(`/categories/${id}`),
+    createCategory: (data) => api.post('/categories', data),
+    updateCategory: (id, data) => api.put(`/categories/${id}`, data),
+    deleteCategory: (id) => api.delete(`/categories/${id}`),
+};
+
+// Collection API (Experimental/Legacy - may need backend support)
+export const collectionAPI = {
+    getCollections: () => api.get('/collections'),
 };
 
 // Vendor API
@@ -76,7 +107,7 @@ export const vendorAPI = {
     updateVendorStatus: (vendorId, statusData) => api.put(`/vendors/${vendorId}/status`, statusData),
     getPayments: () => api.get('/orders/vendor/payments'),
 };
-// Broadway
+
 
 // AI API
 export const aiAPI = {
@@ -86,6 +117,25 @@ export const aiAPI = {
     getVendorInsights: (vendorId) => api.get(`/ai/vendor-insights/${vendorId}`),
     getAdminInsights: () => api.get('/ai/admin-insights'),
     chat: (chatData) => api.post('/ai/chat', chatData)
+};
+
+export const payoutAPI = {
+    requestPayout: (data) => api.post('/payouts/request', data),
+    getPayouts: () => api.get('/payouts'),
+    processPayout: (id, data) => api.patch(`/payouts/${id}/process`, data),
+};
+
+export const analyticsAPI = {
+    getVendorAnalytics: () => api.get('/analytics/vendor'),
+    getAdminAnalytics: () => api.get('/analytics/admin'),
+};
+
+export const adminAPI = {
+    getProducts: (params) => api.get('/admin/products', { params }),
+    getProductStats: () => api.get('/admin/products/stats'),
+    deleteProduct: (id) => api.delete(`/admin/products/${id}`),
+    updateProduct: (id, data) => api.put(`/products/${id}`, data), // Note: some products use /products/:id for update
+    deleteProductImage: (productId, imageId) => api.delete(`/products/${productId}/images/${imageId}`),
 };
 
 export default api;

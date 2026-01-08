@@ -33,8 +33,10 @@ export const createVendor = async (req, res) => {
       storeDescription: req.body.description,
       location: req.body.location,
       // businessLicense,
-      phone: req.body.phone,
-      address: req.body.address
+      address: req.body.address,
+      businessAddress: req.body.businessAddress,
+      socials: req.body.socials,
+      logo: req.body.logo
     });
 
     res.status(201).json({
@@ -101,11 +103,12 @@ export const updateVendor = async (req, res) => {
 
     const fields = [
       "storeName",
-      "description",
+      "storeDescription",
+      "location",
       "logo",
-      "phone",
-      "address",
-      "socials"
+      "businessAddress",
+      "socials",
+      "bankDetails"
     ];
 
     fields.forEach(field => {
@@ -125,7 +128,8 @@ export const updateVendor = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: 'Internal Server Error',
+      error:error.message
     });
   }
 };

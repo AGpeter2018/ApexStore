@@ -7,24 +7,41 @@ import { sendOrderConfirmationEmail } from './email.helper.js';
  * Finalize an order after successful payment verification (from UI or Webhook)
  */
 export const finalizeOrder = async (orderId, reference) => {
-    const order = await Order.findById(orderId).populate('customer', 'name email');
-    if (!order || order.paymentStatus === 'paid') return order;
+    // 1. Update Order Status (Atomic check for paymentStatus)
+    const updateTime = new Date();
+    const order = await Order.findOneAndUpdate(
+        { _id: orderId, paymentStatus: { $ne: 'paid' } },
+        {
+            $set: {
+                paymentStatus: 'paid',
+                paidAt: updateTime,
+                orderStatus: 'processing',
+                paymentReference: reference || undefined
+            }
+        },
+        { new: true }
+    ).populate('customer', 'name email');
 
-    // 1. Update Order Status
-    order.paymentStatus = 'paid';
-    order.paidAt = new Date();
-    order.orderStatus = 'processing';
-    if (reference) order.paymentReference = reference;
-    await order.save();
+    if (!order) {
+        // Order either doesn't exist or is already marked as paid
+        return await Order.findById(orderId).populate('customer', 'name email');
+    }
 
     // 2. Update Vendor Statistics (Atomic Upsert)
     try {
+        const COMMISSION_RATE = 0.10; // 10% platform commission
         const vendorUpdates = {};
+
         order.items.forEach(item => {
             const vId = item.vendor?.toString();
             if (vId) {
-                if (!vendorUpdates[vId]) vendorUpdates[vId] = { sales: 0, orders: 1 };
-                vendorUpdates[vId].sales += item.subtotal;
+                if (!vendorUpdates[vId]) vendorUpdates[vId] = { sales: 0, vendorShare: 0, orders: 1 };
+                const amount = item.subtotal || (item.price * item.quantity);
+                vendorUpdates[vId].sales += amount;
+
+                // Calculate vendor share (90% of subtotal)
+                const share = amount * (1 - COMMISSION_RATE);
+                vendorUpdates[vId].vendorShare += share;
             }
         });
 
@@ -35,7 +52,11 @@ export const finalizeOrder = async (orderId, reference) => {
             await Vendor.findOneAndUpdate(
                 { owner: vOwnerId },
                 {
-                    $inc: { totalSales: data.sales, totalOrders: data.orders },
+                    $inc: {
+                        totalSales: data.sales,
+                        totalOrders: data.orders,
+                        balance: data.vendorShare
+                    },
                     $setOnInsert: { storeName, isApproved: false, isActive: true }
                 },
                 { upsert: true, new: true, setDefaultsOnInsert: true }

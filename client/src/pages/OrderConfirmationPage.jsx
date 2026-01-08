@@ -1,4 +1,4 @@
-import {useEffect} from 'react'
+import { useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchOrderById, selectCurrentOrder, selectOrderLoading, verifyPayment } from '../redux/slices/orderSlice';
@@ -18,10 +18,6 @@ const OrderConfirmationPage = () => {
         const trxref = queryParams.get('trxref'); // Paystack alternate
         const transactionId = queryParams.get('transaction_id'); // Flutterwave
 
-        // DEBUG LOGGING
-        console.log('OrderConfirmationPage Mounted');
-        console.log('URL Params:', { reference, trxref, transactionId });
-        console.log('OrderId from Params:', orderId);
 
         const paymentRef = reference || trxref || transactionId;
 
@@ -31,13 +27,11 @@ const OrderConfirmationPage = () => {
                 return;
             }
 
-            console.log('Starting verification check for order:', orderId);
 
             try {
                 // If we have a payment reference, triggers verification immediately
                 // The backend handles idempotency (if already paid, it returns success or ignores)
                 if (paymentRef) {
-                    console.log('Payment reference found, attempting verification:', paymentRef);
                     const result = await dispatch(verifyPayment({
                         orderId,
                         paymentData: {
@@ -45,13 +39,10 @@ const OrderConfirmationPage = () => {
                             transactionId: transactionId
                         }
                     })).unwrap();
-                    console.log('Verification successful:', result);
 
                     // After verification, refresh order data
-                    console.log('Refreshing order data...');
                     await dispatch(fetchOrderById(orderId)).unwrap();
                 } else {
-                    console.log('No payment reference found, fetching order details only...');
                     // Just fetch the order if no verification needed
                     await dispatch(fetchOrderById(orderId)).unwrap();
                 }

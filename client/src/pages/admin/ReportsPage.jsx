@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { BarChart, DollarSign, ShoppingCart, Users, TrendingUp, Download, Calendar } from 'lucide-react';
+import { userAPI, orderAPI, productAPI } from '../../utils/api';
+import { BarChart, DollarSign, ShoppingCart, Users, TrendingUp, Download, Calendar, Zap } from 'lucide-react';
 
 const ReportsPage = () => {
     const [loading, setLoading] = useState(true);
@@ -21,15 +21,10 @@ const ReportsPage = () => {
 
     const fetchReportData = async () => {
         try {
-            const token = localStorage.getItem('token');
             const [ordersRes, usersRes, productsRes] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/orders/stats`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                }),
-                axios.get(`${import.meta.env.VITE_API_URL}/users/stats`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                }),
-                axios.get(`${import.meta.env.VITE_API_URL}/products`)
+                orderAPI.getOrderStats(),
+                userAPI.getUserStats(),
+                productAPI.getProducts()
             ]);
 
             setReportData({
@@ -154,14 +149,22 @@ Total Products: ${reportData.products?.total || 0}
                 </div>
 
                 {/* Overview Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
                     <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
                         <div className="flex items-center justify-between mb-4">
                             <DollarSign size={32} />
                             <TrendingUp size={24} />
                         </div>
-                        <p className="text-green-100 text-sm mb-2">Total Revenue</p>
-                        <p className="text-3xl font-bold">{formatPrice(reportData.orders?.totalRevenue || 0)}</p>
+                        <p className="text-green-100 text-sm mb-2">Gross Revenue</p>
+                        <p className="text-3xl font-bold">{formatPrice(reportData.orders?.grossRevenue || 0)}</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                        <div className="flex items-center justify-between mb-4">
+                            <Zap size={32} />
+                        </div>
+                        <p className="text-orange-100 text-sm mb-2">Net Platform Revenue</p>
+                        <p className="text-3xl font-bold">{formatPrice(reportData.orders?.netRevenue || 0)}</p>
                     </div>
 
                     <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
@@ -180,11 +183,11 @@ Total Products: ${reportData.products?.total || 0}
                         <p className="text-3xl font-bold">{reportData.users?.totalUsers || 0}</p>
                     </div>
 
-                    <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                    <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
                         <div className="flex items-center justify-between mb-4">
                             <BarChart size={32} />
                         </div>
-                        <p className="text-orange-100 text-sm mb-2">Total Products</p>
+                        <p className="text-red-100 text-sm mb-2">Total Products</p>
                         <p className="text-3xl font-bold">{reportData.products?.total || 0}</p>
                     </div>
                 </div>

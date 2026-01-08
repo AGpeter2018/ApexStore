@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { productAPI, categoryAPI } from '../../utils/api';
 import { TrendingUp, Package, Layers, AlertTriangle, DollarSign, Eye, Star, ShoppingCart } from 'lucide-react';
 
 const AnalyticsPage = () => {
     const [products, setProducts] = useState([]);
-    const [collections, setCollections] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalProducts: 0,
-        totalCollections: 0,
+        totalCategories: 0,
         totalValue: 0,
         lowStockCount: 0,
         outOfStockCount: 0,
@@ -23,30 +23,33 @@ const AnalyticsPage = () => {
 
     const fetchData = async () => {
         try {
-            const [productsRes, collectionsRes] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/products`),
-                axios.get(`${import.meta.env.VITE_API_URL}/collections`)
+            const [productsRes, categoriesRes] = await Promise.all([
+                productAPI.getProducts({ limit: 1000 }), // Get many products for analytics
+                categoryAPI.getCategories()
             ]);
 
             const productsData = productsRes.data.data;
-            const collectionsData = collectionsRes.data.data;
+            const categoriesData = categoriesRes.data.data;
 
             setProducts(productsData);
-            setCollections(collectionsData);
+            setCategories(categoriesData);
 
             // Calculate statistics
-            const totalValue = productsData.reduce((sum, p) => sum + (p.price * p.stock), 0);
-            const lowStockCount = productsData.filter(p => p.stock > 0 && p.stock <= 5).length;
-            const outOfStockCount = productsData.filter(p => p.stock === 0).length;
+            const totalValue = productsData.reduce((sum, p) => sum + (p.price * (p.stockQuantity || p.stock || 0)), 0);
+            const lowStockCount = productsData.filter(p => {
+                const stock = p.stockQuantity || p.stock || 0;
+                return stock > 0 && stock <= (p.lowStockThreshold || 5);
+            }).length;
+            const outOfStockCount = productsData.filter(p => (p.stockQuantity || p.stock || 0) === 0).length;
             const featuredProducts = productsData.filter(p => p.featured).length;
-            const averagePrice = productsData.length > 0 
-                ? productsData.reduce((sum, p) => sum + p.price, 0) / productsData.length 
+            const averagePrice = productsData.length > 0
+                ? productsData.reduce((sum, p) => sum + p.price, 0) / productsData.length
                 : 0;
-            const totalStock = productsData.reduce((sum, p) => sum + p.stock, 0);
+            const totalStock = productsData.reduce((sum, p) => sum + (p.stockQuantity || p.stock || 0), 0);
 
             setStats({
                 totalProducts: productsData.length,
-                totalCollections: collectionsData.length,
+                totalCategories: categoriesData.length,
                 totalValue,
                 lowStockCount,
                 outOfStockCount,
@@ -187,7 +190,7 @@ const AnalyticsPage = () => {
                     {/* Drum Type Distribution */}
                     <div className="bg-white rounded-xl shadow-md p-6">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Drum Type Distribution</h2>
-                        
+
                         {drumTypeDistribution.length > 0 ? (
                             <div className="space-y-4">
                                 {drumTypeDistribution.map(([type, count]) => {
@@ -199,7 +202,7 @@ const AnalyticsPage = () => {
                                                 <span className="text-sm text-gray-600">{count} ({percentage.toFixed(1)}%)</span>
                                             </div>
                                             <div className="w-full bg-gray-200 rounded-full h-3">
-                                                <div 
+                                                <div
                                                     className="bg-gradient-to-r from-orange-500 to-red-500 h-3 rounded-full transition-all duration-500"
                                                     style={{ width: `${percentage}%` }}
                                                 ></div>
@@ -219,7 +222,7 @@ const AnalyticsPage = () => {
                             <Star className="text-yellow-500" fill="currentColor" />
                             Top Rated Products
                         </h2>
-                        
+
                         {topProducts.length > 0 ? (
                             <div className="space-y-4">
                                 {topProducts.map((product, index) => (
@@ -264,7 +267,7 @@ const AnalyticsPage = () => {
                             <AlertTriangle className="text-yellow-500" />
                             Low Stock Alert ({lowStockProducts.length})
                         </h2>
-                        
+
                         {lowStockProducts.length > 0 ? (
                             <div className="space-y-3 max-h-96 overflow-y-auto">
                                 {lowStockProducts.map((product) => (
@@ -298,7 +301,7 @@ const AnalyticsPage = () => {
                             <AlertTriangle className="text-red-500" />
                             Out of Stock ({outOfStockProducts.length})
                         </h2>
-                        
+
                         {outOfStockProducts.length > 0 ? (
                             <div className="space-y-3 max-h-96 overflow-y-auto">
                                 {outOfStockProducts.map((product) => (
@@ -327,31 +330,37 @@ const AnalyticsPage = () => {
                     </div>
                 </div>
 
-                {/* Collection Performance */}
+                {/* Category Performance */}
                 <div className="bg-white rounded-xl shadow-md p-6 mt-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Collection Overview</h2>
-                    
-                    {collections.length > 0 ? (
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Category Overview</h2>
+
+                    {categories.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {collections.map((collection) => {
-                                const collectionProducts = products.filter(
-                                    p => p.collection?._id === collection._id
+                            {categories.map((category) => {
+                                const categoryProducts = products.filter(
+                                    p => (p.categoryId?._id || p.categoryId) === category._id
                                 );
-                                const collectionValue = collectionProducts.reduce(
-                                    (sum, p) => sum + (p.price * p.stock), 0
+                                const categoryValue = categoryProducts.reduce(
+                                    (sum, p) => sum + (p.price * (p.stockQuantity || p.stock || 0)), 0
                                 );
 
                                 return (
-                                    <div key={collection._id} className="p-4 bg-gray-50 rounded-lg">
+                                    <div key={category._id} className="p-4 bg-gray-50 rounded-lg">
                                         <div className="flex items-center gap-3 mb-3">
-                                            <img
-                                                src={collection.collectionImage?.url || 'https://via.placeholder.com/60'}
-                                                alt={collection.name}
-                                                className="w-16 h-16 rounded-lg object-cover"
-                                            />
+                                            {category.categoryImage?.url ? (
+                                                <img
+                                                    src={category.categoryImage.url}
+                                                    alt={category.name}
+                                                    className="w-16 h-16 rounded-lg object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-16 h-16 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">
+                                                    {category.name.charAt(0)}
+                                                </div>
+                                            )}
                                             <div>
-                                                <h3 className="font-bold text-gray-900">{collection.name}</h3>
-                                                {collection.featured && (
+                                                <h3 className="font-bold text-gray-900">{category.name}</h3>
+                                                {category.featured && (
                                                     <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
                                                         Featured
                                                     </span>
@@ -361,11 +370,11 @@ const AnalyticsPage = () => {
                                         <div className="grid grid-cols-2 gap-4 text-sm">
                                             <div>
                                                 <p className="text-gray-600">Products</p>
-                                                <p className="font-bold text-gray-900">{collectionProducts.length}</p>
+                                                <p className="font-bold text-gray-900">{categoryProducts.length}</p>
                                             </div>
                                             <div>
                                                 <p className="text-gray-600">Value</p>
-                                                <p className="font-bold text-gray-900">{formatPrice(collectionValue)}</p>
+                                                <p className="font-bold text-gray-900">{formatPrice(categoryValue)}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -373,7 +382,7 @@ const AnalyticsPage = () => {
                             })}
                         </div>
                     ) : (
-                        <p className="text-gray-500 text-center py-8">No collections yet</p>
+                        <p className="text-gray-500 text-center py-8">No categories yet</p>
                     )}
                 </div>
 
@@ -381,20 +390,20 @@ const AnalyticsPage = () => {
                 <div className="bg-gradient-to-r from-orange-600 to-red-600 rounded-xl shadow-md p-8 mt-8 text-white text-center">
                     <h2 className="text-3xl font-bold mb-4">Ready to grow your inventory?</h2>
                     <p className="text-lg mb-6 opacity-90">
-                        Keep your store fresh with new products and collections
+                        Keep your store fresh with new products and categories
                     </p>
                     <div className="flex justify-center gap-4">
                         <a
-                            href="/admin/add-product"
+                            href="/admin/product/add"
                             className="bg-white text-orange-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors"
                         >
                             Add Product
                         </a>
                         <a
-                            href="/admin/add-collection"
+                            href="/admin/category/add"
                             className="bg-white/20 backdrop-blur text-white px-8 py-3 rounded-lg font-bold hover:bg-white/30 transition-colors"
                         >
-                            Add Collection
+                            Add Category
                         </a>
                     </div>
                 </div>
