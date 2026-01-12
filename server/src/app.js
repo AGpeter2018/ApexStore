@@ -9,6 +9,7 @@ import authRouter from './routes/authRoutes.js';
 import vendorRouter from './routes/vendor.route.js';
 import aiRouter from './routes/ai.routes.js';
 import cartRouter from './routes/cart.routes.js';
+import wishlistRouter from './routes/wishlist.routes.js';
 import webhookRouter from './routes/webhook.routes.js';
 import payoutRouter from './routes/payout.routes.js';
 import analyticsRouter from './routes/analytics.routes.js';
@@ -53,6 +54,9 @@ app.use('/api/ai', aiRouter);
 
 // Cart Route
 app.use('/api/cart', cartRouter);
+
+// Wishlist Route
+app.use('/api/wishlist', wishlistRouter);
 
 // Webhook Route
 app.use('/api/webhooks', webhookRouter);
