@@ -76,8 +76,8 @@ const ProductItem = () => {
                 review
             );
 
-            // server returns updated reviews array in data.data
-            setProduct((prev) => (prev ? { ...prev, reviews: data.data } : { reviews: data.data }));
+            // server returns updated reviews and stats in data.data
+            setProduct((prev) => (prev ? { ...prev, ...data.data } : data.data));
             setError('');
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to submit review');

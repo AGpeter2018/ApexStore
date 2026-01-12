@@ -815,7 +815,13 @@ export const addReview = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Review added successfully',
-            data: product.reviews
+            data: {
+                reviews: product.reviews,
+                rating: product.rating,
+                avgRating: product.avgRating,
+                numReviews: product.numReviews,
+                reviewCount: product.reviewCount
+            }
         });
     } catch (error) {
         res.status(500).json({
