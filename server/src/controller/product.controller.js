@@ -149,7 +149,6 @@ export const getProduct = async (req, res) => {
             .populate('categoryId', 'name slug icon attributes')
             .populate('subcategoryId', 'name slug attributes')
             .populate('vendorId', 'storeName rating location') // Updated
-        // .populate('collection', 'name slug'); // Legacy support
 
         if (!product) {
             return res.status(404).json({
@@ -774,6 +773,58 @@ export const getVendorProducts = async (req, res) => {
         });
     }
 };
+export const addReview = async (req, res) => {
+    const { user, comment, rating } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({
+            success: false,
+            message: 'A valid rating between 1 and 5 is required'
+        });
+    }
+
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found'
+            });
+        }
+
+        // Add review
+        product.reviews.push({
+            user,
+            comment,
+            rating: Number(rating),
+            createdAt: new Date()
+        });
+
+        // Update statistics
+        product.numReviews = product.reviews.length;
+        product.reviewCount = product.reviews.length;
+
+        const reviewsWithRatings = product.reviews.filter(r => r.rating !== undefined && r.rating !== null);
+        const totalRating = reviewsWithRatings.reduce((acc, item) => item.rating + acc, 0);
+
+        product.rating = reviewsWithRatings.length > 0 ? totalRating / reviewsWithRatings.length : 0;
+        product.avgRating = product.rating;
+
+        await product.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Review added successfully',
+            data: product.reviews
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+};
 
 // ============================================
 // EXPORT ALL FUNCTIONS
@@ -789,5 +840,6 @@ export default {
     getProductsByCategory,
     getFeaturedProducts,
     searchProducts,
-    getVendorProducts
+    getVendorProducts,
+    addReview
 };

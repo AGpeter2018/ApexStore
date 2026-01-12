@@ -10,6 +10,7 @@ import {
 
 const ProductItem = () => {
     const { slug } = useParams();
+    const { productId } = useParams();
     const dispatch = useDispatch();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -17,11 +18,14 @@ const ProductItem = () => {
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [adding, setAdding] = useState(false);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [hoverRating, setHoverRating] = useState(0);
 
 
     useEffect(() => {
         fetchProduct();
     }, [slug]);
+
 
     const [recommendations, setRecommendations] = useState([]);
     const [recLoading, setRecLoading] = useState(false);
@@ -60,6 +64,24 @@ const ProductItem = () => {
             setLoading(false);
         } catch (err) {
             setError(err.response?.data?.message || 'Product not found');
+            setLoading(false);
+        }
+    };
+
+    const handleReviewSubmit = async (productId, review) => {
+        try {
+            setLoading(true);
+            const { data } = await axios.post(
+                `${import.meta.env.VITE_API_URL}/products/${productId}/reviews`,
+                review
+            );
+
+            // server returns updated reviews array in data.data
+            setProduct((prev) => (prev ? { ...prev, reviews: data.data } : { reviews: data.data }));
+            setError('');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to submit review');
+        } finally {
             setLoading(false);
         }
     };
@@ -659,6 +681,163 @@ const ProductItem = () => {
                         )}
                     </div>
                 </div>
+
+                {/* Reviews Section */}
+                <div className="mt-16 bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+                    <div className="grid grid-cols-1 lg:grid-cols-3">
+                        {/* Review Summary & Form */}
+                        <div className="p-8 lg:border-r border-gray-100 bg-gray-50/50">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                <Star className="text-amber-500 fill-amber-500" size={24} />
+                                Customer Reviews
+                            </h2>
+
+                            {/* Aggregate Rating */}
+                            <div className="mb-8 p-6 bg-white rounded-xl shadow-sm border border-gray-100 text-center">
+                                <div className="text-5xl font-black text-gray-900 mb-2">
+                                    {(product.rating || product.avgRating || 0).toFixed(1)}
+                                </div>
+                                <div className="flex justify-center mb-2">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star
+                                            key={i}
+                                            size={20}
+                                            className={i < Math.floor(product.rating || product.avgRating || 0)
+                                                ? 'text-yellow-400 fill-yellow-400'
+                                                : 'text-gray-200'}
+                                        />
+                                    ))}
+                                </div>
+                                <p className="text-gray-500 font-medium">
+                                    Based on {product.numReviews || product.reviewCount || 0} reviews
+                                </p>
+                            </div>
+
+                            {/* Add Review Form */}
+                            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                                <h3 className="font-bold text-gray-900 mb-4">Write a Review</h3>
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        const user = e.target.elements.user.value;
+                                        const comment = e.target.elements.comment.value;
+                                        handleReviewSubmit(product._id, { user, rating: reviewRating, comment });
+                                        e.target.reset();
+                                        setReviewRating(5);
+                                    }}
+                                    className="space-y-4"
+                                >
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Name</label>
+                                        <input
+                                            type="text"
+                                            name="user"
+                                            placeholder="Your name"
+                                            required
+                                            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all outline-none"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Rating</label>
+                                        <div className="flex gap-1">
+                                            {[...Array(5)].map((_, i) => (
+                                                <button
+                                                    key={i}
+                                                    type="button"
+                                                    onMouseEnter={() => setHoverRating(i + 1)}
+                                                    onMouseLeave={() => setHoverRating(0)}
+                                                    onClick={() => setReviewRating(i + 1)}
+                                                    className="focus:outline-none transition-transform hover:scale-110"
+                                                >
+                                                    <Star
+                                                        size={28}
+                                                        className={(hoverRating || reviewRating) > i
+                                                            ? 'text-yellow-400 fill-yellow-400'
+                                                            : 'text-gray-200'}
+                                                    />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Comment</label>
+                                        <textarea
+                                            name="comment"
+                                            placeholder="Share your thoughts..."
+                                            required
+                                            rows="4"
+                                            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all outline-none resize-none"
+                                        ></textarea>
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        className="w-full bg-amber-600 text-white py-3 rounded-lg font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-600/20"
+                                    >
+                                        Post Review
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        {/* Reviews List */}
+                        <div className="p-8 lg:col-span-2 max-h-[800px] overflow-y-auto custom-scrollbar">
+                            <div className="space-y-6">
+                                {product.reviews && product.reviews.length > 0 ? (
+                                    product.reviews.map((review) => (
+                                        <div
+                                            key={review._id}
+                                            className="bg-gray-50 rounded-2xl p-6 border border-transparent hover:border-amber-100 hover:bg-white hover:shadow-xl transition-all duration-300"
+                                        >
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-500 to-orange-400 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                                        {(review.user || 'A')[0].toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-gray-900 leading-tight">
+                                                            {review.user || 'Anonymous'}
+                                                        </h4>
+                                                        <div className="flex mt-1">
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <Star
+                                                                    key={i}
+                                                                    size={14}
+                                                                    className={i < review.rating
+                                                                        ? 'text-yellow-400 fill-yellow-400'
+                                                                        : 'text-gray-200'}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <span className="text-sm text-gray-400 font-medium bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
+                                                    {new Date(review.createdAt || Date.now()).toLocaleDateString('en-US', {
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        year: 'numeric'
+                                                    })}
+                                                </span>
+                                            </div>
+                                            <p className="text-gray-700 leading-relaxed italic">
+                                                "{review.comment}"
+                                            </p>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                                        <Sparkles className="mx-auto text-gray-300 mb-4" size={48} />
+                                        <p className="text-gray-500 text-lg font-medium">Be the first to share your experience!</p>
+                                        <p className="text-gray-400">Your feedback helps others make better choices.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 
                 {/* AI Recommendations Section */}
                 {(recommendations.length > 0 || recLoading) && (
