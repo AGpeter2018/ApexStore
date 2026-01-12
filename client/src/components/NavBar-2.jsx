@@ -93,6 +93,9 @@ const NavBar = ({ scrolled }) => {
                                 <Link to="/my-orders" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
                                     My Orders
                                 </Link>
+                                <Link to="/wishlist" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
+                                    Wishlist
+                                </Link>
                                 <CartIcon />
                             </div>
                         )}
@@ -163,6 +166,7 @@ const NavBar = ({ scrolled }) => {
                                 <>
                                     <Link to="/cart" className="text-gray-700 hover:text-orange-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Cart</Link>
                                     <Link to="/my-orders" className="text-gray-700 hover:text-orange-600 font-medium" onClick={() => setMobileMenuOpen(false)}>My Orders</Link>
+                                    <Link to="/wishlist" className="text-gray-700 hover:text-orange-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Wishlist</Link>
                                 </>
                             )}
                             {user.role === 'vendor' && (
