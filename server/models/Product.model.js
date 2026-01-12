@@ -60,8 +60,24 @@ const productSchema = new mongoose.Schema({
         isPrimary: {
             type: Boolean,
             default: false
-        }
+        },
     }],
+    // Reviews
+    reviews: [
+        {
+            user: String,
+            comment: String,
+            rating: {
+                type: Number,
+                min: 1,
+                max: 5
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ],
 
     // ===== CATEGORY SYSTEM (NEW!) =====
     // CHANGED: collection → categoryId + subcategoryId

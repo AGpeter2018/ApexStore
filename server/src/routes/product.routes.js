@@ -12,7 +12,8 @@ import {
     getProductsByCategory,
     getFeaturedProducts,
     searchProducts,
-    getVendorProducts
+    getVendorProducts,
+    addReview
 } from '../controller/product.controller.js';
 import { protect, authorize } from '../../middleware/auth.js';
 
@@ -34,6 +35,9 @@ productRouter.get('/search', searchProducts);
 
 // Get products by category slug
 productRouter.get('/category/:categorySlug', getProductsByCategory);
+
+// Create Review by customer
+productRouter.post('/:id/reviews', addReview);
 
 // Get vendor's products
 productRouter.get('/vendor/:vendorId', getVendorProducts);
