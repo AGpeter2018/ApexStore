@@ -40,9 +40,11 @@ import CheckoutPage from "./pages/CheckoutPage"
 import OrderConfirmationPage from "./pages/OrderConfirmationPage"
 import MyOrdersPage from "./pages/customer/MyOrdersPage"
 import CustomerOrderDetailPage from "./pages/customer/CustomerOrderDetailPage"
+import WishlistPage from "./pages/customer/WishlistPage"
 
 import { useDispatch } from "react-redux"
 import { fetchCart } from "./redux/slices/cartSlice"
+import { fetchWishlist } from "./redux/slices/wishlistSlice"
 import PaymentVerificationPage from "./pages/PaymentVerificationPage"
 
 // Protected Route Component
@@ -66,6 +68,7 @@ function App() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user.token && user.role === 'customer') {
       dispatch(fetchCart());
+      dispatch(fetchWishlist());
     }
   }, [dispatch]);
 
@@ -140,6 +143,15 @@ function App() {
 
         {/* Cart and Checkout Routes */}
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/wishlist" element={
+          <>
+            <NavBar />
+            <ProtectedRoute allowedRoles={['customer']}>
+              <WishlistPage />
+            </ProtectedRoute>
+            <Footer />
+          </>
+        } />
 
         <Route path="/checkout" element={
           <>

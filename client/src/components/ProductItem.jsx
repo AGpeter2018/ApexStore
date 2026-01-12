@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
+import { toggleWishlist } from '../redux/slices/wishlistSlice';
 import axios from 'axios';
 import {
     RotateCcw, Star, MapPin, User, Package, TrendingUp, Sparkles, Wand2, ShoppingCart, Heart, Share2, Truck, Shield
@@ -18,6 +19,8 @@ const ProductItem = () => {
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [adding, setAdding] = useState(false);
+    const { items: wishlistItems } = useSelector((state) => state.wishlist);
+    const isInWishlist = wishlistItems.some(item => item._id === product?._id || item === product?._id);
     const [reviewRating, setReviewRating] = useState(5);
     const [hoverRating, setHoverRating] = useState(0);
 
@@ -84,6 +87,11 @@ const ProductItem = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleToggleWishlist = () => {
+        if (!product?._id) return;
+        dispatch(toggleWishlist(product._id));
     };
 
     const formatPrice = (price) => {
@@ -540,8 +548,15 @@ const ProductItem = () => {
                                 <ShoppingCart size={24} />
                                 {adding ? 'Adding...' : stockQuantity === 0 ? 'Out of Stock' : 'Add to Cart'}
                             </button>
-                            <button className="border border-gray-300 p-4 rounded-lg hover:bg-gray-50 transition-colors">
-                                <Heart size={24} />
+                            <button
+                                onClick={handleToggleWishlist}
+                                className={`border p-4 rounded-lg transition-colors flex items-center justify-center ${isInWishlist
+                                    ? 'border-red-200 bg-red-50 text-red-500 shadow-inner'
+                                    : 'border-gray-300 hover:bg-gray-50 text-gray-400'
+                                    }`}
+                                title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+                            >
+                                <Heart size={24} fill={isInWishlist ? "currentColor" : "none"} />
                             </button>
                             <button className="border border-gray-300 p-4 rounded-lg hover:bg-gray-50 transition-colors">
                                 <Share2 size={24} />
