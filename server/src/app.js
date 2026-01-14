@@ -13,6 +13,7 @@ import wishlistRouter from './routes/wishlist.routes.js';
 import webhookRouter from './routes/webhook.routes.js';
 import payoutRouter from './routes/payout.routes.js';
 import analyticsRouter from './routes/analytics.routes.js';
+import disputeRouter from './routes/dispute.routes.js';
 
 
 const app = express()
@@ -66,6 +67,9 @@ app.use('/api/payouts', payoutRouter);
 
 // Analytics Route
 app.use('/api/analytics', analyticsRouter);
+
+// Dispute Route
+app.use('/api/disputes', disputeRouter);
 
 
 

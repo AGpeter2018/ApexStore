@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import cartReducer from './slices/cartSlice';
 import wishlistReducer from './slices/wishlistSlice';
 import orderReducer from './slices/orderSlice';
+import disputeReducer from './slices/disputeSlice';
 
 export const store = configureStore({
     reducer: {
         cart: cartReducer,
         wishlist: wishlistReducer,
-        order: orderReducer
+        order: orderReducer,
+        dispute: disputeReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
