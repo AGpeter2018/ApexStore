@@ -138,4 +138,13 @@ export const adminAPI = {
     deleteProductImage: (productId, imageId) => api.delete(`/products/${productId}/images/${imageId}`),
 };
 
+// Dispute API
+export const disputeAPI = {
+    getDisputes: (params) => api.get('/disputes', { params }),
+    getDisputeById: (id) => api.get(`/disputes/${id}`),
+    openDispute: (data) => api.post('/disputes', data),
+    respondToDispute: (id, data) => api.post(`/disputes/${id}/respond`, data),
+    resolveDispute: (id, data) => api.patch(`/disputes/${id}/resolve`, data),
+};
+
 export default api;

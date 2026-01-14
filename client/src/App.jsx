@@ -41,6 +41,9 @@ import OrderConfirmationPage from "./pages/OrderConfirmationPage"
 import MyOrdersPage from "./pages/customer/MyOrdersPage"
 import CustomerOrderDetailPage from "./pages/customer/CustomerOrderDetailPage"
 import WishlistPage from "./pages/customer/WishlistPage"
+import OpenDisputePage from "./pages/customer/OpenDisputePage"
+import DisputeListPage from "./pages/customer/DisputeListPage"
+import DisputeDetailsPage from "./pages/customer/DisputeDetailsPage"
 
 import { useDispatch } from "react-redux"
 import { fetchCart } from "./redux/slices/cartSlice"
@@ -60,6 +63,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   return children;
 };
+
 
 function App() {
   const dispatch = useDispatch();
@@ -201,6 +205,25 @@ function App() {
             </ProtectedRoute>
             <Footer />
           </>
+        } />
+
+        {/* Dispute Center Routes */}
+        <Route path="/customer/disputes/open/:orderId" element={
+          <ProtectedRoute allowedRoles={['customer']}>
+            <OpenDisputePage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/disputes" element={
+          <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']}>
+            <DisputeListPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/disputes/:id" element={
+          <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']}>
+            <DisputeDetailsPage />
+          </ProtectedRoute>
         } />
 
         {/* Admin Route */}

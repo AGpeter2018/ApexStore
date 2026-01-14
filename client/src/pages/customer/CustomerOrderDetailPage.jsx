@@ -113,7 +113,8 @@ const CustomerOrderDetailPage = () => {
                     >
                         {order.orderStatus?.toUpperCase()}
                     </span>
-                    {order.orderStatus === 'pending' && order.paymentStatus !== 'paid' && (
+                    {/* Cancel Order: Only for non-shipped orders */}
+                    {['pending', 'processing'].includes(order.orderStatus) && (
                         <button
                             onClick={() => handleCancelOrder(false)}
                             className="delete-order-btn"
@@ -122,13 +123,14 @@ const CustomerOrderDetailPage = () => {
                         </button>
                     )}
 
-                    {order.paymentStatus === 'paid' && !['delivered', 'cancelled', 'refunded'].includes(order.orderStatus) && (
+                    {/* Report a Problem: For shipped or delivered orders */}
+                    {['shipped', 'delivered'].includes(order.orderStatus) && (
                         <button
-                            onClick={() => handleCancelOrder(true)}
+                            onClick={() => navigate(`/customer/disputes/open/${order._id}`)}
                             className="delete-order-btn"
-                            style={{ backgroundColor: '#fff3cd', color: '#856404', borderColor: '#ffeeba' }}
+                            style={{ backgroundColor: '#fef2f2', color: '#991b1b', borderColor: '#fecaca' }}
                         >
-                            Request Refund
+                            Report a Problem / Refund
                         </button>
                     )}
                 </div>

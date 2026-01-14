@@ -96,6 +96,9 @@ const NavBar = ({ scrolled }) => {
                                 <Link to="/wishlist" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
                                     Wishlist
                                 </Link>
+                                <Link to="/disputes" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
+                                    Disputes
+                                </Link>
                                 <CartIcon />
                             </div>
                         )}
@@ -105,15 +108,23 @@ const NavBar = ({ scrolled }) => {
                                 <Link to="/vendor" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
                                     Vendor Dashboard
                                 </Link>
+                                <Link to="/disputes" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
+                                    Disputes
+                                </Link>
                                 <Link to="/vendor/settings" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
                                     Settings
                                 </Link>
                             </div>
                         )}
                         {user.role === 'admin' && (
-                            <Link to="/admin" className="text-red-600 hover:text-red-700 font-medium transition-colors">
-                                Admin Panel
-                            </Link>
+                            <div className="flex items-center gap-6">
+                                <Link to="/disputes" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
+                                    Disputes
+                                </Link>
+                                <Link to="/admin" className="text-red-600 hover:text-red-700 font-medium transition-colors">
+                                    Admin Panel
+                                </Link>
+                            </div>
                         )}
                         {user.email ? (
                             <div className="flex items-center gap-4">
