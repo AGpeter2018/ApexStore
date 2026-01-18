@@ -253,7 +253,32 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Active Disputes Alert Card */}
+                    {orderStats?.activeDisputes > 0 && (
+                        <Link
+                            to="/disputes"
+                            className="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-600 transition-all hover:scale-[1.02] active:scale-[0.98] group"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-gray-600 text-sm font-medium">Active Disputes</p>
+                                    <p className="text-3xl font-bold text-red-600 mt-2">
+                                        {orderStats.activeDisputes}
+                                    </p>
+                                    <p className="text-red-500 text-sm mt-3 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                        Action Required
+                                        <ArrowRight size={14} />
+                                    </p>
+                                </div>
+                                <div className="bg-red-100 p-4 rounded-xl group-hover:bg-red-200 transition-colors animate-pulse">
+                                    <AlertTriangle className="text-red-600" size={32} />
+                                </div>
+                            </div>
+                        </Link>
+                    )}
                 </div>
+
 
                 <div className="mb-6 flex items-center justify-between">
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -641,7 +666,7 @@ const AdminDashboard = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div>    
     );
 };
 

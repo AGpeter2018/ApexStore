@@ -6,9 +6,13 @@ import {
     Edit,
     Trash2,
     Eye,
+    Layers,
     FolderTree,
     Search,
     Filter,
+    Package,
+    Star,
+    TrendingUp,
     AlertCircle,
     ChevronLeft,
     ChevronRight,
@@ -27,6 +31,7 @@ const CategoriesListPage = () => {
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [ filteredCategories, setFilteredCategories] = useState([])
     const [filterLevel, setFilterLevel] = useState('all'); // 'all', 'main', 'sub'
     const [showInactive, setShowInactive] = useState(false);
 

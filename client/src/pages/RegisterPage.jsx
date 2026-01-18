@@ -33,10 +33,21 @@ const RegisterPage = () => {
     const [successMessage, setSuccessMessage] = useState('')
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+       const { name, value} = e.target
+       
+       if(['facebook', 'twitter', 'instagram', 'linkedin'].includes(name)) {
+       setFormData(prev => ({
+        ...prev,
+        socials: {
+            ...prev.socials,
+            [name]: value
+        }
+       }))
+       } else{
+        setFormData(prev => ({
+            ...prev, [name]: value
+        }))
+       }
     };
 
     const validateStep1 = () => {
@@ -90,10 +101,10 @@ const RegisterPage = () => {
                     location: formData.role === 'vendor' ? formData.location : undefined,
                     businessAddress: formData.role === 'vendor' ? formData.businessAddress : undefined,
                     socials: {
-                        facebook: formData.facebook,
-                        twitter: formData.twitter,
-                        instagram: formData.instagram,
-                        linkedin: formData.linkedin
+                        facebook: formData.role === 'vendor' ? formData.socials.facebook : undefined,
+                        twitter: formData.role === 'vendor' ? formData.socials.twitter : undefined,
+                        instagram: formData.role === 'vendor' ? formData.socials.instagram : undefined,
+                        linkedin: formData.role === 'vendor' ? formData.socials.linkedin : undefined,
                     }
                 }
             );

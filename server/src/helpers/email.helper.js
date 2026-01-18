@@ -291,7 +291,7 @@ export const sendVendorOrderNotificationEmail = async (order, vendor, vendorItem
                             </div>
                             
                             <center>
-                                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/vendor/orders/${order._id}" class="button">
+                                <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/vendor/orders/${order._id}" class="button">
                                     View Order in Dashboard
                                 </a>
                             </center>
@@ -308,5 +308,110 @@ export const sendVendorOrderNotificationEmail = async (order, vendor, vendorItem
     } catch (error) {
         console.error(`Error sending vendor order notification to ${vendor.email}:`, error);
         // Don't throw - we don't want to crash checkout if one vendor's email fails
+    }
+};
+
+// Send dispute opened email
+export const sendDisputeOpenedEmail = async (dispute, order, customer, vendor) => {
+    try {
+        const transporter = createTransporter();
+        const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+
+        // Notify Vendor
+        const vendorMailOptions = {
+            from: `"ApexStore Resolution" <${process.env.EMAIL_FROM || 'noreply@apexstore.com'}>`,
+            to: vendor.email,
+            subject: `New Dispute Opened - Order #${order.orderNumber}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                    <h2 style="color: #d32f2f;">New Dispute Received</h2>
+                    <p>Hi ${vendor.name},</p>
+                    <p>A customer has opened a dispute for <strong>Order #${order.orderNumber}</strong>.</p>
+                    <div style="background: #fff5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                        <p><strong>Reason:</strong> ${dispute.reason.replace('_', ' ')}</p>
+                        <p><strong>Description:</strong> ${dispute.description}</p>
+                    </div>
+                    <p>Please log in to your dashboard to respond to this claim within 48 hours.</p>
+                    <a href="${frontendUrl}/disputes/${dispute._id}" style="display: inline-block; padding: 12px 25px; background: #d32f2f; color: white; text-decoration: none; border-radius: 5px;">View Case & Respond</a>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(vendorMailOptions);
+
+        // Notify Admin
+        const adminMailOptions = {
+            from: `"ApexStore System" <${process.env.EMAIL_FROM || 'noreply@apexstore.com'}>`,
+            to: process.env.ADMIN_EMAIL || 'admin@apexstore.com',
+            subject: `[ALERT] New Dispute - Order #${order.orderNumber}`,
+            html: `<p>New dispute opened for Order #${order.orderNumber}. <a href="${frontendUrl}/disputes/${dispute._id}">Click here to view</a></p>`
+        };
+
+        await transporter.sendMail(adminMailOptions);
+
+    } catch (error) {
+        console.error('Error sending dispute opened email:', error);
+    }
+};
+
+// Send dispute response notification
+export const sendDisputeResponseEmail = async (dispute, sender, recipient) => {
+    try {
+        const transporter = createTransporter();
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+        const mailOptions = {
+            from: `"ApexStore Resolution" <${process.env.EMAIL_FROM || 'noreply@apexstore.com'}>`,
+            to: recipient.email,
+            subject: `New Message in Dispute - Case #${dispute._id.slice(-8).toUpperCase()}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                    <h3>New Update from ${sender.name} (${sender.role})</h3>
+                    <p>There is a new message in the dispute for your order.</p>
+                    <p style="padding: 15px; background: #f5f5f5; border-radius: 5px; font-style: italic;">
+                        "${dispute.responses[dispute.responses.length - 1].message}"
+                    </p>
+                    <a href="${frontendUrl}/disputes/${dispute._id}" style="display: inline-block; padding: 12px 25px; background: #667eea; color: white; text-decoration: none; border-radius: 5px;">View Full Conversation</a>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Error sending dispute response email:', error);
+    }
+};
+
+// Send dispute resolution notification
+export const sendDisputeResolvedEmail = async (dispute, order, customer, vendor) => {
+    try {
+        const transporter = createTransporter();
+        const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+
+        const recipients = [customer, vendor];
+
+        for (const recipient of recipients) {
+            const mailOptions = {
+                from: `"ApexStore Resolution" <${process.env.EMAIL_FROM || 'noreply@apexstore.com'}>`,
+                to: recipient.email,
+                subject: `Final Decision: Dispute for Order #${order.orderNumber}`,
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; border-top: 5px solid #4CAF50;">
+                        <h2 style="color: #4CAF50;">Dispute Resolved</h2>
+                        <p>Hi ${recipient.name},</p>
+                        <p>The administration has made a final decision regarding the dispute for <strong>Order #${order.orderNumber}</strong>.</p>
+                        <div style="background: #f1f8e9; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                            <p><strong>Action Taken:</strong> <span style="text-transform: uppercase; font-weight: bold; color: #2e7d32;">${dispute.adminDecision.action.replace('_', ' ')}</span></p>
+                            <p><strong>Ruling Note:</strong> ${dispute.adminDecision.note}</p>
+                        </div>
+                        <p>This decision is binding and the case is now closed.</p>
+                        <a href="${frontendUrl}/disputes/${dispute._id}" style="display: inline-block; padding: 12px 25px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">View Resolution Details</a>
+                    </div>
+                `
+            };
+            await transporter.sendMail(mailOptions);
+        }
+    } catch (error) {
+        console.error('Error sending dispute resolved email:', error);
     }
 };
