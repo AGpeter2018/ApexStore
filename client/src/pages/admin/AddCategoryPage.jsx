@@ -40,6 +40,7 @@ const AddCategoryPage = () => {
     const [galleryPreviews, setGalleryPreviews] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
 
     useEffect(() => {
@@ -48,8 +49,10 @@ const AddCategoryPage = () => {
 
     const fetchCategories = async () => {
         try {
+            setLoading(true);
             const { data } = await categoryAPI.getCategories({ parentId: 'null', isActive: 'true' });
             setCategories(data.data || []);
+            setLoading(false);
         } catch (err) {
             console.error('Failed to fetch categories:', err);
         }
@@ -254,10 +257,11 @@ const handleSubmit = async (e) => {
             }
         };
 
+        
         await categoryAPI.createCategory(categoryData);
-
+        
         setMessage({ type: 'success', text: 'Category created successfully!' });
-
+        
         setTimeout(() => {
             navigate('/admin/categories');
         }, 1200);
@@ -269,6 +273,7 @@ const handleSubmit = async (e) => {
     } finally {
         setSaving(false);
         setUploading(false);
+        setLoading(false);
     }
 };
 
@@ -831,7 +836,7 @@ return (
                                     Add
                                 </button>
                             </div>
-                            {formData.keywords.length > 0 && (
+                            {formData.keywords?.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-3">
                                     {formData.keywords.map((keyword, index) => (
                                         <span

@@ -110,6 +110,29 @@ const VendorDashboard = () => {
                 </div>
             </div>
 
+            {/* Active Disputes Alert Banner */}
+            {stats?.activeDisputes > 0 && (
+                <div className="max-w-7xl mx-auto px-4 pt-8 underline-offset-4">
+                    <Link
+                        to="/disputes"
+                        className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-2xl group hover:border-red-400 transition-all shadow-sm"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="bg-red-100 p-3 rounded-xl animate-pulse">
+                                <AlertCircle className="text-red-600" size={24} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-red-900">Active Disputes Detected</h3>
+                                <p className="text-red-700 text-sm">You have {stats.activeDisputes} open dispute(s) that require your attention.</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-red-600 font-bold group-hover:gap-3 transition-all">
+                            Review Disputes <ArrowRight size={18} />
+                        </div>
+                    </Link>
+                </div>
+            )}
+
             <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
                 {/* Key Metrics Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

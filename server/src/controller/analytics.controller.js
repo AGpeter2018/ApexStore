@@ -21,7 +21,7 @@ export const getVendorAnalytics = async (req, res) => {
             {
                 $match: {
                     'items.vendor': vendorId,
-                    paymentStatus: 'paid',
+                    paymentStatus: { $in: ['paid', 'partially_refunded'] },
                     paidAt: { $gte: thirtyDaysAgo }
                 }
             },
@@ -32,7 +32,24 @@ export const getVendorAnalytics = async (req, res) => {
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$paidAt" } },
-                    revenue: { $sum: { $ifNull: ["$items.subtotal", { $multiply: ["$items.price", "$items.quantity"] }] } },
+                    revenue: {
+                        $sum: {
+                            $subtract: [
+                                { $ifNull: ["$items.subtotal", { $multiply: ["$items.price", "$items.quantity"] }] },
+                                {
+                                    $multiply: [
+                                        { $ifNull: ["$refundedAmount", 0] },
+                                        {
+                                            $divide: [
+                                                { $ifNull: ["$items.subtotal", { $multiply: ["$items.price", "$items.quantity"] }] },
+                                                { $ifNull: ["$subtotal", 1] }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
                     orders: { $addToSet: "$_id" }
                 }
             },
@@ -52,7 +69,7 @@ export const getVendorAnalytics = async (req, res) => {
             {
                 $match: {
                     'items.vendor': vendorId,
-                    paymentStatus: 'paid'
+                    paymentStatus: { $in: ['paid', 'partially_refunded'] }
                 }
             },
             { $unwind: '$items' },
@@ -97,13 +114,13 @@ export const getAdminAnalytics = async (req, res) => {
     try {
         // 1. Total Platform GMV, Commission, and Order Count
         const platformStatsAgg = await Order.aggregate([
-            { $match: { paymentStatus: 'paid' } },
+            { $match: { paymentStatus: { $in: ['paid', 'partially_refunded'] } } },
             {
                 $group: {
                     _id: null,
-                    totalGMV: { $sum: "$total" },
+                    totalGMV: { $sum: { $subtract: ["$total", { $ifNull: ["$refundedAmount", 0] }] } },
                     totalOrders: { $count: {} },
-                    totalCommission: { $sum: { $multiply: ["$total", 0.10] } }
+                    totalCommission: { $sum: { $multiply: [{ $subtract: ["$total", { $ifNull: ["$refundedAmount", 0] }] }, 0.10] } }
                 }
             }
         ]);
@@ -141,15 +158,15 @@ export const getAdminAnalytics = async (req, res) => {
         const globalTrend = await Order.aggregate([
             {
                 $match: {
-                    paymentStatus: 'paid',
+                    paymentStatus: { $in: ['paid', 'partially_refunded'] },
                     paidAt: { $gte: ninetyDaysAgo }
                 }
             },
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$paidAt" } },
-                    revenue: { $sum: "$total" },
-                    commission: { $sum: { $multiply: ["$total", 0.10] } },
+                    revenue: { $sum: { $subtract: ["$total", { $ifNull: ["$refundedAmount", 0] }] } },
+                    commission: { $sum: { $multiply: [{ $subtract: ["$total", { $ifNull: ["$refundedAmount", 0] }] }, 0.10] } },
                     count: { $count: {} }
                 }
             },

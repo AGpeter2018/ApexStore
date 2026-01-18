@@ -47,7 +47,7 @@ const orderSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['pending', 'paid', 'failed', 'refunded'],
+        enum: ['pending', 'paid', 'failed', 'refunded', 'partially_refunded'],
         default: 'pending'
     },
     paymentReference: {
@@ -88,7 +88,11 @@ const orderSchema = new mongoose.Schema({
         trim: true
     },
     deliveredAt: Date,
-    paidAt: Date
+    paidAt: Date,
+    refundedAmount: {
+        type: Number,
+        default: 0
+    }
 }, {
     timestamps: true
 });

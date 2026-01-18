@@ -19,6 +19,7 @@ const DisputeDetailsPage = () => {
     const [responseMessage, setResponseMessage] = useState('');
     const [adminAction, setAdminAction] = useState('full_refund');
     const [adminNote, setAdminNote] = useState('');
+    const [refundAmount, setRefundAmount] = useState('');
 
     useEffect(() => {
         dispatch(fetchDisputeById(id));
@@ -44,10 +45,18 @@ const DisputeDetailsPage = () => {
 
     const handleResolveSubmit = (e) => {
         e.preventDefault();
+        if (adminAction === 'partial_refund' && (!refundAmount || refundAmount <= 0)) {
+            alert('Please specify a valid refund amount');
+            return;
+        }
         if (!window.confirm('Are you sure you want to finalize this decision? This action is binding and permanent.')) return;
         dispatch(resolveDispute({
             id,
-            resolutionData: { action: adminAction, adminNote }
+            resolutionData: {
+                action: adminAction,
+                adminNote,
+                refundAmount: adminAction === 'partial_refund' ? refundAmount : undefined
+            }
         }));
     };
 
@@ -89,8 +98,8 @@ const DisputeDetailsPage = () => {
                     <div className="lg:col-span-2 space-y-8">
                         {/* Status Banner */}
                         <div className={`p-6 rounded-3xl border-2 shadow-sm flex items-center justify-between ${dispute.status === 'resolved'
-                                ? 'bg-green-50 border-green-100'
-                                : 'bg-amber-50 border-amber-100'
+                            ? 'bg-green-50 border-green-100'
+                            : 'bg-amber-50 border-amber-100'
                             }`}>
                             <div className="flex items-center gap-4">
                                 {dispute.status === 'resolved'
@@ -143,10 +152,10 @@ const DisputeDetailsPage = () => {
                                 {dispute.responses?.map((res, i) => (
                                     <div key={i} className={`flex gap-4 ${res.user?.role === 'admin' ? 'justify-center' : ''}`}>
                                         <div className={`flex-1 p-6 rounded-3xl shadow-sm border ${res.user?.role === 'admin'
-                                                ? 'bg-slate-900 text-white border-slate-800 text-center max-w-2xl mx-auto'
-                                                : res.user?.role === 'vendor'
-                                                    ? 'bg-white border-blue-50'
-                                                    : 'bg-white border-amber-50'
+                                            ? 'bg-slate-900 text-white border-slate-800 text-center max-w-2xl mx-auto'
+                                            : res.user?.role === 'vendor'
+                                                ? 'bg-white border-blue-50'
+                                                : 'bg-white border-amber-50'
                                             }`}>
                                             <div className={`flex items-center gap-2 mb-3 text-sm font-bold uppercase tracking-widest ${res.user?.role === 'admin' ? 'text-amber-400 justify-center' : 'text-gray-400'
                                                 }`}>
@@ -251,6 +260,24 @@ const DisputeDetailsPage = () => {
                                                 </button>
                                             ))}
                                         </div>
+
+                                        {adminAction === 'partial_refund' && (
+                                            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+                                                    Partial Refund Amount (₦)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    className="w-full p-4 bg-slate-800 border-2 border-slate-700 rounded-xl focus:border-amber-500 outline-none transition-all font-black text-amber-500 text-xl"
+                                                    placeholder="Enter amount..."
+                                                    value={refundAmount}
+                                                    onChange={(e) => setRefundAmount(e.target.value)}
+                                                    max={dispute.order?.total}
+                                                    required
+                                                />
+                                                <p className="text-[10px] text-slate-500 mt-2 font-bold uppercase">Max selectable: ₦{dispute.order?.total?.toLocaleString()}</p>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div>
@@ -298,6 +325,12 @@ const DisputeDetailsPage = () => {
                                         <p className="text-xs font-bold text-gray-400 uppercase mb-1">Rationale</p>
                                         <p className="text-gray-700 font-medium">{dispute.adminDecision?.note}</p>
                                     </div>
+                                    {dispute.resolutionDetails?.refundAmount && (
+                                        <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
+                                            <p className="text-xs font-bold text-amber-600 uppercase mb-1">Refunded Amount</p>
+                                            <p className="text-xl font-black text-amber-700">₦{dispute.resolutionDetails.refundAmount.toLocaleString()}</p>
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-2 text-xs text-gray-400 font-bold uppercase">
                                         <Calendar size={14} />
                                         Decided on {formatDate(dispute.adminDecision?.decidedAt)}

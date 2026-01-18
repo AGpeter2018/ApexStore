@@ -879,7 +879,7 @@ const AddProductPage = () => {
                   >
                     <option value="">Select Vendor</option>
                     {vendors.map(vendor => (
-                      <option key={vendor._id} value={vendor._id}>{vendor.name}</option>
+                      <option key={vendor._id} value={vendor._id}>{vendor.storeName}</option>
                     ))}
                   </select>
                 </div>

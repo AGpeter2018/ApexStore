@@ -30,7 +30,7 @@ const OpenDisputePage = () => {
     useEffect(() => {
         if (success) {
             alert('Your dispute has been opened successfully. An admin will review it shortly.');
-            navigate('/customer/disputes');
+            navigate('/disputes');
         }
     }, [success, navigate]);
 

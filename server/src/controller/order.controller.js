@@ -4,6 +4,7 @@ import Cart from '../../models/Cart.model.js';
 import Vendor from '../../models/Vendor.js';
 import User from '../../models/User.model.js';
 import Payout from '../../models/Payout.model.js';
+import Dispute from '../../models/Dispute.model.js';
 import { processPayment, verifyPayment, refundPayment } from '../helpers/payment.helper.js';
 import { sendOrderConfirmationEmail, sendOrderStatusUpdateEmail, sendVendorOrderNotificationEmail } from '../helpers/email.helper.js';
 import { finalizeOrder } from '../helpers/order.helper.js';
@@ -205,6 +206,13 @@ export const getOrderStats = async (req, res) => {
         const deliveredOrders = await Order.countDocuments({ ...filter, orderStatus: 'delivered' });
         const cancelledOrders = await Order.countDocuments({ ...filter, orderStatus: 'cancelled' });
 
+        // Dispute stats
+        const disputeFilter = req.user.role === 'vendor' ? { vendor: req.user._id } : {};
+        const activeDisputes = await Dispute.countDocuments({
+            ...disputeFilter,
+            status: { $in: ['open', 'vendor_responded', 'under_review'] }
+        });
+
         // Calculate trends (Current Month vs Previous Month)
         const now = new Date();
         const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -229,13 +237,26 @@ export const getOrderStats = async (req, res) => {
         if (req.user.role === 'vendor') {
             const allPaidOrders = await Order.find({
                 'items.vendor': req.user._id,
-                paymentStatus: 'paid'
+                paymentStatus: { $in: ['paid', 'partially_refunded'] }
             });
 
             allPaidOrders.forEach(order => {
                 order.items.forEach(item => {
                     if (item.vendor && item.vendor.toString() === req.user._id.toString()) {
-                        const amount = item.subtotal || (item.price * item.quantity);
+                        // For partial refunds, we subtract the portion of the refund that belongs to this vendor.
+                        // However, since we currently store refundedAmount on the Order, and usually disputes are per-vendor:
+                        // If it's a single vendor order, we can subtract the whole order.refundedAmount.
+                        // If it's multi-vendor, we'd need item-level refund tracking.
+                        // For now, if paymentStatus is partially_refunded, we adjust the revenue.
+                        let amount = item.subtotal || (item.price * item.quantity);
+
+                        // Simple heuristic: subtract whole refund if this is the only vendor or primary vendor.
+                        // Better: subtract proportional refund.
+                        if (order.paymentStatus === 'partially_refunded' && order.refundedAmount > 0) {
+                            const ratio = amount / order.subtotal;
+                            amount -= (order.refundedAmount * ratio);
+                        }
+
                         totalRevenue += amount;
                         if (order.createdAt >= startOfCurrentMonth) {
                             currentMonthRevenue += amount;
@@ -248,20 +269,26 @@ export const getOrderStats = async (req, res) => {
         }
         else {
             const revenueStats = await Order.aggregate([
-                { $match: { paymentStatus: 'paid' } },
+                { $match: { paymentStatus: { $in: ['paid', 'partially_refunded'] } } },
                 {
                     $group: {
                         _id: null,
-                        total: { $sum: '$total' },
-                        subtotal: { $sum: '$subtotal' },
+                        total: { $sum: { $subtract: ['$total', { $ifNull: ['$refundedAmount', 0] }] } },
+                        subtotal: { $sum: { $subtract: ['$subtotal', { $ifNull: ['$refundedAmount', 0] }] } }, // Estimate subtotal adjustment
                         currentMonth: {
-                            $sum: { $cond: [{ $gte: ['$createdAt', startOfCurrentMonth] }, '$total', 0] }
+                            $sum: {
+                                $cond: [
+                                    { $gte: ['$createdAt', startOfCurrentMonth] },
+                                    { $subtract: ['$total', { $ifNull: ['$refundedAmount', 0] }] },
+                                    0
+                                ]
+                            }
                         },
                         lastMonth: {
                             $sum: {
                                 $cond: [
                                     { $and: [{ $gte: ['$createdAt', startOfLastMonth] }, { $lte: ['$createdAt', endOfLastMonth] }] },
-                                    '$total',
+                                    { $subtract: ['$total', { $ifNull: ['$refundedAmount', 0] }] },
                                     0
                                 ]
                             }
@@ -317,7 +344,8 @@ export const getOrderStats = async (req, res) => {
                 totalCommission,
                 orderTrend,
                 revenueTrend,
-                recentOrders
+                recentOrders,
+                activeDisputes
             }
         });
     } catch (error) {
@@ -492,8 +520,8 @@ export const checkout = async (req, res) => {
             const itemSubtotal = product.price * cartItem.quantity;
             subtotal += itemSubtotal;
 
-            // Robust vendor identification: fallback to vendorId.owner
-            const vendorPayoutId = product.createdBy || product.vendorId?.owner;
+            // Robust vendor identification: prioritize vendorId.owner for assigned products
+            const vendorPayoutId = product.vendorId?.owner || product.createdBy;
             if (!vendorPayoutId) {
                 console.warn(`Warning: No vendor/owner found for product ${product._id}`);
             }
@@ -753,7 +781,7 @@ export const cancelOrder = async (req, res) => {
                 for (const [vOwnerId, data] of Object.entries(vendorUpdates)) {
                     await Vendor.findOneAndUpdate(
                         { owner: vOwnerId },
-                        { $inc: { totalSales: -data.sales, totalOrders: -data.orders, balance: -data.sales } }
+                        { $inc: { totalSales: -data.sales, totalOrders: -data.orders, balance: -(data.sales * 0.90) } }
                     );
                 }
             } catch (vErr) {
@@ -787,7 +815,7 @@ export const getVendorPayments = async (req, res) => {
         // Find all orders that contain items from this vendor and are paid
         const orders = await Order.find({
             'items.vendor': vendorId,
-            paymentStatus: 'paid'
+            paymentStatus: { $in: ['paid', 'partially_refunded'] }
         })
             .populate('customer', 'name email')
             .sort({ paidAt: -1 });
@@ -799,7 +827,13 @@ export const getVendorPayments = async (req, res) => {
             );
 
             const vendorSubtotal = vendorItems.reduce((sum, item) => sum + item.subtotal, 0);
-            const vendorShare = vendorSubtotal * 0.90; // 90% of items subtotal
+            let vendorShare = vendorSubtotal * 0.90; // 90% of items subtotal
+
+            // Adjust for partial refunds
+            if (order.paymentStatus === 'partially_refunded' && order.refundedAmount > 0) {
+                const ratio = vendorSubtotal / order.subtotal;
+                vendorShare -= (order.refundedAmount * ratio * 0.90); // Subtract 90% of the proportional refund
+            }
 
             return {
                 _id: order._id,
@@ -903,7 +937,7 @@ export const processRefund = async (req, res) => {
             for (const [vOwnerId, data] of Object.entries(vendorUpdates)) {
                 await Vendor.findOneAndUpdate(
                     { owner: vOwnerId },
-                    { $inc: { totalSales: -data.sales, totalOrders: -data.orders, balance: -data.sales } }
+                    { $inc: { totalSales: -data.sales, totalOrders: -data.orders, balance: -(data.sales * 0.90) } }
                 );
             }
         } catch (vErr) {
