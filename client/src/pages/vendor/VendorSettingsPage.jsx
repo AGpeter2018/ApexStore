@@ -18,7 +18,7 @@ const VendorSettingsPage = () => {
             facebook: '',
             instagram: '',
             twitter: '',
-            website: ''
+            linkedin: ''
         }
     });
 
@@ -41,7 +41,7 @@ const VendorSettingsPage = () => {
                         facebook: vendor.socials?.facebook || '',
                         instagram: vendor.socials?.instagram || '',
                         twitter: vendor.socials?.twitter || '',
-                        website: vendor.socials?.website || ''
+                        linkedin: vendor.socials?.linkedin || ''
                     }
                 });
             }
@@ -233,11 +233,11 @@ const VendorSettingsPage = () => {
                         </div>
                         <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Website</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Linkedin</label>
                                 <input
                                     type="text"
-                                    name="socials.website"
-                                    value={formData.socials.website}
+                                    name="socials.linkedin"
+                                    value={formData.socials.linkedin}
                                     onChange={handleChange}
                                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 font-medium"
                                     placeholder="yourwebsite.com"

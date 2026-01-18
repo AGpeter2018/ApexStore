@@ -13,6 +13,8 @@ const EditProductPage = () => {
   const [productId, setProductId] = useState(null); // Get from URL params
 
   const [formData, setFormData] = useState(null);
+  const [vendors, setVendors] = useState([]);
+  const [vendorId, setVendorId] = useState('');
   const [newImages, setNewImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -48,6 +50,7 @@ const EditProductPage = () => {
     try {
       await Promise.all([
         fetchCategories(),
+        fetchVendors(),
         fetchProduct(id)
       ]);
     } catch (error) {
@@ -77,6 +80,15 @@ const EditProductPage = () => {
     }
   };
 
+  const fetchVendors = async () => {
+    try {
+      const response = await adminAPI.getVendors();
+      setVendors(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching vendors:', error);
+    }
+  };
+
   const fetchProduct = async (productId) => {
     try {
       const response = await productAPI.getProductById(productId);
@@ -101,6 +113,7 @@ const EditProductPage = () => {
           ? product.description
           : [{ type: 'text', title: '', content: product.description || '', order: 0 }],
       });
+      setVendorId(product.vendorId?._id || product.vendorId || '');
 
       // Initialize specifications fields from populated product data
       const initialCategory = product.subcategoryId?.attributes?.length > 0
@@ -454,7 +467,8 @@ const EditProductPage = () => {
         featured: formData.featured,
         customizable: formData.customizable,
         customizationOptions: formData.customizationOptions,
-        images: [...formData.images, ...uploadedImages]
+        images: [...formData.images, ...uploadedImages],
+        vendorId: vendorId || undefined
       };
 
       await adminAPI.updateProduct(productId, updateData);
@@ -887,6 +901,25 @@ const EditProductPage = () => {
                   </p>
                 )}
               </div>
+
+              {vendors.length > 0 && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Assign to Vendor
+                  </label>
+                  <select
+                    name="vendorId"
+                    value={vendorId}
+                    onChange={(e) => setVendorId(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  >
+                    <option value="">Select Vendor</option>
+                    {vendors.map(vendor => (
+                      <option key={vendor._id} value={vendor._id}>{vendor.storeName}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {subcategories.length > 0 && (
                 <div>
