@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Search, Filter, Grid, List, Star, Package, Sparkles } from 'lucide-react';
-import Navbar from '../components/Navbar-2';
+import Navbar from '../components/NavBar-2';
 import Footer from '../components/Footer';
 
 const SearchPage = () => {

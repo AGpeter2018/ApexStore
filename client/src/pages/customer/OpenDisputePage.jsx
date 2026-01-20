@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { openDispute, resetDisputeStatus } from '../../redux/slices/disputeSlice';
 import { fetchOrderById, selectCurrentOrder } from '../../redux/slices/orderSlice';
 import { AlertCircle, ArrowLeft, Send, Upload, Shield } from 'lucide-react';
-import NavBar from '../../components/Navbar-2';
+import NavBar from '../../components/NavBar-2';
 import Footer from '../../components/Footer';
 
 const OpenDisputePage = () => {

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { fetchDisputes } from '../../redux/slices/disputeSlice';
 import { Shield, AlertTriangle, CheckCircle, Clock, ChevronRight, MessageSquare, ArrowRight } from 'lucide-react';
-import NavBar from '../../components/Navbar-2';
+import NavBar from '../../components/NavBar-2';
 import Footer from '../../components/Footer';
 
 const DisputeListPage = () => {

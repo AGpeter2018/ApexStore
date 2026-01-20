@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchCart, selectCartItems, selectCartTotal, selectCartCount, selectCartLoading } from '../redux/slices/cartSlice';
 import CartItem from '../components/CartItem';
-import NavBar from '../components/Navbar-2';
+import NavBar from '../components/NavBar-2';
 import Footer from '../components/Footer';
 import { ShoppingCart, ArrowRight } from 'lucide-react';
 

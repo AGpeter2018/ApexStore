@@ -6,7 +6,7 @@ import {
     Shield, ArrowLeft, Send, CheckCircle, AlertTriangle,
     User, Store, Calendar, MessageSquare, Gavel
 } from 'lucide-react';
-import NavBar from '../../components/Navbar-2';
+import NavBar from '../../components/NavBar-2';
 import Footer from '../../components/Footer';
 
 const DisputeDetailsPage = () => {
