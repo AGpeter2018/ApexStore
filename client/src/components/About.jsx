@@ -1,5 +1,5 @@
 import React from 'react'
-import Testimonies from './testimonies'
+import Testimonies from './Testimonies.jsx'
 
 const About = () => {
   return (
