@@ -23,21 +23,21 @@ app.use(express.json())
 const allowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-  process.env.CLIENT_URL 
+  "https://apex-store-market.vercel.app"
 ];
 
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
+
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    callback(new Error("CORS not allowed"));
+
+    return callback(null, false);
   },
   credentials: true
 }));
-
-app.options("*", cors());
 
 
 app.use(express.urlencoded({ extended: true }))
