@@ -34,7 +34,7 @@ app.use(cors({
       return callback(null, true);
     }
 
-    return callback(null, false);
+    return callback(new Error('CORS policy violation: Origin not allowed by CORS'));
   },
   credentials: true
 }));
