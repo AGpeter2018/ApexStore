@@ -21,11 +21,19 @@ const app = express()
 app.use(express.json())
 
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Vite frontend
+    origin: [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        process.env.CLIENT_URL
+    ].filter(Boolean), 
     credentials: true
 }));
 
 app.use(express.urlencoded({ extended: true }))
+
+app.get('/', (req, res) => {
+    res.status(200).json({ message: 'ApexStore API is running...' });
+});
 
 // Routes
 

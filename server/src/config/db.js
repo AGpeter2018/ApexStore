@@ -12,7 +12,7 @@ const connectDB = async () => {
             connectTimeoutMS: 30000,
         });
 
-        console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
         
         // Wait for connection to be fully ready
         if (mongoose.connection.readyState === 1) {
@@ -21,7 +21,7 @@ const connectDB = async () => {
         
         return conn;
     } catch (error) {
-        console.error(`❌ MongoDB connection error: ${error.message}`);
+        console.error(`MongoDB connection error: ${error.message}`);
         process.exit(1);
     }
 };

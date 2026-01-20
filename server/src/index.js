@@ -6,9 +6,10 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables IMMEDIATELY
+// Load environment variables
+dotenv.config(); // Try loading from current working directory (.env in root)
 const envPath = path.resolve(__dirname, '../.env');
-dotenv.config({ path: envPath });
+dotenv.config({ path: envPath }); // Keep fallback for existing structure
 
 import connectDB from './config/db.js';
 import app from './app.js';
