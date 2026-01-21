@@ -19,26 +19,29 @@ import disputeRouter from './routes/dispute.routes.js';
 const app = express()
 // Middleware
 
-app.use((req, res, next) => {
-  console.log(`📥 ${req.method} ${req.url} from ${req.headers.origin || 'no origin'}`);
-  
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Max-Age', '86400'); // Cache for 24 hours
-    return res.status(204).send(); // No content, just headers
-  }
-  
-  next();
-});
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://apex-store-market.vercel.app',
+  process.env.CLIENT_URL
+].filter(Boolean);
 
-// Then CORS middleware
 app.use(cors({
-  origin: true,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.indexOf(origin + '/') !== -1) {
+      callback(null, true);
+    } else {
+      console.log('CORS Refused for origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  preflightContinue: false, // Don't pass OPTIONS to next handler
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   optionsSuccessStatus: 204
 }));
 
@@ -47,7 +50,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.get('/', (req, res) => {
-    res.status(200).json({ message: 'ApexStore API is running...' });
+  res.status(200).json({ message: 'ApexStore API is running...' });
 });
 
 // Routes
