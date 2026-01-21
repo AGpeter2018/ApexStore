@@ -18,21 +18,31 @@ import disputeRouter from './routes/dispute.routes.js';
 
 const app = express()
 // Middleware
-app.use(express.json())
 
-const corsOptions = {
-  origin: [
-    'http://localhost:5173',  
-    'http://127.0.0.1:5173',
-    'https://apex-store-market.vercel.app',  
-  ].filter(Boolean), // 
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.url} from ${req.headers.origin || 'no origin'}`);
+  
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400'); // Cache for 24 hours
+    return res.status(204).send(); // No content, just headers
+  }
+  
+  next();
+});
+
+// Then CORS middleware
+app.use(cors({
+  origin: true,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+  preflightContinue: false, // Don't pass OPTIONS to next handler
+  optionsSuccessStatus: 204
+}));
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.use(express.json())
 
 app.use(express.urlencoded({ extended: true }))
 
