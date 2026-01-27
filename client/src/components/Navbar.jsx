@@ -1,7 +1,6 @@
 import { ChevronDown, ChevronUp, Menu, Search, User, X, Sparkles, ShoppingBag, LogOut, ShieldCheck, LayoutDashboard, Heart, MessageSquare } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import AnchorLink from 'react-anchor-link-smooth-scroll'
 import CartIcon from './CartIcon'
 
 
@@ -32,6 +31,28 @@ const Navbar = ({ scrolled }) => {
     }
   };
 
+  const handleSmoothScroll = (e, href) => {
+    e.preventDefault();
+    const targetId = href.replace('#', '');
+    const element = document.getElementById(targetId);
+
+    if (element) {
+      const offset = 100;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    } else {
+      // Fallback if element doesn't exist on current page
+      navigate(`/${href}`);
+    }
+  };
+
   const NavItem = ({ href, label, tab, mobile = false }) => {
     const baseClass = mobile
       ? 'p-4 bg-white/5 rounded-2xl text-center text-xs font-black text-slate-400 uppercase tracking-widest'
@@ -41,17 +62,17 @@ const Navbar = ({ scrolled }) => {
 
     if (isHome) {
       return (
-        <AnchorLink
+        <a
           href={href}
-          offset={mobile ? 80 : 100}
-          onClick={() => {
+          onClick={(e) => {
+            handleSmoothScroll(e, href);
             setMarkTab(tab);
             if (mobile) setOpenMenu(false);
           }}
           className={`${baseClass}${extraMobileClass}`}
         >
           {label}
-        </AnchorLink>
+        </a>
       );
     }
     return (

@@ -22,7 +22,7 @@ const WishlistPage = () => {
             await dispatch(addToCart({ productId, quantity: 1 })).unwrap();
             alert('✅ Added to cart successfully!');
         } catch (error) {
-            alert('❌ ' + (error || 'Failed to add to cart'));
+            alert( (error || 'Failed to add to cart'));
         }
     };
 
