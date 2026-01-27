@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+html {
+    scroll-behavior: smooth;
+}
+
 @layer utilities {
     .animation-in {
         animation-fill-mode: both;

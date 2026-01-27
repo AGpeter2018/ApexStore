@@ -6,7 +6,7 @@ import {
     Shield, ArrowLeft, Send, CheckCircle, AlertTriangle,
     User, Store, Calendar, MessageSquare, Gavel
 } from 'lucide-react';
-import NavBar from '../../components/NavBar-2';
+import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 
 const DisputeDetailsPage = () => {
@@ -83,7 +83,7 @@ const DisputeDetailsPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <NavBar />
+            <Navbar />
             <div className="max-w-7xl mx-auto px-4 py-12">
                 <button
                     onClick={() => navigate(-1)}

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { fetchDisputes } from '../../redux/slices/disputeSlice';
 import { Shield, AlertTriangle, CheckCircle, Clock, ChevronRight, MessageSquare, ArrowRight } from 'lucide-react';
-import NavBar from '../../components/NavBar-2';
+import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 
 const DisputeListPage = () => {
@@ -46,7 +46,7 @@ const DisputeListPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <NavBar />
+            <Navbar />
             <div className="max-w-6xl mx-auto px-4 py-12">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                     <div>

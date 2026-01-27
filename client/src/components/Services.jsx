@@ -1,85 +1,79 @@
-import React from 'react'
+import React from 'react';
+import { Shield, Truck, Users, Zap, ArrowUpRight } from 'lucide-react';
 
 const services = [
     {
-        sectionImage: '🎨',
-        sectionHeader: 'Custom Drum Crafting',
-        sectionText: ' Bespoke Yoruba drums tailored to your specific needs. Our master craftsmen create instruments with your preferred size, wood type, and tuning.'
+        icon: <Shield className="text-orange-500" size={32} />,
+        header: 'Verified Vendors',
+        text: 'Every merchant on ApexStore undergoes a rigorous multi-step verification process to ensure authenticity and quality.'
     },
     {
-     sectionImage: '🔧',
-     sectionHeader: 'Repair & Restoration',
-     sectionText: ' Expert restoration of vintage drums. We replace worn skins, repair cracks, and refinish surfaces while preserving authentic character.'   
+        icon: <Truck className="text-orange-500" size={32} />,
+        header: 'Global Logistics',
+        text: 'Secure door-to-door delivery across Africa and internationally, with real-time tracking for every masterpiece.'
     },
     {
-        sectionImage: '🎵',
-        sectionHeader: 'Professional Tuning',
-        sectionText: '  Achieve perfect sound with our tuning services. Our technicians understand traditional Yoruba tonal requirements.'
+        icon: <Users className="text-orange-500" size={32} />,
+        header: 'Direct Artisan Support',
+        text: 'We bridge the gap between traditional craft and modern commerce, ensuring fair trade and direct impact to makers.'
     },
     {
-        sectionImage: '📚',
-        sectionHeader: 'Workshops & Training',
-        sectionText: '        Learn authentic Yoruba drumming from certified instructors. Beginner to advanced classes available.',
-    },
-    {
-        sectionImage: '🎭',
-        sectionHeader: 'Bulk Orders',
-        sectionText: 'Special pricing for cultural groups, schools, and performance troupes. Comprehensive packages available.'
-    },
-    {
-        sectionImage: '🚚',
-        sectionHeader: 'Nationwide Delivery',
-        sectionText: ' Fast, secure delivery across Nigeria and internationally. Careful packaging with tracking for all orders.'
-    },
-    {
-        sectionImage: '🎪',
-        sectionHeader: 'Drum Rentals',
-        sectionText: 'Flexible rental options for events, ceremonies, and performances. Perfect for weddings and festivals.'
-    },
-    {
-        sectionImage: '✅',
-        sectionHeader: 'Authentication',
-        sectionText: ' Expert verification for antique drums. Our specialists provide historical background and care guidance.'
+        icon: <Zap className="text-orange-500" size={32} />,
+        header: 'Expert Curation',
+        text: 'Our team hand-picks the most impactful cultural products, ensuring you discover the best of African innovation.'
     }
-]
+];
 
 const Services = () => {
-  return (
-    <div>
-<section id='services' class="py-20 px-8 bg-white">
-    <div class="max-w-7xl mx-auto">
-        <h2 class="text-4xl md:text-5xl font-bold text-center text-slate-900 mb-4">
-            Our Services
-        </h2>
-        <p class="text-center text-slate-600 mb-12 max-w-2xl mx-auto">
-            Beyond selling drums, we offer comprehensive services to support your drumming journey and preserve Yoruba cultural heritage
-        </p>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {
-                services.map((service, id) => {
-                    return(
-            <div key={id} class="bg-slate-50 p-6 rounded-xl border border-slate-200 hover:shadow-xl hover:border-slate-300 transition-all">
-                <div class="text-4xl mb-4">{service.sectionImage}</div>
-                <h3 class="text-xl font-bold text-slate-900 mb-3">{service.sectionHeader}</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">
-                   {service.sectionText}
-                </p>
+    return (
+        <section id='services' className="py-32 bg-slate-950 relative overflow-hidden">
+            {/* Background Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-orange-600/5 blur-[150px] rounded-full" />
+
+            <div className="max-w-7xl mx-auto px-6 relative z-10 animate-fadeInUp">
+                <div className="text-center mb-20">
+                    <h2 className="text-sm font-black text-orange-500 uppercase tracking-[0.4em] mb-4">The Apex Advantage</h2>
+                    <h3 className="text-4xl md:text-6xl font-black text-white tracking-tighter mb-6">
+                        BEYOND JUST A <br />
+                        <span className="text-slate-500">MARKETPLACE</span>
+                    </h3>
+                    <p className="text-slate-400 font-medium max-w-2xl mx-auto leading-relaxed">
+                        We are building the digital infrastructure for African commerce—where authenticity meets accessibility.
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {services.map((service, id) => (
+                        <div key={id} className="group p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:border-orange-500/30 transition-all duration-500 hover:-translate-y-2">
+                            <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
+                                {service.icon}
+                            </div>
+                            <h4 className="text-2xl font-black text-white mb-4 tracking-tight">{service.header}</h4>
+                            <p className="text-slate-400 text-sm leading-relaxed mb-6 font-medium">
+                                {service.text}
+                            </p>
+                            <div className="flex items-center gap-2 text-orange-500 font-bold text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                                Learn More <ArrowUpRight size={14} />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Trust Footer */}
+                <div className="mt-24 pt-12 border-t border-white/5 flex flex-wrap justify-center items-center gap-12 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                    <div className="text-lg font-black text-white tracking-tighter flex items-center gap-2">
+                        <Shield size={20} /> SECURE ESCROW
+                    </div>
+                    <div className="text-lg font-black text-white tracking-tighter flex items-center gap-2">
+                        <Users size={20} /> 5-STAR VENDORS
+                    </div>
+                    <div className="text-lg font-black text-white tracking-tighter flex items-center gap-2">
+                        <Zap size={20} /> INSTANT PAYOUTS
+                    </div>
+                </div>
             </div>
-                    )
-                    
-                })
-            }
-        </div>
-        <div class="text-center mt-12">
-            <a href="#contact" class="bg-slate-900 text-white px-10 py-4 rounded-lg text-lg font-bold hover:bg-slate-800 transition-colors inline-block shadow-lg hover:shadow-xl">
-                Request a Service
-            </a>
-        </div>
-    </div>
-</section>
-</div>
-  )
-}
+        </section>
+    );
+};
 
 export default Services

@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom"
 
 import CategoryPage from "./components/Category"
 import Homepage from "./pages/homepage"
-import NavBar from "./components/NavBar-2"
+import Navbar from "./components/Navbar"
 import CollectionDetailPage from "./pages/CollectionDetailPage"
 import ShowProductPage from "./pages/ShowProductPage"
 import AddProductPage from "./pages/Product-admin"
@@ -82,7 +82,7 @@ function App() {
         <Route path="/" element={<Homepage />} />
         <Route path="/categories" element={
           <>
-            <NavBar />
+            <Navbar />
             <CategoryPage />
             <Footer />
           </>
@@ -92,7 +92,7 @@ function App() {
 
         <Route path="/categories/*" element={
           <>
-            <NavBar />
+            <Navbar />
             <ShowProductPage />
           </>
         }
@@ -100,7 +100,7 @@ function App() {
 
         <Route path="/products/*" element={
           <>
-            <NavBar />
+            <Navbar />
             <CollectionDetailPage />
             <Footer />
           </>
@@ -109,7 +109,7 @@ function App() {
 
         <Route path="/login" element={
           <>
-            <NavBar />
+            <Navbar />
             <LoginPage />
             <Footer />
           </>
@@ -118,7 +118,7 @@ function App() {
 
         <Route path="/register" element={
           <>
-            <NavBar />
+            <Navbar />
             <RegisterPage />
             <Footer />
           </>
@@ -127,7 +127,7 @@ function App() {
 
         <Route path="/forgot-password" element={
           <>
-            <NavBar />
+            <Navbar />
             <ForgotPasswordPage />
             <Footer />
           </>
@@ -136,7 +136,7 @@ function App() {
 
         <Route path="/reset-password/:token" element={
           <>
-            <NavBar />
+            <Navbar />
             <ResetPasswordPage />
             <Footer />
           </>
@@ -149,7 +149,7 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/wishlist" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['customer']}>
               <WishlistPage />
             </ProtectedRoute>
@@ -159,7 +159,7 @@ function App() {
 
         <Route path="/checkout" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['customer']}>
               <CheckoutPage />
             </ProtectedRoute>
@@ -169,7 +169,7 @@ function App() {
 
         <Route path="/order-confirmation/:orderId" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['customer']}>
               <OrderConfirmationPage />
             </ProtectedRoute>
@@ -179,7 +179,7 @@ function App() {
 
         <Route path="/my-orders" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['customer']}>
               <MyOrdersPage />
             </ProtectedRoute>
@@ -189,7 +189,7 @@ function App() {
 
         <Route path="/my-orders/:id" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['customer']}>
               <CustomerOrderDetailPage />
             </ProtectedRoute>
@@ -199,7 +199,7 @@ function App() {
 
         <Route path="/payment/verify" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['customer']}>
               <PaymentVerificationPage />
             </ProtectedRoute>
@@ -230,7 +230,7 @@ function App() {
 
         <Route path="/admin" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminDashboard />
             </ProtectedRoute>
@@ -241,7 +241,7 @@ function App() {
 
         <Route path="/admin/categories/add" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <AddCategoryPage />
               <Footer />
@@ -252,7 +252,7 @@ function App() {
 
         <Route path="/admin/product/add" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <AddProductPage />
               <Footer />
@@ -263,7 +263,7 @@ function App() {
 
         <Route path="/admin/product/list" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <ProductsListPage />
               <Footer />
@@ -274,7 +274,7 @@ function App() {
 
         <Route path="/admin/products/edit/:id" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <EditProductPage />
               <Footer />
@@ -285,7 +285,7 @@ function App() {
 
         <Route path="/admin/categories" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <CategoriesListPage />
               <Footer />
@@ -296,7 +296,7 @@ function App() {
 
         <Route path="/admin/categories/edit/:id" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <EditCategoryPage />
               <Footer />
@@ -307,7 +307,7 @@ function App() {
 
         <Route path="/admin/product-analytics" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <AnalyticsPage />
               <Footer />
@@ -320,7 +320,7 @@ function App() {
 
         <Route path="/admin/users" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <UsersManagementPage />
               <Footer />
@@ -331,7 +331,7 @@ function App() {
 
         <Route path="/admin/reports" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <ReportsPage />
               <Footer />
@@ -342,7 +342,7 @@ function App() {
 
         <Route path="/admin/vendors" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <VendorsManagementPage />
               <Footer />
@@ -352,7 +352,7 @@ function App() {
         />
         <Route path="/admin/vendors/:id" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <VendorAccountDetailPage />
               <Footer />
@@ -363,7 +363,7 @@ function App() {
 
         <Route path="/vendor" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['vendor']}>
               <VendorDashboard />
               <Footer />
@@ -374,7 +374,7 @@ function App() {
 
         <Route path="/vendor/orders" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['vendor', 'admin']}>
               <OrdersPage />
               <Footer />
@@ -385,7 +385,7 @@ function App() {
 
         <Route path="/orders/:id" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['vendor', 'admin']}>
               <OrderDetailPage />
               <Footer />
@@ -396,7 +396,7 @@ function App() {
 
         <Route path="/vendor/payments" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['vendor']}>
               <PaymentsPage />
               <Footer />
@@ -407,7 +407,7 @@ function App() {
 
         <Route path="/vendor/analytics" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['vendor']}>
               <AnalyticsDashboard />
               <Footer />
@@ -418,7 +418,7 @@ function App() {
 
         <Route path="/vendor/settings" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['vendor']}>
               <VendorSettingsPage />
               <Footer />
@@ -429,7 +429,7 @@ function App() {
 
         <Route path="/admin/payouts" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminPayoutPage />
               <Footer />
@@ -440,7 +440,7 @@ function App() {
 
         <Route path="/admin/analytics" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminAnalyticsPage />
               <Footer />
@@ -451,7 +451,7 @@ function App() {
 
         <Route path="/vendor/product/list" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['vendor']}>
               <ProductsListPage />
               <Footer />
@@ -462,7 +462,7 @@ function App() {
 
         <Route path="/vendor/products/edit/:id" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['vendor']}>
               <EditProductPage />
               <Footer />
@@ -473,7 +473,7 @@ function App() {
 
         <Route path="/vendor/product/add" element={
           <>
-            <NavBar />
+            <Navbar />
             <ProtectedRoute allowedRoles={['vendor']}>
               <AddProductPage />
               <Footer />

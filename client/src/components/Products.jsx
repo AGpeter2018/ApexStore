@@ -1,107 +1,191 @@
-import { ArrowBigRight } from 'lucide-react'
-import React from 'react'
-import { Link } from 'react-router-dom'
-
-const products = [
-    {
-        productImage: 'https://m.media-amazon.com/images/I/71QOHWQT0uL._AC_SL500_.jpg',
-        productTitle: 'Talking Drum (Gangan)',
-        productText: 'The iconic hourglass-shaped drum that mimics Yoruba tonal language'
-    },
-    {
-        productImage: 'https://m.media-amazon.com/images/I/511eR5397CL._AC_.jpg',
-        productTitle: 'Dundun (Bass Drum)',
-        productText: 'Large ceremonial drum with deep, resonant tones for traditional ceremonies'
-    },
-    {
-        productImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNCOaQerCbm5F9rjlf2rjgefbkomZm4adKFA&s',
-        productTitle: 'Bata Drum Set',
-        productText: 'Sacred three-drum ensemble used in Yoruba religious ceremonies'
-    },
-    {
-        productImage: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBw8QDw8PDxAQDw8PDw8PDxAVEA8PDw8PFRUWFhURFRUYHSggGBolGxUVITEhJSkrLi4uFx8zODUtNygtLisBCgoKDg0OFQ8QGisdHR0tKy0tKystLSstKy0tLS01MC0tLy0tKy0tKystLS0rLSsrLS0tLS0tLTc3LTctLSstN//AABEIAKgBLAMBIgACEQEDEQH/xAAbAAACAwEBAQAAAAAAAAAAAAAAAQIDBAYFB//EAEAQAAIBAgMEBQkFBwQDAAAAAAABAgMRBBIhBTFBURNhcYGRBiIyUoKhscHRBxQjQpIzYnKissLwU1SD4RUkNP/EABgBAQEBAQEAAAAAAAAAAAAAAAABAgME/8QAIhEBAQACAQUAAgMAAAAAAAAAAAECEQMSITFBURNhBCJx/9oADAMBAAIRAxEAPwDvwADs5gAAAAAAAAAEAwIABIYUAAwI2CwwASEySEAh2AAFYTRNCZBFILEkNoCuwiTQrFCaFYmIgjYLDYWCE0RsTEwKwsSACNiLRNkQFYLAmNAawGI0AYhgIAAAAAAAAAAAGRSGhDQAxEmiIAFhodgpASsUYrF06Uc1WcacecmkS3XldbWkKklFOUmklq23ZJc2zlMZ5aqcnSwFGeLqapuMXKEeuVtEv4nEwVPJ/G4t5toYnoob+gptVJLv9CL7FLtMdfxro+tm3PtBwtC8aP8A7NTcmnlo5uCzb5eymaPI7aePr9PWxtPoqUuj+7wdPon+bM1F+da2XWXcW7I2Lg8K74ejFVNzrS/ErP23quxWR6qpOW9ib81LrWonVxfIWHlJvUshQRbGCNsBiZJoQERgBEKwMYmBAY2iJQr6CQ2JoBWENg0BsAYjQjbW5ITQAAAAAMQwEADIoAQAM5/y52/PZ+CliacYTmqlKCjK+VqUtd3UmdAcJ9rrzYfBYf8A3OOpQtuuldP+pEvhY7nDTlKlTlNKMpQhKSW6MnFNrXrJVXZN9RmwVGM6dOc0pTlBOV1fK7axSe5LdbqKMXOMHkpWTekoaqmtL8N0upcN/BrNy1N1qTa2ji1q5NJLe20kiFfa0U8tOE6krX3ZIJc8z39yZiw2CjdOaz1Iu+Z3yp8HGO5e99Zvjhk3d7+vXsON5L6dOmTyw1K+KqJ2nGjyyxzcect+nKxgqbFz3c5zd97lJybR0kqaM1SyaW67suF3yRzym/LUy14eJDyapL0c9O/5oTyt9bsQq7MxEZONPESlFcakFNp8m1Ztd50KuDp+/eZ1rwu/rlY42vR1q0nOOnn03m73CVmveergNs0qmkZect8XeMl2xep6FWkmrW0PMxuyYTebKsy1TfB9T4M1OTLH9pcca9KOJvxLY1zlauJqYd/iqU6XGaTcofxJb17z1MNilOKlGSlFpNNO6a5pnow5Jl4cssLHsxrFilc8uFYvhVN7YbhFMKpcncIBMbBhERMYmUJiGIBCZMiQbBDEbAIYAAhiIAYAACGAUgAYAcD9oKdXaewaC/3XSyXVGdJ/CMjvzitubLqYrbWHlFuFPCYVzqVFdZHNyVk+bV/cYzuo6YTddPCUoupGzjS6STU01duSUpQj155T14FahfXcr3UeCv8AMmrcPNgllhH1Yr5koK558stumjgtS5ysRhEk1fsIiWbQ8nHXc4xyyk83mpOSilZtN5ezieroUyoxbzNJtaJ8SzLSxThacY+jFQ81KySXHdp/mpewcfAVtTFu6okVzRa2QCMdaipaNJnOYrBSwblUoxlKlKd5Uk9ItvWUFw520R1jSK5QUlZ6riTx3ivKwOLjVipRd0/c+Ka4PqNiZyW341MDU6ej6DTlOnraaSu+x6b/APH7GwduUMZT6SjLdZTg7KdN8pL57md+Pk6nPPDT2oVDRTqmEtpzOu3N6UZXGZqUzTFlQhMk0RZURESIgBFkmIg2CGBsAIAIEAxAAwAKAAAEABTkpJOLUk9zTTT7GgqSMNSKTdr5qkukm+cbWhHstr3m2py5u3LT83uTMPSZm5Pi34cDhy306YJxZNRK0i2JxbSSsNMiiWW5RGXUA4wsEyCtzIW5hYd7GNtE4ciDT6iy9iLZUQkRuWNCZB5u2cCq9KUHyfwPmNTYlbDTWMwTccjarUldum07ScV+am9+Xevh9ekzl5UejxVSK0Ukqi63fK34ZC4X+3+l8F5OeUMMSlCVoV0k5Q4SXrQ5rq4HvI5Xa/k5Gr+LQ/CrReZZfNvLfdNbma/JTaWJqxqQxNNqVF5VWtljVet1b1lxtp2HoxyviuWUmtx0cJ2NEKpkuTps6SubaqpO6KIal0UVCYrEmIoTEMRBsGAFAIYigAAAAAYUgAZBj2rgI4mhWw83KMa1KdNyi7SipK10cL9m+0KuDxNbYuL0lTlOeElujKL86UI9TTc17R9GON+0fyfnWpQxuFbhjME+khKK86VOOtlzaevZmXEzfrePx1mNvlduEZde+0f7mZKMLJLkkZfJ/b8Mdg44iHmzcHCtBa9FVjKGeHvTXNNHpRRxz71ueEId5ckJRHJGGiaJLtB7tCvK3v8AAgtUjLVx1NSyrNJ2u7RlJLW2rWiI4+q4xjGPpVKkKafFJvVrrsmZq1annUVGDULxV4qUr3yvhok+PFmpNtSNFLExlJxWklq4tOMkudnwLsplxdKVRKaeWUU2nm1jJaq1ue59Rqp1VOMZKzUop6O615GbjPILEJIk2RuZQrEZkm9/wIxiZqkjnttwtiqMl+ZTg/05v7DomeFt5fiUHp6Vt/VL6ieYLaLNMTJQNaPXHnqaJwZGIyxGykrl6Rmw7NRtEWhMlIiwhESRFgbgAChBYdgsArBYYWAQIY7FVFjAEQIaAaCuR2RsRYHH4zJ5uFxlDpacb2hCtCXnQtzs9Oq3I6JS0bs3xst/hzNNZaJ+q79z0l7mzDTlr2Xi+1Hnzmq7S7jHOo04JX1jv85ecoyt1b7Xuerv7DPHDx1vdp62bbiuxcC9GbdtJNCUiTZnm3ro95ikUbSpTlDNT/aU5xqQV9JOO+L5XTaKbQrvNBq6l+JTbyzhNPVNd1nw3Nde6nJ2IYnBUqutSnGTta7XnW5J70axz7aXemd0o6QzKc04tpPe0nZvXrvryRqypJJbkkiNDDU6atTgo3snbe7brviTaM5UQYkE011kM1jns0nFDbIJjTGzRTOd25eVejG+kc02uO5r4tHTWucxWqKpXqSVvM/DXxfyLj3yiXxWnDGpFNCOhfFHqcFkQYRQmjURqw7NkTJh4aGyK0NRCkQJNEWioTEOwNAbrDSKfv8AT527VJfIax1L14+JdrpbYLEFi6b3Tj+pElWh6y8UA7BYamuaC6AjYLEgAjYLEgCoiRIAHa+j7+w8qcHCVr/923PvWviesijGYfMsy3peK+q+vM58mO43jWe5JNFMG+0nS03I87oscrb+OhGSuu8cviCM1YrUbdRO5Fu+4TZFSbExArjaI3CTRGoypzZnaq4tS0T15Wafgy1RKYx1i1uTvfhfq6jQ5MzZGmHbVbo6E5uo6ainLMmlayd73W45jyVlnw/S6/i1Jz132TyL3RRm+0bHupha0Y3UIOnDR2zTlKKt3K/j2m/yWpZcHh1u/DT8W38zrxz2xne2nuU1oXRKqaLonocE0gS1JwiNR1LEaaMTQiqkXm2UGRZJisBACdhNFBlCxIDm0rcF1eBF0I+qvBFwgKfu8PVj4IPu0eVuy6LgAp6Bfvfql9Q6H96f6pFwgKujl68/FfQLT/1J/wAv0LbCsNiq9T/UfhH6ElUq+uv0/wDZOwZRuqFXqc4vuaJxxNTio+8zY3DKrSqUnKUVUhKDlF5ZxUlZuL4M5KHkTUo//NtLF07boyblHstGUV7iXKtSR17qO7ulFPV2d0nx7vgX0termt5wlbB7dpfs8VRxC5TjBN9zh/cVYTyh2rQmlisHnpbpSoJ5o9aV2n2XRytjpMX0CSK5GXBbYo1oKUZJ29JejKPVKL1i+0nPEpcbmMrGpKaZKDuUdImWRfLQ5xbFhKLK76jTKgnG5HIixytqeftLaNOjFzqTUIrUl7LO7Yc1t3bau6FGVpbqkvVXJdZ421vLKpVvDDLJDc5v0pLqR4VDCXbead27t5pNtsSbV7W0qMZUEnbJTl0rW++SMmr+1ZntbKWWhRj6tKmu9RRy+LouOHr3m3em4xTa9KTUUl4nq0sPUWiqyst2kfodJl3rGU7R0tOZppnO06dfT8Rd8Pozdh54hb3B+zJfM6zJxsdBTRJrU8qOKrL8sX7TXyGsZV9Rfrf0NzKM6exTRceRTx0+NN9ziy6O0HxhNfpfzNdUTT0QsZI7QjxUv0sf/kIda9mX0LuJppsJlH3+n6y+A/vlP14+KG4LQFcRlowEFwGAgAdwuA0iAAHZdRXLEU1vnBe1ElsWSrBmSW0aK3zj3XZTPbdBcZPsX1M3kxntuYZX09FlTR5NXylpLdCb8EVLyjb3Uku2TfyMXnwntucWXx7WQrnh0+B49XblX8qhH2W+7Vmd7UryVuka61GEX8Dnf5GDc4cm7G7KjJ5lFKXrLSXitTnsZs/GU25UZvfez1T8DdOvVlo6tR/8tRcb7k0V1JwafSOL4vNK/wAew45c2F9OmPHlPby6G28dSdq9HNyyvf8A52Gyl5XQ1/DrX42p1JaretETVegvRdO+vo5ZPr3FkaieihWfZSqW8bWM9XyNdM91YvKW/o0K8nut0eV/zNF0dvVmllwzi3rac4xf8typUKj9GhV78kfiyaweJ4Uor+KaT9yZd5+on9GHaO1NpyTVKOGpX3O9So17kjmamwMdXnnxFfPJ800l2LcdzDZmIe904905/Qujsqq99ZLsppfFssnKnVxuLoeTs475rwNsNjyS/aK/YjqlsdfmrVX+iPwQ1sijx6SXbVn9R+PkvtPyYfHN09nyXpVL96XyCc6cd9ZLq6TXwR0y2Vh+NKD7Vm+JdTwtOPowjHsikanDl7rN5sfjlY4lPSHTTf7sa1vHcWwp4mXo06kf4p2+bOqyrkFkdJw/axeb9OfwmzKrnTk7U3Fec023N3e/q19x7cKHN3LR3OuGEx8OOWVyqKgOw7gdGSsFhgBHKhOmuRO4myDYFwA0AAAAAAAaOd29jZQqZVN2stFdIAPP/JtmLvwTdeTLaC/NNLtZUtoU3+dN8l5/uQAeTHHfl6b2SVdy9GnWlytSnb3of3fEy9HD1fadOK/quAHacOLneWxbT2Pi3rkpx7aj+CiaqewcVxnSj2QnL33QAdJwYOX5smiPk3VfpYiXswpr4pmiHkxD81StL/kcP6bCA1OLCek/Jl9aIeTeH4wcv4p1J/FmqlsbDx9GlTXsREBroidVaY4WC3JLuRLokAFTYyoVhgBFlchgRFbIsAKI3FcYFQriuMAgC4AEGYLgBQXDMAALMDYAB//Z',
-        productTitle: 'Sakara Drum',
-        productText: 'Clay pot drum covered with goatskin, perfect for acoustic music'
-    }
-]
-
-const categories = [
-    {
-        categoryIcon: '🪘',
-        categoryTitle: 'Talking Drums'
-    },
-    {
-        categoryIcon: '🥁',
-        categoryTitle: 'Bàtá Drums',
-    },
-    {
-        categoryIcon: '🎵',
-        categoryTitle: 'Dundun'
-    },
-    {
-        categoryIcon: '🎵',
-        categoryTitle: 'Accessories'
-    },
-    {
-        categoryIcon: '📚',
-        categoryTitle: 'Learning Materials'
-    }
-]
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { ArrowRight, ShoppingCart, Star, Eye, TrendingUp, Sparkles, Package } from 'lucide-react';
 
 const Products = () => {
-  return (
-    <div>
-    <section id="product" className="py-20 px-8 bg-slate-500/30">
-        <h2 class="text-4xl md:text-5xl font-bold text-center text-slate-900 mb-12">
-            Featured Drums
-        </h2>
-        <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('all');
 
-             {
-                 products.map((product, id) => {
-                     return   <div key={id} className="bg-white rounded-xl overflow-hidden shadow-lg hover:-translate-y-3 hover:shadow-2xl transition-all cursor-pointer border border-slate-200">
-                <div className="h-64 bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-8xl relative overflow-hidden">
-                    <span class="absolute text-9xl opacity-20">🥁</span>
-                    <span class="relative z-10">
-                        <img src={product.productImage} alt="" />
-                    </span>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-slate-900 mb-2">{product.productTitle}</h3>
-                    <p class="text-slate-600 text-sm mb-4">{product.productText}</p>
-                   
-                </div>
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                // Using the VITE_API_URL environment variable as configured in previous steps
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/products?limit=8`);
+                setProducts(response.data.data || []);
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
+
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat('en-NG', {
+            style: 'currency',
+            currency: 'NGN',
+            minimumFractionDigits: 0
+        }).format(price);
+    };
+
+    return (
+        <section id="product" className="py-24 bg-slate-900 overflow-hidden relative">
+            {/* Design Element - subtle glow */}
+            <div className="absolute top-1/2 left-0 w-[600px] h-[600px] bg-orange-600/5 blur-[120px] rounded-full -ml-64" />
+
+            <div className="container mx-auto px-6 relative z-10 animate-fadeInUp">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+                    <div className="max-w-2xl text-left">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 mb-4">
+                            <TrendingUp className="text-orange-500" size={14} />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-orange-400">Handpicked Excellence</span>
+                        </div>
+                        <h2 className="text-3xl sm:text-5xl md:text-7xl font-black text-white tracking-tighter mb-4 leading-none">
+                            APEX <span className="bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent">SIGNATURE</span>
+                        </h2>
+                        <p className="text-slate-400 font-medium leading-relaxed max-w-xl text-lg">
+                            The finest artisanal treasures, directly from the makers.
+                            Every piece tells a story of heritage and verified excellence.
+                        </p>
                     </div>
-                    })
-                }
-        </div>
-    </section>
-    <section class="py-30 px-8 bg-white">
-        <h2 class="text-4xl md:text-5xl font-bold text-center text-slate-900 mb-12">
-            Discover Your Perfect Product Collection
-        </h2>
-        <div class="max-w-7xl mx-auto md:w-150">
-      
-            <div class="bg-slate-50 p-8 rounded-xl text-center shadow-lg shadow  transition-all  border border-slate-200 ">
-                <p className=' text-slate-600 mb-2 max-w-2xl leading-relaxed '>
-               Dive into our exclusive collections showcasing premium Yoruba drums, traditional percussion sets, and rare cultural.
-                </p>
-                <p className=' text-slate-600  max-w-2xl leading-relaxed '>Curated Collections of Authentic African Percussion
-Explore our handpicked collections featuring the finest Yoruba drums and traditional Nigerian percussion instruments. Each collection is thoughtfully curated to celebrate the rich heritage of West African music, from ceremonial ensembles to contemporary performance pieces. Whether you're a professional musician, cultural enthusiast, or collector, discover drums that resonate with history and craftsmanship.
-</p>
-            </div>
-            <div className=' flex items-center justify-center  space-x-1 animate-fadeInUp-delay-2 mt-15 md:mt-5  bg-slate-900 text-white  py-4 rounded-lg text-lg font-bold hover:bg-slate-800 hover:shadow-xl  transition-all shadow-xl mx-45 md:mx-55 group'>
-                            
-                    <Link to="/collections" href="#products" className="">
-                        Shop Now
-                    </Link>
-                        <ArrowBigRight className='fill-slate-950 h-6 w-4 pt-1 transform group-hover:translate-x-1 transition-transform duration-300 cursor-pointer'/>
-                    
-            </div>
-        </div>
-    </section>
-    </div>
-  )
-}
 
-export default Products
+                    {/* Modern Filter Tabs */}
+                    <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 backdrop-blur-md">
+                        {['all', 'latest', 'popular'].map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${activeTab === tab
+                                    ? 'bg-orange-600 text-white shadow-xl shadow-orange-900/40'
+                                    : 'text-slate-500 hover:text-white'
+                                    }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Products Grid */}
+                {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="animate-pulse">
+                                <div className="bg-slate-800 aspect-[4/5] rounded-[2.5rem] mb-6 shadow-2xl"></div>
+                                <div className="h-4 bg-slate-800 rounded-full w-3/4 mb-3"></div>
+                                <div className="h-4 bg-slate-800 rounded-full w-1/2"></div>
+                            </div>
+                        ))}
+                    </div>
+                ) : products.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+                        {products.map((product) => (
+                            <div key={product._id} className="group">
+                                {/* Product Card */}
+                                <div className="relative bg-slate-900/40 rounded-[3rem] border border-white/5 p-4 transition-all duration-700 hover:border-orange-500/40 hover:-translate-y-3 hover:shadow-[0_30px_60px_-15px_rgba(234,88,12,0.4)]">
+
+                                    {/* Image Base */}
+                                    <div className="aspect-[4/5] relative rounded-[2.5rem] overflow-hidden bg-slate-950 shadow-inner">
+                                        <img
+                                            src={product.images?.[0]?.url || 'https://via.placeholder.com/400x500?text=Apex+Collection'}
+                                            alt={product.name}
+                                            className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+                                        />
+
+                                        {/* Floating Actions */}
+                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                        <div className="absolute inset-x-0 bottom-6 px-6 flex justify-center gap-3 translate-y-12 group-hover:translate-y-0 transition-transform duration-500">
+                                            <button className="w-14 h-14 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all transform hover:scale-110 shadow-2xl">
+                                                <ShoppingCart size={24} />
+                                            </button>
+                                            <Link to={`/product/${product.slug || product._id}`} className="w-14 h-14 rounded-2xl bg-orange-600/90 backdrop-blur-md text-white flex items-center justify-center hover:bg-orange-500 transition-all transform hover:scale-110 shadow-2xl">
+                                                <Eye size={24} />
+                                            </Link>
+                                        </div>
+
+                                        {/* Status Badge */}
+                                        <div className="absolute top-6 left-6 flex flex-col gap-2">
+                                            <div className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-[8px] font-black text-white uppercase tracking-[0.2em]">
+                                                {product.category?.name || 'Curated'}
+                                            </div>
+                                            {product.stock < 10 && (
+                                                <div className="px-3 py-1 bg-red-600/90 rounded-full text-[8px] font-black text-white uppercase tracking-[0.2em] animate-pulse">
+                                                    Rare Find
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Info Base */}
+                                    <div className="p-6 text-left">
+                                        <div className="flex items-center gap-1 text-amber-500 mb-2">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} size={10} fill={i < 4 ? "currentColor" : "none"} />
+                                            ))}
+                                            <span className="text-[10px] font-bold text-slate-500 ml-1">4.8</span>
+                                        </div>
+                                        <h4 className="text-xl font-bold text-white mb-2 line-clamp-1 group-hover:text-orange-400 transition-colors">
+                                            {product.name}
+                                        </h4>
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-2xl font-black text-white tracking-tight">
+                                                {formatPrice(product.price)}
+                                            </div>
+                                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-lg group-hover:bg-orange-500/10 group-hover:text-orange-400 transition-all">
+                                                @{product.vendor?.storeName || 'Official'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="py-24 text-center bg-slate-950/40 rounded-[4rem] border border-dashed border-white/10">
+                        <Package size={64} className="mx-auto text-slate-800 mb-6" />
+                        <h4 className="text-2xl font-black text-white mb-2 tracking-tight">Vibrant Choices Pending</h4>
+                        <p className="text-slate-500 font-medium">New marketplace treasures are arriving momentarily.</p>
+                    </div>
+                )}
+
+                {/* Epic Marketplace CTA Section */}
+                <div className="mt-32 relative rounded-[4rem] overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-rose-700 to-amber-600 transition-transform duration-700 group-hover:scale-105" />
+                    <img
+                        src="https://images.unsplash.com/photo-1523450001312-faa4e2e37f0f?w=1920&q=80"
+                        className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay group-hover:scale-120 transition-transform duration-[20s]"
+                        alt="Join marketplace"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent md:bg-gradient-to-r" />
+
+                    <div className="relative z-10 px-8 py-20 md:p-24 flex flex-col md:flex-row items-center justify-between gap-12 text-left">
+                        <div className="max-w-xl">
+                            <h3 className="text-3xl sm:text-5xl md:text-7xl font-black text-white tracking-tighter mb-8 leading-none">
+                                JOIN THE <br />
+                                <span className="underline decoration-white/20 underline-offset-8">PREMIUM</span> ECONOMY
+                            </h3>
+                            <p className="text-orange-100 text-xl font-medium opacity-80 leading-relaxed">
+                                Join 500+ verified vendors and thousands of collectors in Africa's most vibrant digital pulse.
+                            </p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-6 w-full md:w-auto">
+                            <Link
+                                to="/categories"
+                                className="bg-white text-black px-12 py-7 rounded-3xl font-black text-xl hover:shadow-[0_30px_60px_rgba(255,255,255,0.3)] hover:-translate-y-2 transition-all flex items-center justify-center gap-3 active:scale-95"
+                            >
+                                START EXPLORING
+                                <ArrowRight size={24} />
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+export default Products;

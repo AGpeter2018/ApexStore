@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchCart, selectCartItems, selectCartTotal, selectCartCount, selectCartLoading } from '../redux/slices/cartSlice';
 import CartItem from '../components/CartItem';
-import NavBar from '../components/NavBar-2';
+import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { ShoppingCart, ArrowRight } from 'lucide-react';
 
@@ -33,7 +33,7 @@ const CartPage = () => {
     if (loading) {
         return (
             <>
-                <NavBar />
+                <Navbar />
                 <div className="cart-page">
                     <div className="loading">Loading cart...</div>
                 </div>
@@ -45,7 +45,7 @@ const CartPage = () => {
     if (cartItems.length === 0) {
         return (
             <>
-                <NavBar />
+                <Navbar />
                 <div className="cart-page">
                     <div className="empty-cart">
                         <ShoppingCart size={80} />
@@ -63,7 +63,7 @@ const CartPage = () => {
 
     return (
         <>
-            <NavBar />
+            <Navbar />
             <div className="cart-page">
                 <div className="cart-container">
                     <h1>Shopping Cart ({cartCount} items)</h1>
