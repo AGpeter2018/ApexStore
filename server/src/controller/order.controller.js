@@ -8,6 +8,7 @@ import Dispute from '../../models/Dispute.model.js';
 import { processPayment, verifyPayment, refundPayment } from '../helpers/payment.helper.js';
 import { sendOrderConfirmationEmail, sendOrderStatusUpdateEmail, sendVendorOrderNotificationEmail } from '../helpers/email.helper.js';
 import { finalizeOrder } from '../helpers/order.helper.js';
+import { calculateDiscount } from '../helpers/price.helper.js';
 
 /**
  * Get all orders
@@ -401,9 +402,13 @@ export const createOrder = async (req, res) => {
             })
         );
 
+        const totalItemsCount = orderItems.reduce((acc, item) => acc + item.quantity, 0);
+        const { discountAmount, percentage, type, reason } = calculateDiscount(subtotal, totalItemsCount);
+
+        const discountedSubtotal = subtotal - discountAmount;
         const shippingFee = 1500;
-        const tax = subtotal * 0.075;
-        const total = subtotal + shippingFee + tax;
+        const tax = discountedSubtotal * 0.075;
+        const total = discountedSubtotal + shippingFee + tax;
 
         const order = new Order({
             customer: req.user._id,
@@ -411,6 +416,12 @@ export const createOrder = async (req, res) => {
             shippingAddress,
             paymentMethod,
             subtotal,
+            discountAmount,
+            discountInfo: {
+                type,
+                percentage,
+                reason
+            },
             shippingFee,
             tax,
             total,
@@ -537,9 +548,13 @@ export const checkout = async (req, res) => {
             });
         }
 
+        const totalItemsCount = orderItems.reduce((acc, item) => acc + item.quantity, 0);
+        const { discountAmount, percentage, type, reason } = calculateDiscount(subtotal, totalItemsCount);
+
+        const discountedSubtotal = subtotal - discountAmount;
         const shippingFee = 1500;
-        const tax = subtotal * 0.075;
-        const total = subtotal + shippingFee + tax;
+        const tax = discountedSubtotal * 0.075;
+        const total = discountedSubtotal + shippingFee + tax;
 
         const order = new Order({
             customer: req.user._id,
@@ -547,6 +562,12 @@ export const checkout = async (req, res) => {
             shippingAddress,
             paymentMethod,
             subtotal,
+            discountAmount,
+            discountInfo: {
+                type,
+                percentage,
+                reason
+            },
             shippingFee,
             tax,
             total,

@@ -26,9 +26,22 @@ const CartPage = () => {
         navigate('/checkout');
     };
 
+    const getDiscountInfo = (count, subtotal) => {
+        let percentage = 0;
+        let nextThreshold = 3;
+        if (count >= 10) percentage = 15;
+        else if (count >= 6) { percentage = 10; nextThreshold = 10; }
+        else if (count >= 3) { percentage = 5; nextThreshold = 6; }
+
+        const amount = (subtotal * percentage) / 100;
+        return { amount, percentage, nextThreshold };
+    };
+
+    const { amount: discountAmount, percentage: discountPercentage, nextThreshold } = getDiscountInfo(cartCount, cartTotal);
     const shippingFee = 1500;
-    const tax = cartTotal * 0.075;
-    const total = cartTotal + shippingFee + tax;
+    const discountedSubtotal = cartTotal - discountAmount;
+    const tax = discountedSubtotal * 0.075;
+    const total = discountedSubtotal + shippingFee + tax;
 
     if (loading) {
         return (
@@ -83,6 +96,13 @@ const CartPage = () => {
                                 <span>₦{cartTotal.toLocaleString()}</span>
                             </div>
 
+                            {discountAmount > 0 && (
+                                <div className="summary-row discount">
+                                    <span>Bulk Savings ({discountPercentage}%):</span>
+                                    <span>-₦{discountAmount.toLocaleString()}</span>
+                                </div>
+                            )}
+
                             <div className="summary-row">
                                 <span>Shipping Fee:</span>
                                 <span>₦{shippingFee.toLocaleString()}</span>
@@ -99,6 +119,15 @@ const CartPage = () => {
                                 <span>Total:</span>
                                 <span>₦{total.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                             </div>
+
+                            {cartCount < 10 && (
+                                <div className="bulk-promo">
+                                    <p>
+                                        Add <strong>{nextThreshold - cartCount} more item{nextThreshold - cartCount > 1 ? 's' : ''}</strong> to unlock
+                                        <strong> {nextThreshold === 6 ? '10%' : nextThreshold === 10 ? '15%' : '5%'} off</strong>!
+                                    </p>
+                                </div>
+                            )}
 
                             <button onClick={handleCheckout} className="checkout-btn">
                                 Proceed to Checkout
@@ -169,11 +198,27 @@ const CartPage = () => {
                     color: #666;
                 }
 
+                .summary-row.discount {
+                    color: #10b981;
+                    font-weight: 600;
+                }
+
                 .summary-row.total {
                     font-size: 24px;
                     font-weight: 700;
                     color: #333;
                     margin-top: 10px;
+                }
+
+                .bulk-promo {
+                    background: #f0fdf4;
+                    border: 1px dashed #22c55e;
+                    padding: 12px;
+                    border-radius: 8px;
+                    margin: 15px 0;
+                    font-size: 14px;
+                    color: #166534;
+                    text-align: center;
                 }
 
                 .summary-divider {
