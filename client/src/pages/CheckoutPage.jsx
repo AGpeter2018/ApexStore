@@ -26,9 +26,22 @@ const CheckoutPage = () => {
     const [paymentMethod, setPaymentMethod] = useState('paystack');
     const [notes, setNotes] = useState('');
 
+    const getDiscountInfo = (count, subtotal) => {
+        let percentage = 0;
+        if (count >= 10) percentage = 15;
+        else if (count >= 6) percentage = 10;
+        else if (count >= 3) percentage = 5;
+
+        const amount = (subtotal * percentage) / 100;
+        return { amount, percentage };
+    };
+
+    const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+    const { amount: discountAmount, percentage: discountPercentage } = getDiscountInfo(cartCount, cartTotal);
     const shippingFee = 1500;
-    const tax = cartTotal * 0.075;
-    const total = cartTotal + shippingFee + tax;
+    const discountedSubtotal = cartTotal - discountAmount;
+    const tax = discountedSubtotal * 0.075;
+    const total = discountedSubtotal + shippingFee + tax;
 
     useEffect(() => {
         if (cartItems.length === 0) {
@@ -339,6 +352,12 @@ const CheckoutPage = () => {
                             <span>Subtotal:</span>
                             <span>₦{cartTotal.toLocaleString()}</span>
                         </div>
+                        {discountAmount > 0 && (
+                            <div className="summary-row discount">
+                                <span>Bulk Savings ({discountPercentage}%):</span>
+                                <span>-₦{discountAmount.toLocaleString()}</span>
+                            </div>
+                        )}
                         <div className="summary-row">
                             <span>Shipping:</span>
                             <span>₦{shippingFee.toLocaleString()}</span>
@@ -633,6 +652,11 @@ const CheckoutPage = () => {
                     margin-bottom: 15px;
                     font-size: 16px;
                     color: #666;
+                }
+
+                .summary-row.discount {
+                    color: #10b981;
+                    font-weight: 600;
                 }
 
                 .summary-row.total {

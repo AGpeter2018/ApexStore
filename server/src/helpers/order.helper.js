@@ -37,10 +37,19 @@ export const finalizeOrder = async (orderId, reference) => {
             if (vId) {
                 if (!vendorUpdates[vId]) vendorUpdates[vId] = { sales: 0, vendorShare: 0, orders: 1 };
                 const amount = item.subtotal || (item.price * item.quantity);
-                vendorUpdates[vId].sales += amount;
 
-                // Calculate vendor share (90% of subtotal)
-                const share = amount * (1 - COMMISSION_RATE);
+                // Proportionally apply discount to item amount for fair revenue split
+                let effectiveAmount = amount;
+                if (order.discountAmount > 0 && order.subtotal > 0) {
+                    const itemWeight = amount / order.subtotal;
+                    const itemDiscount = order.discountAmount * itemWeight;
+                    effectiveAmount = amount - itemDiscount;
+                }
+
+                vendorUpdates[vId].sales += effectiveAmount;
+
+                // Calculate vendor share (90% of effective subtotal)
+                const share = effectiveAmount * (1 - COMMISSION_RATE);
                 vendorUpdates[vId].vendorShare += share;
             }
         });

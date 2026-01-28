@@ -92,6 +92,25 @@ const orderSchema = new mongoose.Schema({
     refundedAmount: {
         type: Number,
         default: 0
+    },
+    discountAmount: {
+        type: Number,
+        default: 0
+    },
+    discountInfo: {
+        type: {
+            type: String,
+            enum: ['bulk', 'coupon', 'none'],
+            default: 'none'
+        },
+        percentage: {
+            type: Number,
+            default: 0
+        },
+        reason: {
+            type: String,
+            trim: true
+        }
     }
 }, {
     timestamps: true
