@@ -564,7 +564,7 @@ const ProductItem = () => {
                         </div>
 
                         {/* Features */}
-                        <div className="grid grid-cols-3 gap-4 mb-8 p-6 bg-gray-100 rounded-lg">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 p-6 bg-gray-100 rounded-lg">
                             <div className="text-center">
                                 <Truck className="mx-auto mb-2 text-amber-600" size={32} />
                                 <p className="text-sm font-semibold">Free Shipping</p>

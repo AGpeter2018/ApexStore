@@ -1,6 +1,7 @@
 import React from 'react';
 import { Target, Globe, Heart } from 'lucide-react';
 import Testimonies from './Testimonies.jsx';
+import { motion } from 'framer-motion';
 
 const About = () => {
     return (
@@ -11,9 +12,15 @@ const About = () => {
                 {/* Decorative background */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/20 to-transparent" />
 
-                <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center animate-fadeInUp">
+                <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
                     {/* Visual Side */}
-                    <div className="relative group">
+                    <motion.div
+                        initial={{ opacity: 0, x: -50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8 }}
+                        className="relative group"
+                    >
                         <div className="absolute inset-0 bg-orange-600/20 blur-[100px] rounded-full group-hover:bg-orange-600/30 transition-all duration-700" />
                         <div className="relative aspect-square rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl">
                             <img
@@ -34,10 +41,16 @@ const About = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Content Side */}
-                    <div className="text-left">
+                    <motion.div
+                        initial={{ opacity: 0, x: 50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        className="text-left"
+                    >
                         <div className="inline-flex items-center gap-2 mb-6">
                             <Globe className="text-orange-500" size={20} />
                             <span className="text-sm font-black text-orange-500 uppercase tracking-[0.4em]">Our Mission</span>
@@ -81,7 +94,7 @@ const About = () => {
                                 </a>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </section>
         </div>
