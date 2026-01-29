@@ -1,5 +1,6 @@
 import React from 'react';
 import { Shield, Truck, Users, Zap, ArrowUpRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const services = [
     {
@@ -30,8 +31,14 @@ const Services = () => {
             {/* Background Glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-orange-600/5 blur-[150px] rounded-full" />
 
-            <div className="max-w-7xl mx-auto px-6 relative z-10 animate-fadeInUp">
-                <div className="text-center mb-20">
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8 }}
+                    className="text-center mb-20"
+                >
                     <h2 className="text-sm font-black text-orange-500 uppercase tracking-[0.4em] mb-4">The Apex Advantage</h2>
                     <h3 className="text-4xl md:text-6xl font-black text-white tracking-tighter mb-6">
                         BEYOND JUST A <br />
@@ -40,11 +47,18 @@ const Services = () => {
                     <p className="text-slate-400 font-medium max-w-2xl mx-auto leading-relaxed">
                         We are building the digital infrastructure for African commerce—where authenticity meets accessibility.
                     </p>
-                </div>
+                </motion.div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {services.map((service, id) => (
-                        <div key={id} className="group p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:border-orange-500/30 transition-all duration-500 hover:-translate-y-2">
+                        <motion.div
+                            key={id}
+                            initial={{ opacity: 0, y: 50 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: id * 0.1 }}
+                            className="group p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:border-orange-500/30 transition-all duration-500 hover:-translate-y-2"
+                        >
                             <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
                                 {service.icon}
                             </div>
@@ -55,12 +69,18 @@ const Services = () => {
                             <div className="flex items-center gap-2 text-orange-500 font-bold text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
                                 Learn More <ArrowUpRight size={14} />
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
 
                 {/* Trust Footer */}
-                <div className="mt-24 pt-12 border-t border-white/5 flex flex-wrap justify-center items-center gap-12 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 0.4 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.8, duration: 1 }}
+                    className="mt-24 pt-12 border-t border-white/5 flex flex-wrap justify-center items-center gap-12 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700"
+                >
                     <div className="text-lg font-black text-white tracking-tighter flex items-center gap-2">
                         <Shield size={20} /> SECURE ESCROW
                     </div>
@@ -70,7 +90,7 @@ const Services = () => {
                     <div className="text-lg font-black text-white tracking-tighter flex items-center gap-2">
                         <Zap size={20} /> INSTANT PAYOUTS
                     </div>
-                </div>
+                </motion.div>
             </div>
         </section>
     );

@@ -1,7 +1,6 @@
 import Vendor from "../models/Vendor.js";
 
 export const requireVendor = async (req, res, next) => {
-
   if (req.user.role !== "vendor") {
     return res.status(403).json({
       success: false,
@@ -13,15 +12,11 @@ export const requireVendor = async (req, res, next) => {
 
   if (!vendor) {
     // Fail-safe: Create missing vendor profile
-    const {storeName, storeDescription, location, businessAddress,  socials, logo} = req.body;
     vendor = await Vendor.create({
-     owner: user._id,
-                storeName,
-                storeDescription,
-                location, 
-                businessAddress,
-                socials,
-                logo
+      owner: req.user._id,
+      storeName: `${req.user.name}'s Store`,
+      storeDescription: "Premium African products and craftsmanship.",
+      location: "Lagos",
     });
   }
 

@@ -72,9 +72,9 @@ const MyOrdersPage = () => {
                 </div>
 
                 {loading ? (          
-            <div className="flex justify-center items-center min-h-screen">
+           <div className="flex justify-center items-center min-h-screen">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>     
+            </div>
                 ) : filteredOrders.length === 0 ? (
                     <div className="empty-state">
                         <Package size={80} />

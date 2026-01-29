@@ -73,8 +73,8 @@ const DisputeDetailsPage = () => {
 
     if (loading && !dispute) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="h-12 w-12 border-4 border-amber-600/20 border-t-amber-600 rounded-full animate-spin"></div>
+           <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
             </div>
         );
     }
