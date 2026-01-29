@@ -65,9 +65,9 @@ const DisputeListPage = () => {
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center py-20">
-                        <div className="h-12 w-12 border-4 border-amber-600/20 border-t-amber-600 rounded-full animate-spin"></div>
-                    </div>
+                   <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+                </div> 
                 ) : items.length === 0 ? (
                     <div className="bg-white rounded-3xl p-16 text-center border-2 border-dashed border-gray-200 shadow-sm">
                         <Shield size={64} className="mx-auto text-gray-200 mb-6" />

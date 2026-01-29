@@ -8,7 +8,6 @@ const ShowProductPage = () => {
       <Routes>
         <Route path="/:slug" element={<ProductShow />} />
       </Routes>
-      {/* <ProductShow/> */}
     </div>
   )
 }

@@ -74,7 +74,7 @@ const LoginPage = () => {
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 flex items-center justify-center py-8 px-4">
             <div className="max-w-md w-full">
                 {/* Logo/Brand */}
-                <div className="text-center mb-8">
+                <div className="text-center  mb-8">
                     <svg className='h-20 w-20 mx-auto' viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -107,7 +107,7 @@ const LoginPage = () => {
                 </div>
 
                 {/* Login Form */}
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="bg-white rounded-2xl shadow-xl p-8 mb-10">
                     {error && (
                         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6">
                             {error}
@@ -193,16 +193,6 @@ const LoginPage = () => {
                                 Sign up
                             </Link>
                         </p>
-                    </div>
-                </div>
-
-                {/* Demo Accounts */}
-                <div className="mt-8 bg-orange-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-700 font-semibold mb-2">Demo Accounts:</p>
-                    <div className="text-xs text-gray-600 space-y-1">
-                        <p>Admin: admin@apexstore.com / password123</p>
-                        <p>Vendor: vendor@apexstore.com / password123</p>
-                        <p>Customer: customer@apexstore.com / password123</p>
                     </div>
                 </div>
             </div>

@@ -538,14 +538,14 @@ const RegisterPage = () => {
                     </div>
                     <div className="bg-white/80 backdrop-blur rounded-lg p-4 text-center">
                         <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <span className="text-2xl">���</span>
+                            <span className="text-2xl">✓</span>
                         </div>
                         <h3 className="font-semibold text-gray-900 mb-1">Fast Setup</h3>
                         <p className="text-xs text-gray-600">Start in minutes</p>
                     </div>
                     <div className="bg-white/80 backdrop-blur rounded-lg p-4 text-center">
                         <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <span className="text-2xl">���</span>
+                            <span className="text-2xl">✓</span>
                         </div>
                         <h3 className="font-semibold text-gray-900 mb-1">Free</h3>
                         <p className="text-xs text-gray-600">No credit card required</p>
