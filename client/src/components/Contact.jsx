@@ -65,7 +65,7 @@ const Contact = () => {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Call Us</p>
-                                    <p className="text-white font-bold text-lg">+234 (0) 800-APEX-STORE</p>
+                                    <p className="text-white font-bold text-lg">+234 814 891 5475</p>
                                 </div>
                             </div>
 
@@ -94,7 +94,8 @@ const Contact = () => {
                             {/* Glassmorphism Glow */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/10 blur-[100px] -mr-32 -mt-32 rounded-full" />
 
-                            <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
+                            <form  action="https://formspree.io/f/movnookg"
+                            method="POST" onSubmit={handleSubmit} className="relative z-10 space-y-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Full Name</label>
@@ -105,7 +106,7 @@ const Contact = () => {
                                             onChange={handleChange}
                                             required
                                             className="w-full bg-black/40 border border-white/5 rounded-2xl py-5 px-8 text-white focus:border-orange-500/50 focus:bg-black/60 outline-none transition-all"
-                                            placeholder="John Doe"
+                                            placeholder="Full Name"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -117,7 +118,7 @@ const Contact = () => {
                                             onChange={handleChange}
                                             required
                                             className="w-full bg-black/40 border border-white/5 rounded-2xl py-5 px-8 text-white focus:border-orange-500/50 focus:bg-black/60 outline-none transition-all"
-                                            placeholder="john@example.com"
+                                            placeholder="your@email.com"
                                         />
                                     </div>
                                 </div>

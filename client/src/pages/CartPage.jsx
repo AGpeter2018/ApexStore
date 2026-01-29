@@ -3,8 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchCart, selectCartItems, selectCartTotal, selectCartCount, selectCartLoading } from '../redux/slices/cartSlice';
 import CartItem from '../components/CartItem';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
 import { ShoppingCart, ArrowRight } from 'lucide-react';
 
 const CartPage = () => {
@@ -26,263 +24,126 @@ const CartPage = () => {
         navigate('/checkout');
     };
 
+    const getDiscountInfo = (count, subtotal) => {
+        let percentage = 0;
+        let nextThreshold = 3;
+
+        if (count >= 10) {
+            percentage = 15;
+            nextThreshold = null;
+        } else if (count >= 6) {
+            percentage = 10;
+            nextThreshold = 10;
+        } else if (count >= 3) {
+            percentage = 5;
+            nextThreshold = 6;
+        }
+
+        const amount = (subtotal * percentage) / 100;
+        return { amount, percentage, nextThreshold };
+    };
+
+    const { amount: discountAmount, percentage: discountPercentage, nextThreshold } = getDiscountInfo(cartCount, cartTotal);
     const shippingFee = 1500;
-    const tax = cartTotal * 0.075;
-    const total = cartTotal + shippingFee + tax;
+    const discountedSubtotal = cartTotal - discountAmount;
+    const tax = discountedSubtotal * 0.075;
+    const total = discountedSubtotal + shippingFee + tax;
 
     if (loading) {
-        return (
-            <>
-                <Navbar />
-                <div className="cart-page">
-                    <div className="loading">Loading cart...</div>
-                </div>
-                <Footer />
-            </>
-        );
+        <div className="flex justify-center items-center min-h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+        </div>
     }
 
     if (cartItems.length === 0) {
         return (
-            <>
-                <Navbar />
-                <div className="cart-page">
-                    <div className="empty-cart">
-                        <ShoppingCart size={80} />
-                        <h2>Your cart is empty</h2>
-                        <p>Add some products to get started!</p>
-                        <button onClick={() => navigate('/categories')} className="shop-btn">
-                            Start Shopping
-                        </button>
-                    </div>
+            <div className="min-h-[80vh] bg-gradient-to-br from-[#f5f7fa] to-[#c3cfe2] flex items-center justify-center px-4 py-10">
+                <div className="text-center p-12 bg-white rounded-2xl max-w-lg w-full mx-auto shadow-lg">
+                    <ShoppingCart size={80} className="text-gray-300 mx-auto mb-6" />
+                    <h2 className="text-3xl font-bold text-gray-800 mb-3">Your cart is empty</h2>
+                    <p className="text-gray-600 text-lg mb-8">Add some products to get started!</p>
+                    <button
+                        onClick={() => navigate('/categories')}
+                        className="px-10 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:-translate-y-1 transition-transform shadow-lg hover:shadow-indigo-500/30"
+                    >
+                        Start Shopping
+                    </button>
                 </div>
-                <Footer />
-            </>
+            </div>
         );
     }
 
     return (
-        <>
-            <Navbar />
-            <div className="cart-page">
-                <div className="cart-container">
-                    <h1>Shopping Cart ({cartCount} items)</h1>
+        <div className="min-h-[80vh] bg-gradient-to-br from-[#f5f7fa] to-[#c3cfe2] px-4 py-10">
+            <div className="max-w-7xl mx-auto">
+                <h1 className="text-3xl font-bold text-gray-800 mb-8">Shopping Cart ({cartCount} items)</h1>
 
-                    <div className="cart-content">
-                        <div className="cart-items">
-                            {cartItems.map((item) => (
-                                <CartItem key={item.product._id} item={item} />
-                            ))}
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8">
+                    <div className="flex flex-col gap-4">
+                        {cartItems.map((item) => (
+                            <CartItem key={item.product._id} item={item} />
+                        ))}
+                    </div>
+
+                    <div className="bg-white p-8 rounded-2xl shadow-lg h-fit sticky top-24">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-6">Order Summary</h2>
+
+                        <div className="flex justify-between mb-4 text-gray-600">
+                            <span>Subtotal:</span>
+                            <span>₦{cartTotal.toLocaleString()}</span>
                         </div>
 
-                        <div className="cart-summary">
-                            <h2>Order Summary</h2>
-
-                            <div className="summary-row">
-                                <span>Subtotal:</span>
-                                <span>₦{cartTotal.toLocaleString()}</span>
+                        {discountAmount > 0 && (
+                            <div className="flex justify-between mb-4 text-emerald-600 font-bold">
+                                <span>Bulk Savings ({discountPercentage}%):</span>
+                                <span>-₦{discountAmount.toLocaleString()}</span>
                             </div>
+                        )}
 
-                            <div className="summary-row">
-                                <span>Shipping Fee:</span>
-                                <span>₦{shippingFee.toLocaleString()}</span>
-                            </div>
-
-                            <div className="summary-row">
-                                <span>Tax (7.5%):</span>
-                                <span>₦{tax.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                            </div>
-
-                            <div className="summary-divider"></div>
-
-                            <div className="summary-row total">
-                                <span>Total:</span>
-                                <span>₦{total.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                            </div>
-
-                            <button onClick={handleCheckout} className="checkout-btn">
-                                Proceed to Checkout
-                                <ArrowRight size={20} />
-                            </button>
-
-                            <button onClick={() => navigate('/categories')} className="continue-shopping-btn">
-                                Continue Shopping
-                            </button>
+                        <div className="flex justify-between mb-4 text-gray-600">
+                            <span>Shipping Fee:</span>
+                            <span>₦{shippingFee.toLocaleString()}</span>
                         </div>
+
+                        <div className="flex justify-between mb-4 text-gray-600">
+                            <span>Tax (7.5%):</span>
+                            <span>₦{tax.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                        </div>
+
+                        <div className="h-px bg-gradient-to-r from-indigo-500 to-purple-600 my-6"></div>
+
+                        <div className="flex justify-between mb-6 text-2xl font-bold text-gray-800">
+                            <span>Total:</span>
+                            <span>₦{total.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                        </div>
+
+                        {cartCount < 10 && (
+                            <div className="bg-green-50 border border-dashed border-green-500 p-3 rounded-lg mb-4 text-center text-sm text-green-800">
+                                <p>
+                                    Add <strong>{nextThreshold - cartCount} more item{nextThreshold - cartCount > 1 ? 's' : ''}</strong> to unlock
+                                    <strong> {nextThreshold === 6 ? '10%' : nextThreshold === 10 ? '15%' : '5%'} off</strong>!
+                                </p>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={handleCheckout}
+                            className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all shadow-lg hover:shadow-indigo-500/30 mb-4"
+                        >
+                            Proceed to Checkout
+                            <ArrowRight size={20} />
+                        </button>
+
+                        <button
+                            onClick={() => navigate('/categories')}
+                            className="w-full py-3.5 bg-white text-indigo-600 border-2 border-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-colors"
+                        >
+                            Continue Shopping
+                        </button>
                     </div>
                 </div>
             </div>
-            <Footer />
-
-            <style jsx>{`
-                .cart-page {
-                    min-height: 80vh;
-                    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-                    padding: 40px 20px;
-                }
-
-                .cart-container {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                }
-
-                .cart-container h1 {
-                    font-size: 32px;
-                    font-weight: 700;
-                    color: #333;
-                    margin-bottom: 30px;
-                }
-
-                .cart-content {
-                    display: grid;
-                    grid-template-columns: 1fr 400px;
-                    gap: 30px;
-                }
-
-                .cart-items {
-                    display: flex;
-                    flex-direction: column;
-                }
-
-                .cart-summary {
-                    background: white;
-                    padding: 30px;
-                    border-radius: 16px;
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-                    height: fit-content;
-                    position: sticky;
-                    top: 100px;
-                }
-
-                .cart-summary h2 {
-                    font-size: 24px;
-                    font-weight: 700;
-                    margin: 0 0 20px 0;
-                    color: #333;
-                }
-
-                .summary-row {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 15px;
-                    font-size: 16px;
-                    color: #666;
-                }
-
-                .summary-row.total {
-                    font-size: 24px;
-                    font-weight: 700;
-                    color: #333;
-                    margin-top: 10px;
-                }
-
-                .summary-divider {
-                    height: 2px;
-                    background: linear-gradient(90deg, #667eea, #764ba2);
-                    margin: 20px 0;
-                }
-
-                .checkout-btn {
-                    width: 100%;
-                    padding: 16px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    border-radius: 12px;
-                    font-size: 18px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                    margin-top: 20px;
-                    transition: transform 0.2s, box-shadow 0.2s;
-                }
-
-                .checkout-btn:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-                }
-
-                .continue-shopping-btn {
-                    width: 100%;
-                    padding: 14px;
-                    background: white;
-                    color: #667eea;
-                    border: 2px solid #667eea;
-                    border-radius: 12px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    margin-top: 15px;
-                    transition: all 0.2s;
-                }
-
-                .continue-shopping-btn:hover {
-                    background: #f5f7ff;
-                }
-
-                .empty-cart {
-                    text-align: center;
-                    padding: 80px 20px;
-                    background: white;
-                    border-radius: 16px;
-                    max-width: 500px;
-                    margin: 0 auto;
-                }
-
-                .empty-cart svg {
-                    color: #ddd;
-                    margin-bottom: 20px;
-                }
-
-                .empty-cart h2 {
-                    font-size: 28px;
-                    color: #333;
-                    margin: 20px 0 10px 0;
-                }
-
-                .empty-cart p {
-                    color: #666;
-                    font-size: 16px;
-                    margin-bottom: 30px;
-                }
-
-                .shop-btn {
-                    padding: 14px 40px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    border-radius: 12px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: transform 0.2s;
-                }
-
-                .shop-btn:hover {
-                    transform: translateY(-2px);
-                }
-
-                .loading {
-                    text-align: center;
-                    padding: 100px 20px;
-                    font-size: 20px;
-                    color: #667eea;
-                }
-
-                @media (max-width: 968px) {
-                    .cart-content {
-                        grid-template-columns: 1fr;
-                    }
-
-                    .cart-summary {
-                        position: static;
-                    }
-                }
-            `}</style>
-        </>
+        </div>
     );
 };
 

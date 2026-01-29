@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
 import { ShoppingBag, Sparkles, Store, Users, Zap, ArrowRight, Play } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 const images = [
     "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=1920&q=80", // African lifestyle/fashion
@@ -45,30 +46,50 @@ const Hero = () => {
             </div>
 
             {/* Content Container */}
-            <div className={`relative z-10 container mx-auto px-6 text-center transition-all duration-1000 transform ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <div className={`relative z-10 container mx-auto px-6 text-center`}>
 
                 {/* Premium Badge */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8 animate-bounce">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8"
+                >
                     <Sparkles className="text-orange-500" size={16} />
                     <span className="text-xs font-bold tracking-widest text-orange-200 uppercase tracking-[0.3em]">The Premier African Marketplace</span>
-                </div>
+                </motion.div>
 
                 {/* Main Headline */}
-                <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black text-white mb-6 tracking-tighter leading-none animate-fadeInUp">
+                <motion.h1
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                    className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black text-white mb-6 tracking-tighter leading-none"
+                >
                     <span className="block mb-2">DISCOVER THE</span>
                     <span className="bg-gradient-to-r from-orange-500 via-rose-500 to-amber-500 bg-clip-text text-transparent">
                         PULSE OF AFRICA
                     </span>
-                </h1>
+                </motion.h1>
 
                 {/* Sub-headline */}
-                <p className="text-lg md:text-2xl text-slate-300 mb-12 max-w-4xl mx-auto leading-relaxed font-medium animate-fadeInUp animate-fadeInUp-delay-1">
+                <motion.p
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.6 }}
+                    className="text-lg md:text-2xl text-slate-300 mb-12 max-w-4xl mx-auto leading-relaxed font-medium"
+                >
                     From handcrafted masterpieces to modern essentials.
                     Connect directly with the finest artisans and vendors across the continent.
-                </p>
+                </motion.p>
 
                 {/* Direct CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-fadeInUp animate-fadeInUp-delay-2">
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.8 }}
+                    className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+                >
                     <Link
                         to="/categories"
                         className="group relative px-12 py-5 bg-orange-600 text-white rounded-2xl font-black text-xl hover:bg-orange-700 transition-all shadow-[0_0_40px_-10px_rgba(234,88,12,0.5)] active:scale-95 overflow-hidden"
@@ -87,7 +108,7 @@ const Hero = () => {
                         <Store className="text-orange-500" size={24} />
                         BECOME A VENDOR
                     </Link>
-                </div>
+                </motion.div>
 
                 {/* Stats / Trust Badges */}
                 <div className="mt-20 pt-10 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-8">

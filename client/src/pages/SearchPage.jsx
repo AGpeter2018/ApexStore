@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Search, Filter, Grid, List, Star, Package, Sparkles } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
 
 const SearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -65,9 +63,7 @@ const SearchPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Navbar />
-
-            <main className="container mx-auto px-4 py-8 pt-24">
+            <main className="container mx-auto px-4 py-8">
                 {/* Search Header */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -93,9 +89,9 @@ const SearchPage = () => {
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center items-center py-20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-                    </div>
+                      <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+                </div>
                 ) : products.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {products.map((product) => (
@@ -146,8 +142,6 @@ const SearchPage = () => {
                     </div>
                 )}
             </main>
-
-            <Footer />
         </div>
     );
 };

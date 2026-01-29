@@ -4,8 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { openDispute, resetDisputeStatus } from '../../redux/slices/disputeSlice';
 import { fetchOrderById, selectCurrentOrder } from '../../redux/slices/orderSlice';
 import { AlertCircle, ArrowLeft, Send, Upload, Shield } from 'lucide-react';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
 
 const OpenDisputePage = () => {
     const { orderId } = useParams();
@@ -62,7 +60,6 @@ const OpenDisputePage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Navbar />
             <div className="max-w-4xl mx-auto px-4 py-12">
                 <button
                     onClick={() => navigate(-1)}
@@ -160,7 +157,6 @@ const OpenDisputePage = () => {
                     </form>
                 </div>
             </div>
-            <Footer />
         </div>
     );
 };

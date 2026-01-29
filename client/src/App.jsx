@@ -4,11 +4,10 @@ import { Navigate } from "react-router-dom"
 
 import CategoryPage from "./components/Category"
 import Homepage from "./pages/homepage"
-import Navbar from "./components/Navbar"
 import CollectionDetailPage from "./pages/CollectionDetailPage"
 import ShowProductPage from "./pages/ShowProductPage"
 import AddProductPage from "./pages/Product-admin"
-import Footer from "./components/Footer"
+import MainLayout from "./components/MainLayout"
 
 import AddCategoryPage from "./pages/admin/AddCategoryPage"
 import AdminDashboard from "./pages/admin/AdminDashboard"
@@ -81,130 +80,113 @@ function App() {
       <Routes>
         <Route path="/" element={<Homepage />} />
         <Route path="/categories" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <CategoryPage />
-            <Footer />
-          </>
+          </MainLayout>
         }
         />
 
 
         <Route path="/categories/*" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ShowProductPage />
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/products/*" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <CollectionDetailPage />
-            <Footer />
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/login" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <LoginPage />
-            <Footer />
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/register" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <RegisterPage />
-            <Footer />
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/forgot-password" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ForgotPasswordPage />
-            <Footer />
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/reset-password/:token" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ResetPasswordPage />
-            <Footer />
-          </>
+          </MainLayout>
         }
         />
 
-        <Route path="/search" element={<SearchPage />} />
+        <Route path="/search" element={
+          <MainLayout>
+            <SearchPage />
+          </MainLayout>
+        } />
 
         {/* Cart and Checkout Routes */}
-        <Route path="/cart" element={<CartPage />} />
+        <Route path="/cart" element={
+          <MainLayout>
+            <CartPage />
+          </MainLayout>
+        } />
         <Route path="/wishlist" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['customer']}>
               <WishlistPage />
             </ProtectedRoute>
-            <Footer />
-          </>
+          </MainLayout>
         } />
 
         <Route path="/checkout" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['customer']}>
               <CheckoutPage />
             </ProtectedRoute>
-            <Footer />
-          </>
+          </MainLayout>
         } />
 
         <Route path="/order-confirmation/:orderId" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['customer']}>
               <OrderConfirmationPage />
             </ProtectedRoute>
-            <Footer />
-          </>
+          </MainLayout>
         } />
 
         <Route path="/my-orders" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['customer']}>
               <MyOrdersPage />
             </ProtectedRoute>
-            <Footer />
-          </>
+          </MainLayout>
         } />
 
         <Route path="/my-orders/:id" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['customer']}>
               <CustomerOrderDetailPage />
             </ProtectedRoute>
-            <Footer />
-          </>
+          </MainLayout>
         } />
 
         <Route path="/payment/verify" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['customer']}>
               <PaymentVerificationPage />
             </ProtectedRoute>
-            <Footer />
-          </>
+          </MainLayout>
         } />
 
         {/* Dispute Center Routes */}
@@ -215,270 +197,228 @@ function App() {
         } />
 
         <Route path="/disputes" element={
-          <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']}>
-            <DisputeListPage />
-          </ProtectedRoute>
+          <MainLayout>
+            <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']}>
+              <DisputeListPage />
+            </ProtectedRoute>
+          </MainLayout>
         } />
 
         <Route path="/disputes/:id" element={
-          <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']}>
-            <DisputeDetailsPage />
-          </ProtectedRoute>
+          <MainLayout>
+            <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']}>
+              <DisputeDetailsPage />
+            </ProtectedRoute>
+          </MainLayout>
         } />
 
         {/* Admin Route */}
 
         <Route path="/admin" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminDashboard />
             </ProtectedRoute>
-            <Footer />
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/admin/categories/add" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <AddCategoryPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/admin/product/add" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <AddProductPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/admin/product/list" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <ProductsListPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/admin/products/edit/:id" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <EditProductPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/admin/categories" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <CategoriesListPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/admin/categories/edit/:id" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <EditCategoryPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/admin/product-analytics" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <AnalyticsPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         {/* Admin User Route */}
 
         <Route path="/admin/users" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <UsersManagementPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/admin/reports" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <ReportsPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/admin/vendors" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <VendorsManagementPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
         <Route path="/admin/vendors/:id" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <VendorAccountDetailPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/vendor" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['vendor']}>
               <VendorDashboard />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/vendor/orders" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['vendor', 'admin']}>
               <OrdersPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/orders/:id" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['vendor', 'admin']}>
               <OrderDetailPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/vendor/payments" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['vendor']}>
               <PaymentsPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/vendor/analytics" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['vendor']}>
               <AnalyticsDashboard />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/vendor/settings" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['vendor']}>
               <VendorSettingsPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/admin/payouts" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminPayoutPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/admin/analytics" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminAnalyticsPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/vendor/product/list" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['vendor']}>
               <ProductsListPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/vendor/products/edit/:id" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['vendor']}>
               <EditProductPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 
         <Route path="/vendor/product/add" element={
-          <>
-            <Navbar />
+          <MainLayout>
             <ProtectedRoute allowedRoles={['vendor']}>
               <AddProductPage />
-              <Footer />
             </ProtectedRoute>
-          </>
+          </MainLayout>
         }
         />
 

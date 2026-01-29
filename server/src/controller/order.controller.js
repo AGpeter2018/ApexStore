@@ -401,9 +401,19 @@ export const createOrder = async (req, res) => {
             })
         );
 
+        // Discount Logic
+        const totalQuantity = orderItems.reduce((acc, item) => acc + item.quantity, 0);
+        let discountPercentage = 0;
+        if (totalQuantity >= 10) discountPercentage = 15;
+        else if (totalQuantity >= 6) discountPercentage = 10;
+        else if (totalQuantity >= 3) discountPercentage = 5;
+
+        const discountAmount = (subtotal * discountPercentage) / 100;
+        const discountedSubtotal = subtotal - discountAmount;
+
         const shippingFee = 1500;
-        const tax = subtotal * 0.075;
-        const total = subtotal + shippingFee + tax;
+        const tax = discountedSubtotal * 0.075;
+        const total = discountedSubtotal + shippingFee + tax;
 
         const order = new Order({
             customer: req.user._id,
@@ -411,6 +421,8 @@ export const createOrder = async (req, res) => {
             shippingAddress,
             paymentMethod,
             subtotal,
+            discountAmount,
+            discountPercentage,
             shippingFee,
             tax,
             total,
@@ -537,9 +549,19 @@ export const checkout = async (req, res) => {
             });
         }
 
+        // Discount Logic
+        const totalQuantity = orderItems.reduce((acc, item) => acc + item.quantity, 0);
+        let discountPercentage = 0;
+        if (totalQuantity >= 10) discountPercentage = 15;
+        else if (totalQuantity >= 6) discountPercentage = 10;
+        else if (totalQuantity >= 3) discountPercentage = 5;
+
+        const discountAmount = (subtotal * discountPercentage) / 100;
+        const discountedSubtotal = subtotal - discountAmount;
+
         const shippingFee = 1500;
-        const tax = subtotal * 0.075;
-        const total = subtotal + shippingFee + tax;
+        const tax = discountedSubtotal * 0.075;
+        const total = discountedSubtotal + shippingFee + tax;
 
         const order = new Order({
             customer: req.user._id,
@@ -547,6 +569,8 @@ export const checkout = async (req, res) => {
             shippingAddress,
             paymentMethod,
             subtotal,
+            discountAmount,
+            discountPercentage,
             shippingFee,
             tax,
             total,

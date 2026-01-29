@@ -689,10 +689,9 @@ const EditProductPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="text-center">
-          <Loader className="animate-spin h-16 w-16 text-orange-600 mx-auto mb-4" />
-          <p className="text-gray-600 font-semibold">Loading product...</p>
-        </div>
+         <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+          </div>
       </div>
     );
   }

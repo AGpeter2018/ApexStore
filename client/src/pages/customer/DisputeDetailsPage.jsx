@@ -6,8 +6,6 @@ import {
     Shield, ArrowLeft, Send, CheckCircle, AlertTriangle,
     User, Store, Calendar, MessageSquare, Gavel
 } from 'lucide-react';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
 
 const DisputeDetailsPage = () => {
     const { id } = useParams();
@@ -73,8 +71,8 @@ const DisputeDetailsPage = () => {
 
     if (loading && !dispute) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="h-12 w-12 border-4 border-amber-600/20 border-t-amber-600 rounded-full animate-spin"></div>
+             <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
             </div>
         );
     }
@@ -83,7 +81,6 @@ const DisputeDetailsPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Navbar />
             <div className="max-w-7xl mx-auto px-4 py-12">
                 <button
                     onClick={() => navigate(-1)}
@@ -341,7 +338,6 @@ const DisputeDetailsPage = () => {
                     </div>
                 </div>
             </div>
-            <Footer />
         </div>
     );
 };
