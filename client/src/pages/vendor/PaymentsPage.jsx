@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { vendorAPI, payoutAPI } from '../../utils/api';
 import { DollarSign, CreditCard, Clock, CheckCircle, ArrowUpRight, Search, Filter, Wallet, Building2, AlertCircle } from 'lucide-react';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const PaymentsPage = () => {
     const [payments, setPayments] = useState([]);
@@ -134,11 +135,7 @@ const PaymentsPage = () => {
     );
 
     if (loading) {
-        return (
-             <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     return (

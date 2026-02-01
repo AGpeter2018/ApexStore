@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { Upload, X, Plus, Loader, AlertCircle, CheckCircle, Package, ArrowLeft, Trash2, Sparkles } from 'lucide-react';
 import { adminAPI, categoryAPI, productAPI } from '../../utils/api';
 import AIAssistantModal from '../../components/AIAssistantModal';
@@ -687,13 +689,7 @@ const EditProductPage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-         <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-          </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!formData) {
@@ -1054,7 +1050,7 @@ const EditProductPage = () => {
                 className="absolute w-full h-full opacity-0 cursor-pointer"
               />
               {uploading ? (
-                <Loader className="animate-spin text-orange-600" />
+                <LoadingSpinner fullPage={false} size="h-6 w-6" />
               ) : (
                 <div className="text-center">
                   <Upload className="mx-auto text-gray-400 mb-2" size={24} />
@@ -1349,12 +1345,12 @@ const EditProductPage = () => {
             >
               {uploading ? (
                 <>
-                  <Loader className="animate-spin" size={20} />
+                  <LoadingSpinner fullPage={false} size="h-5 w-5" color="border-white" />
                   Uploading Images...
                 </>
               ) : saving ? (
                 <>
-                  <Loader className="animate-spin" size={20} />
+                  <LoadingSpinner fullPage={false} size="h-5 w-5" color="border-white" />
                   Updating Product...
                 </>
               ) : (

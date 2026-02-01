@@ -7,6 +7,7 @@ import axios from 'axios';
 import {
     RotateCcw, Star, MapPin, User, Package, TrendingUp, Sparkles, Wand2, ShoppingCart, Heart, Share2, Truck, Shield
 } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 
 
 const ProductItem = () => {
@@ -300,11 +301,7 @@ const ProductItem = () => {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     if (error || !product) {

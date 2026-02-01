@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { productAPI, categoryAPI } from '../../utils/api';
-import { TrendingUp, Package, Layers, AlertTriangle, DollarSign, Eye, Star, ShoppingCart } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, ShoppingBag, Users, Map, Calendar, ArrowUpRight, ArrowDownRight, Package, Filter, Download, ChevronRight, BarChart3, PieChart, Activity, Sparkles, Layers, AlertTriangle, Eye, Star, ShoppingCart } from 'lucide-react';
 
 const AnalyticsPage = () => {
     const [products, setProducts] = useState([]);
@@ -96,11 +99,7 @@ const AnalyticsPage = () => {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     const drumTypeDistribution = getDrumTypeDistribution();

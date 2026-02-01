@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { categoryAPI } from '../../utils/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Upload, X, Loader, Plus, Minus, Info, AlertCircle } from 'lucide-react';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { Upload, X, Loader, Plus, Minus, Info, AlertCircle, ArrowLeft } from 'lucide-react';
 
 const EditCategoryPage = () => {
     const { id } = useParams();
@@ -265,13 +266,7 @@ const EditCategoryPage = () => {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen bg-gray-50">
-                <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     if (!formData) {
@@ -619,7 +614,7 @@ const EditCategoryPage = () => {
                     {/* Submit */}
                     <div className="flex gap-4">
                         <button type="submit" disabled={saving || uploading} className="flex-1 bg-orange-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
-                            {uploading ? (<><Loader className="animate-spin" size={20} />Uploading Images...</>) : saving ? (<><Loader className="animate-spin" size={20} />Updating Category...</>) : ('Update Category')}
+                            {uploading ? (<><LoadingSpinner fullPage={false} size="h-5 w-5" color="border-white" />Uploading Images...</>) : saving ? (<><LoadingSpinner fullPage={false} size="h-5 w-5" color="border-white" />Updating Category...</>) : ('Update Category')}
                         </button>
                         <button type="button" onClick={() => navigate('/admin/categories')} className="px-8 py-4 bg-gray-500 text-white rounded-lg font-bold hover:bg-gray-600 transition-colors">Cancel</button>
                     </div>

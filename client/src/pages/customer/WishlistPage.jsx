@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { fetchWishlist, toggleWishlist } from '../../redux/slices/wishlistSlice';
 import { addToCart } from '../../redux/slices/cartSlice';
-import { ShoppingCart, Heart, Trash2, ArrowRight } from 'lucide-react';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { Heart, ShoppingBag, Trash2, ArrowRight, Package, TrendingUp } from 'lucide-react';
 
 const WishlistPage = () => {
     const dispatch = useDispatch();
@@ -22,7 +23,7 @@ const WishlistPage = () => {
             await dispatch(addToCart({ productId, quantity: 1 })).unwrap();
             alert('✅ Added to cart successfully!');
         } catch (error) {
-            alert( (error || 'Failed to add to cart'));
+            alert((error || 'Failed to add to cart'));
         }
     };
 
@@ -34,12 +35,8 @@ const WishlistPage = () => {
         }).format(price);
     };
 
-    if (loading && items.length === 0) {
-        return (
-             <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-        );
+    if (loading) {
+        return <LoadingSpinner />;
     }
 
     return (

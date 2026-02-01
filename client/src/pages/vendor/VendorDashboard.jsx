@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { orderAPI, vendorAPI, aiAPI } from '../../utils/api';
-import { Package, ShoppingCart, DollarSign, TrendingUp, Clock, CheckCircle, XCircle, Truck, ArrowRight, LayoutGrid, CreditCard, Sparkles, AlertCircle, Zap, BarChart3, Store } from 'lucide-react';
+import {
+    LayoutDashboard, Package, ShoppingBag, DollarSign,
+    TrendingUp, TrendingDown, Users, Star, ArrowUpRight,
+    Clock, CheckCircle, XCircle, AlertTriangle, ChevronRight,
+    ShoppingCart, Truck, ArrowRight, LayoutGrid, CreditCard, Sparkles, AlertCircle, Zap, BarChart3, Store
+} from 'lucide-react';
 
 const VendorDashboard = () => {
     const [stats, setStats] = useState(null);
@@ -75,11 +82,7 @@ const VendorDashboard = () => {
     };
 
     if (loading) {
-        return (
-              <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     return (

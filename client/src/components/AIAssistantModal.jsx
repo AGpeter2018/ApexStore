@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Sparkles, Loader, X, Check, Copy, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import LoadingSpinner from './LoadingSpinner';
 
 const AIAssistantModal = ({ isOpen, onClose, productName, categoryName, onApply }) => {
     const [loading, setLoading] = useState(false);
@@ -89,7 +90,7 @@ const AIAssistantModal = ({ isOpen, onClose, productName, categoryName, onApply 
 
                     {loading && (
                         <div className="h-full flex flex-col items-center justify-center py-20">
-                            <Loader className="w-12 h-12 text-orange-600 animate-spin mb-4" />
+                            <LoadingSpinner fullPage={false} color="text-orange-600" />
                             <p className="text-gray-600 font-medium">Crafting your product's story...</p>
                             <p className="text-xs text-gray-400 mt-2">This may take a few seconds</p>
                         </div>

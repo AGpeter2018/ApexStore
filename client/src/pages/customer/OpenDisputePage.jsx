@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { openDispute, resetDisputeStatus } from '../../redux/slices/disputeSlice';
 import { fetchOrderById, selectCurrentOrder } from '../../redux/slices/orderSlice';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { AlertCircle, ArrowLeft, Send, Upload, Shield } from 'lucide-react';
 
 const OpenDisputePage = () => {
@@ -10,6 +11,7 @@ const OpenDisputePage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const order = useSelector(selectCurrentOrder);
+    const orderLoading = useSelector(state => state.order.loading);
     const { loading, error, success } = useSelector((state) => state.dispute);
 
     const [formData, setFormData] = useState({
@@ -44,7 +46,11 @@ const OpenDisputePage = () => {
         }));
     };
 
-    if (!order && !loading) {
+    if (orderLoading) { // Use orderLoading for initial order fetch
+        return <LoadingSpinner />;
+    }
+
+    if (!order) { // If not loading and order is null, then order not found
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
@@ -142,7 +148,7 @@ const OpenDisputePage = () => {
                                 className="w-full bg-amber-600 text-white py-5 rounded-2xl font-black text-xl hover:bg-amber-700 transition-all shadow-xl hover:shadow-amber-200 flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98]"
                             >
                                 {loading ? (
-                                    <div className="h-6 w-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <LoadingSpinner fullPage={false} size="h-6 w-6" color="border-white" />
                                 ) : (
                                     <>
                                         Submit Dispute to Admin

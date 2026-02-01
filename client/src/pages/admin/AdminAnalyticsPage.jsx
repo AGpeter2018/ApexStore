@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { analyticsAPI } from '../../utils/api';
 import { TrendingUp, Users, ShoppingBag, DollarSign, Globe, ArrowUpRight, Loader2, BarChart3 } from 'lucide-react';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const AdminAnalyticsPage = () => {
     const [data, setData] = useState(null);
@@ -32,11 +33,7 @@ const AdminAnalyticsPage = () => {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     const { platformStats = {}, globalTrend = [], topVendors = [] } = data || {};

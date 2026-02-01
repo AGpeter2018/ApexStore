@@ -3,7 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { orderAPI } from '../../utils/api';
 import { fetchOrderById, selectCurrentOrder, selectOrderLoading } from '../../redux/slices/orderSlice';
-import { ArrowLeft, Package, MapPin, CreditCard, Truck, Calendar } from 'lucide-react';
+import {
+    ArrowLeft, Package, MapPin, CreditCard, Truck, Calendar,
+    CheckCircle, Clock, AlertCircle, ChevronLeft, ExternalLink,
+    Download, Phone, User, Shield, Camera, Home
+} from 'lucide-react';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const CustomerOrderDetailPage = () => {
     const { id } = useParams();
@@ -76,12 +81,8 @@ const CustomerOrderDetailPage = () => {
         }));
     };
 
-    if (loading) {
-        return (
-            <div className="order-detail-page">
-                <div className="loading">Loading order details...</div>
-            </div>
-        );
+    if (loading && !order) {
+        return <LoadingSpinner />;
     }
 
     if (!order) {
@@ -275,7 +276,7 @@ const CustomerOrderDetailPage = () => {
                 )}
             </div>
 
-            <style jsx>{`
+            <style>{`
                 .order-detail-page {
                     min-height: 80vh;
                     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -322,6 +323,12 @@ const CustomerOrderDetailPage = () => {
                     color: #333;
                     margin: 0 0 5px 0;
                 }
+                    @media screen and (max-width:768px) {
+                      .order-header h1 {
+                        font-size:15px
+                      }
+                      
+                    }
 
                 .order-number {
                     color: #666;
@@ -360,6 +367,10 @@ const CustomerOrderDetailPage = () => {
                     border-radius: 16px;
                     margin-bottom: 20px;
                 }
+                    // @media screen and (max-width:768px) {
+                    // .delete-order-btn {
+                    // }
+                    // }
 
                 .timeline-card h2 {
                     font-size: 24px;

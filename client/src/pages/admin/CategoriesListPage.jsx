@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { categoryAPI } from '../../utils/api';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import {
     Plus,
     Edit,
@@ -31,7 +32,7 @@ const CategoriesListPage = () => {
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [ filteredCategories, setFilteredCategories] = useState([])
+    const [filteredCategories, setFilteredCategories] = useState([])
     const [filterLevel, setFilterLevel] = useState('all'); // 'all', 'main', 'sub'
     const [showInactive, setShowInactive] = useState(false);
 
@@ -61,7 +62,7 @@ const CategoriesListPage = () => {
 
         // Filter by search term
         if (searchTerm) {
-            filtered = filtered.filter(cat => 
+            filtered = filtered.filter(cat =>
                 cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cat.description?.toLowerCase().includes(searchTerm.toLowerCase())
             );
@@ -91,7 +92,7 @@ const CategoriesListPage = () => {
             const hasSubcategories = categories.some(c => String(c.parentId) === String(id));
 
             if (hasProducts) {
-                alert(`Cannot delete category with ${ category.stats.productCount } products.Please move or delete products first.`)
+                alert(`Cannot delete category with ${category.stats.productCount} products.Please move or delete products first.`)
                 setDeleteConfirm(null)
                 return;
             }
@@ -102,12 +103,12 @@ const CategoriesListPage = () => {
                 return;
             }
 
-            await axios.delete(`${ import.meta.env.VITE_API_URL } /categories/${ id } `, {
+            await axios.delete(`${import.meta.env.VITE_API_URL} /categories/${id} `, {
                 headers: {
-                    Authorization: `Bearer ${ token } `,
+                    Authorization: `Bearer ${token} `,
                 }
             });
-            
+
             setCategories(categories.filter(c => String(c._id) !== String(id)));
             setDeleteConfirm(null);
         } catch (error) {
@@ -118,23 +119,23 @@ const CategoriesListPage = () => {
 
     const handleBulkDelete = async () => {
         if (selectedCategories.length === 0) return;
-        
-        if (confirm(`Delete ${ selectedCategories.length } category(ies) ? `)) {
+
+        if (confirm(`Delete ${selectedCategories.length} category(ies) ? `)) {
             try {
                 const results = await Promise.allSettled(
-                    selectedCategories.map(id => 
-                        axios.delete(`${ import.meta.env.VITE_API_URL } /categories/${ id } `, {
+                    selectedCategories.map(id =>
+                        axios.delete(`${import.meta.env.VITE_API_URL} /categories/${id} `, {
                             headers: {
-                                Authorization: `Bearer ${ token } `
+                                Authorization: `Bearer ${token} `
                             }
                         })
                     )
                 );
 
                 const failed = results.filter(r => r.status === 'rejected').length;
-                
+
                 if (failed > 0) {
-                    alert(`${ failed } categories could not be deleted(may have products or subcategories)`);
+                    alert(`${failed} categories could not be deleted(may have products or subcategories)`);
                 }
 
                 await fetchCategories();
@@ -155,8 +156,8 @@ const CategoriesListPage = () => {
     };
 
     const toggleSelect = (id) => {
-        setSelectedCategories(prev => 
-            prev.includes(String(id)) 
+        setSelectedCategories(prev =>
+            prev.includes(String(id))
                 ? prev.filter(cId => cId !== String(id))
                 : [...prev, String(id)]
         );
@@ -170,13 +171,7 @@ const CategoriesListPage = () => {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen bg-gray-50">
-                <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     return (
@@ -333,8 +328,8 @@ const CategoriesListPage = () => {
                 {filteredCategories.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredCategories.map((category) => (
-                            <div 
-                                key={String(category._id)} 
+                            <div
+                                key={String(category._id)}
                                 className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                             >
                                 <div className="relative">
@@ -352,7 +347,7 @@ const CategoriesListPage = () => {
                                     <div
                                         className="h-48 overflow-hidden"
                                         style={{
-                                            background: `linear - gradient(135deg, ${ category.colorTheme?.primary || '#FFEDD5' } 0 %, ${ category.colorTheme?.secondary || '#FEE2B3' } 100 %)`
+                                            background: `linear - gradient(135deg, ${category.colorTheme?.primary || '#FFEDD5'} 0 %, ${category.colorTheme?.secondary || '#FEE2B3'} 100 %)`
                                         }}
                                     >
                                         {category.categoryImage?.url ? (
@@ -442,14 +437,14 @@ const CategoriesListPage = () => {
                                     {/* Actions */}
                                     <div className="flex items-center gap-2">
                                         <Link
-                                            to={`/ categories / ${ category.slug } `}
+                                            to={`/ categories / ${category.slug} `}
                                             className="flex-1 text-center py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-1 text-sm font-medium"
                                         >
                                             <Eye size={16} />
                                             View
                                         </Link>
                                         <Link
-                                            to={`/ admin / categories / edit / ${ category._id } `}
+                                            to={`/ admin / categories / edit / ${category._id} `}
                                             className="flex-1 text-center py-2 text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center gap-1 text-sm font-medium"
                                         >
                                             <Edit size={16} />
@@ -471,8 +466,8 @@ const CategoriesListPage = () => {
                     <div className="bg-white rounded-xl shadow-md p-12 text-center">
                         <Layers size={64} className="mx-auto text-gray-300 mb-4" />
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                            {searchTerm || filterLevel !== 'all' || !showInactive 
-                                ? 'No Categories Found' 
+                            {searchTerm || filterLevel !== 'all' || !showInactive
+                                ? 'No Categories Found'
                                 : 'No Categories Yet'
                             }
                         </h3>

@@ -94,8 +94,8 @@ const Contact = () => {
                             {/* Glassmorphism Glow */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/10 blur-[100px] -mr-32 -mt-32 rounded-full" />
 
-                            <form  action="https://formspree.io/f/movnookg"
-                            method="POST" onSubmit={handleSubmit} className="relative z-10 space-y-8">
+                            <form action="https://formspree.io/f/movnookg"
+                                method="POST" onSubmit={handleSubmit} className="relative z-10 space-y-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Full Name</label>
@@ -151,17 +151,17 @@ const Contact = () => {
 
                                 <button
                                     type="submit"
-                                    disabled={status === 'sending'}
+                                    disabled={loading}
                                     className="group relative w-full bg-orange-600 hover:bg-orange-700 text-white py-6 rounded-2xl font-black text-xl flex items-center justify-center gap-3 transition-all shadow-[0_20px_50px_-10px_rgba(234,88,12,0.4)] active:scale-95 disabled:opacity-50"
                                 >
-                                    {status === 'sending' ? (
-                                        <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                                    {loading ? (
+                                        <LoadingSpinner fullPage={false} size="w-6 h-6" color="border-white" />
                                     ) : status === 'success' ? (
                                         "MESSAGE SENT"
                                     ) : (
                                         <>
                                             SEND MESSAGE
-                                            <Send size={24} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                            <Send size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                         </>
                                     )}
                                 </button>

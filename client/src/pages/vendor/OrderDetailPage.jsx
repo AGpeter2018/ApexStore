@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { orderAPI } from '../../utils/api';
 import { ArrowLeft, Package, MapPin, AlertCircle, Trash2, RefreshCcw } from 'lucide-react';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const OrderDetailPage = () => {
     const { id } = useParams();
@@ -104,11 +105,7 @@ const OrderDetailPage = () => {
     };
 
     if (loading) {
-        return (
-             <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     if (error) {

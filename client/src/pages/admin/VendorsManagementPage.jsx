@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'
 import { vendorAPI } from '../../utils/api';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import {
     Store,
     Search,
@@ -92,11 +93,7 @@ const VendorsManagementPage = () => {
     });
 
     if (loading) {
-        return (
-              <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     return (

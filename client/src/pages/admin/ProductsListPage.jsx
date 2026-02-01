@@ -24,6 +24,8 @@ import {
     FolderTree
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const ProductsListPage = () => {
     const navigate = useNavigate();
@@ -152,14 +154,8 @@ const ProductsListPage = () => {
         setCurrentPage(1);
     };
 
-    if (loading && products.length === 0) {
-        return (
-            <div className="flex justify-center items-center min-h-screen bg-gray-50">
-                 <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-            </div>
-        );
+    if (loading) {
+        return <LoadingSpinner />;
     }
 
     return (

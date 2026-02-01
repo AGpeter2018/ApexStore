@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { userAPI, orderAPI, productAPI } from '../../utils/api';
 import { BarChart, DollarSign, ShoppingCart, Users, TrendingUp, Download, Calendar, Zap } from 'lucide-react';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const ReportsPage = () => {
     const [loading, setLoading] = useState(true);
@@ -92,11 +93,7 @@ Total Products: ${reportData.products?.total || 0}
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     return (

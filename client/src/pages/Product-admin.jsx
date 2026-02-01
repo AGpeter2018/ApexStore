@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, X, Plus, Loader, AlertCircle, CheckCircle, Package, Trash2, Sparkles } from 'lucide-react';
 import axios from 'axios';
 import AIAssistantModal from '../components/AIAssistantModal';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const AddProductPage = () => {
   const navigate = useNavigate();
@@ -756,7 +757,6 @@ const AddProductPage = () => {
                   Full Description <span className="text-red-500">*</span>
                 </label>
                 <p className="text-xs text-gray-500 mb-3">Add multiple sections to structure your product description</p>
-
                 {formData.description.map((desc, index) => (
                   <div key={index} className="mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
                     <div className="flex items-center justify-between mb-3">
@@ -885,20 +885,22 @@ const AddProductPage = () => {
                 </div>
               )}
             </div>
-          </div>
+          </div >
 
           {/* Specifications */}
-          {specFields.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">3</div>
-                Specifications
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {specFields.map(field => renderSpecificationField(field))}
+          {
+            specFields.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">3</div>
+                  Specifications
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {specFields.map(field => renderSpecificationField(field))}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          }
 
           {/* Pricing & Inventory */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -1010,7 +1012,7 @@ const AddProductPage = () => {
                 className="absolute w-full h-full opacity-0 cursor-pointer"
               />
               {uploading ? (
-                <Loader className="animate-spin text-orange-600" />
+                <LoadingSpinner fullPage={false} size="h-6 w-6" />
               ) : (
                 <p className="text-gray-500">Drag & drop images here, or click to select (max 5)</p>
               )}
@@ -1218,8 +1220,7 @@ const AddProductPage = () => {
           onApply={handleAIApply}
         />
       </div>
-    </div>
-  );
+    </div>);
 };
 
 export default AddProductPage;

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchOrderById, selectCurrentOrder, selectOrderLoading, verifyPayment } from '../redux/slices/orderSlice';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { CheckCircle, Package, MapPin, CreditCard, ArrowRight } from 'lucide-react';
 
 const OrderConfirmationPage = () => {
@@ -63,11 +64,7 @@ const OrderConfirmationPage = () => {
     }, [orderId, location.search, dispatch]);
 
     if (loading) {
-        return (
-            <div className="confirmation-page">
-                <div className="loading">Loading order details...</div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     if (!order) {
@@ -154,13 +151,13 @@ const OrderConfirmationPage = () => {
                             </div>
                             <div className="info-row">
                                 <span>Payment Status:</span>
-                                <span className={`status-badge ${order.paymentStatus}`}>
+                                <span className={`status - badge ${order.paymentStatus} `}>
                                     {order.paymentStatus?.toUpperCase()}
                                 </span>
                             </div>
                             <div className="info-row">
                                 <span>Order Status:</span>
-                                <span className={`status-badge ${order.orderStatus}`}>
+                                <span className={`status - badge ${order.orderStatus} `}>
                                     {order.orderStatus?.toUpperCase()}
                                 </span>
                             </div>
@@ -241,247 +238,247 @@ const OrderConfirmationPage = () => {
 
 
             <style jsx>{`
-                .confirmation-page {
-                    min-height: 80vh;
-                    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-                    padding: 40px 20px;
-                }
+    .confirmation - page {
+    min - height: 80vh;
+    background: linear - gradient(135deg, #f5f7fa 0 %, #c3cfe2 100 %);
+    padding: 40px 20px;
+}
 
-                .confirmation-container {
-                    max-width: 1000px;
-                    margin: 0 auto;
-                }
+                .confirmation - container {
+    max - width: 1000px;
+    margin: 0 auto;
+}
 
-                .success-header {
-                    text-align: center;
-                    background: white;
-                    padding: 50px 30px;
-                    border-radius: 16px;
-                    margin-bottom: 30px;
-                }
+                .success - header {
+    text - align: center;
+    background: white;
+    padding: 50px 30px;
+    border - radius: 16px;
+    margin - bottom: 30px;
+}
 
-                .success-icon {
-                    color: #4CAF50;
-                    margin-bottom: 20px;
-                }
+                .success - icon {
+    color: #4CAF50;
+    margin - bottom: 20px;
+}
 
-                .success-header h1 {
-                    font-size: 32px;
-                    color: #333;
-                    margin-bottom: 10px;
-                }
+                .success - header h1 {
+    font - size: 32px;
+    color: #333;
+    margin - bottom: 10px;
+}
 
-                .success-header p {
-                    font-size: 18px;
-                    color: #666;
-                    margin-bottom: 20px;
-                }
+                .success - header p {
+    font - size: 18px;
+    color: #666;
+    margin - bottom: 20px;
+}
 
-                .order-number {
-                    display: inline-block;
-                    padding: 12px 24px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border-radius: 25px;
-                    font-size: 16px;
-                }
+                .order - number {
+    display: inline - block;
+    padding: 12px 24px;
+    background: linear - gradient(135deg, #667eea 0 %, #764ba2 100 %);
+    color: white;
+    border - radius: 25px;
+    font - size: 16px;
+}
 
-                .order-details-grid {
-                    display: grid;
-                    gap: 20px;
-                    margin-bottom: 30px;
-                }
+                .order - details - grid {
+    display: grid;
+    gap: 20px;
+    margin - bottom: 30px;
+}
 
-                .detail-card {
-                    background: white;
-                    padding: 30px;
-                    border-radius: 16px;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                }
+                .detail - card {
+    background: white;
+    padding: 30px;
+    border - radius: 16px;
+    box - shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 
-                .card-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    margin-bottom: 20px;
-                    color: #667eea;
-                }
+                .card - header {
+    display: flex;
+    align - items: center;
+    gap: 12px;
+    margin - bottom: 20px;
+    color: #667eea;
+}
 
-                .card-header h3 {
-                    font-size: 20px;
-                    color: #333;
-                    margin: 0;
-                }
+                .card - header h3 {
+    font - size: 20px;
+    color: #333;
+    margin: 0;
+}
 
-                .items-list {
-                    margin-bottom: 20px;
-                }
+                .items - list {
+    margin - bottom: 20px;
+}
 
-                .order-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 15px;
-                    padding: 15px;
-                    background: #f9f9f9;
-                    border-radius: 12px;
-                    margin-bottom: 10px;
-                }
+                .order - item {
+    display: flex;
+    align - items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #f9f9f9;
+    border - radius: 12px;
+    margin - bottom: 10px;
+}
 
-                .order-item img {
-                    width: 60px;
-                    height: 60px;
-                    object-fit: cover;
-                    border-radius: 8px;
-                }
+                .order - item img {
+    width: 60px;
+    height: 60px;
+    object - fit: cover;
+    border - radius: 8px;
+}
 
-                .item-info {
-                    flex: 1;
-                }
+                .item - info {
+    flex: 1;
+}
 
-                .item-name {
-                    font-weight: 600;
-                    color: #333;
-                    margin: 0 0 5px 0;
-                }
+                .item - name {
+    font - weight: 600;
+    color: #333;
+    margin: 0 0 5px 0;
+}
 
-                .item-quantity {
-                    color: #666;
-                    font-size: 14px;
-                    margin: 0;
-                }
+                .item - quantity {
+    color: #666;
+    font - size: 14px;
+    margin: 0;
+}
 
-                .item-price {
-                    font-weight: 700;
-                    color: #667eea;
-                    margin: 0;
-                }
+                .item - price {
+    font - weight: 700;
+    color: #667eea;
+    margin: 0;
+}
 
-                .order-totals {
-                    border-top: 2px solid #e0e0e0;
-                    padding-top: 15px;
-                }
+                .order - totals {
+    border - top: 2px solid #e0e0e0;
+    padding - top: 15px;
+}
 
-                .total-row {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 10px;
-                    font-size: 16px;
-                    color: #666;
-                }
+                .total - row {
+    display: flex;
+    justify - content: space - between;
+    margin - bottom: 10px;
+    font - size: 16px;
+    color: #666;
+}
 
-                .total-row.grand-total {
-                    font-size: 20px;
-                    font-weight: 700;
-                    color: #333;
-                    margin-top: 10px;
-                    padding-top: 10px;
-                    border-top: 2px solid #667eea;
-                }
+                .total - row.grand - total {
+    font - size: 20px;
+    font - weight: 700;
+    color: #333;
+    margin - top: 10px;
+    padding - top: 10px;
+    border - top: 2px solid #667eea;
+}
 
-                .address-info p {
-                    margin: 8px 0;
-                    color: #666;
-                    line-height: 1.6;
-                }
+                .address - info p {
+    margin: 8px 0;
+    color: #666;
+    line - height: 1.6;
+}
 
-                .payment-info {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 15px;
-                }
+                .payment - info {
+    display: flex;
+    flex - direction: column;
+    gap: 15px;
+}
 
-                .info-row {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 12px;
-                    background: #f9f9f9;
-                    border-radius: 8px;
-                }
+                .info - row {
+    display: flex;
+    justify - content: space - between;
+    align - items: center;
+    padding: 12px;
+    background: #f9f9f9;
+    border - radius: 8px;
+}
 
-                .status-badge {
-                    padding: 6px 16px;
-                    border-radius: 20px;
-                    font-size: 12px;
-                    font-weight: 700;
-                }
+                .status - badge {
+    padding: 6px 16px;
+    border - radius: 20px;
+    font - size: 12px;
+    font - weight: 700;
+}
 
-                .status-badge.pending {
-                    background: #fff3cd;
-                    color: #856404;
-                }
+                .status - badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
 
-                .status-badge.paid,
-                .status-badge.processing {
-                    background: #d4edda;
-                    color: #155724;
-                }
+                .status - badge.paid,
+                .status - badge.processing {
+    background: #d4edda;
+    color: #155724;
+}
 
-                .status-badge.failed {
-                    background: #f8d7da;
-                    color: #721c24;
-                }
+                .status - badge.failed {
+    background: #f8d7da;
+    color: #721c24;
+}
 
-                .action-buttons {
-                    display: flex;
-                    gap: 15px;
-                    justify-content: center;
-                }
+                .action - buttons {
+    display: flex;
+    gap: 15px;
+    justify - content: center;
+}
 
-                .btn-primary,
-                .btn-secondary {
-                    padding: 14px 30px;
-                    border-radius: 12px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    border: none;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
+                .btn - primary,
+                .btn - secondary {
+    padding: 14px 30px;
+    border - radius: 12px;
+    font - size: 16px;
+    font - weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: flex;
+    align - items: center;
+    gap: 10px;
+}
 
-                .btn-primary {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                }
+                .btn - primary {
+    background: linear - gradient(135deg, #667eea 0 %, #764ba2 100 %);
+    color: white;
+}
 
-                .btn-primary:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-                }
+                .btn - primary:hover {
+    transform: translateY(-2px);
+    box - shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
 
-                .btn-secondary {
-                    background: white;
-                    color: #667eea;
-                    border: 2px solid #667eea;
-                }
+                .btn - secondary {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
 
-                .btn-secondary:hover {
-                    background: #f5f7ff;
-                }
+                .btn - secondary:hover {
+    background: #f5f7ff;
+}
 
                 .loading,
                 .error {
-                    text-align: center;
-                    padding: 100px 20px;
-                    font-size: 20px;
-                    color: #667eea;
-                }
+    text - align: center;
+    padding: 100px 20px;
+    font - size: 20px;
+    color: #667eea;
+}
 
-                @media (max-width: 768px) {
-                    .action-buttons {
-                        flex-direction: column;
-                    }
+@media(max - width: 768px) {
+                    .action - buttons {
+        flex - direction: column;
+    }
 
-                    .btn-primary,
-                    .btn-secondary {
-                        width: 100%;
-                        justify-content: center;
-                    }
-                }
-            `}</style>
+                    .btn - primary,
+                    .btn - secondary {
+        width: 100 %;
+        justify - content: center;
+    }
+}
+`}</style>
         </div >
     );
 };

@@ -1,7 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Search, Filter, Grid, List, Star, Package, Sparkles } from 'lucide-react';
+import ProductItem from '../components/ProductItem';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { Search, Filter, SlidersHorizontal, Package, ArrowRight, Grid, List, Star, Sparkles } from 'lucide-react';
 
 const SearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -23,7 +26,7 @@ const SearchPage = () => {
             setLoading(true);
 
             // 1. Expand search intent using AI
-            const expansionRes = await axios.post(`${import.meta.env.VITE_API_URL}/ai/expand-search-intent`, {
+            const expansionRes = await axios.post(`${import.meta.env.VITE_API_URL} /ai/expand - search - intent`, {
                 query
             });
 
@@ -89,9 +92,7 @@ const SearchPage = () => {
                 </div>
 
                 {loading ? (
-                      <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-                </div>
+                    <LoadingSpinner fullPage={false} />
                 ) : products.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {products.map((product) => (

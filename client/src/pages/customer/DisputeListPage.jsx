@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { fetchDisputes } from '../../redux/slices/disputeSlice';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { Shield, AlertTriangle, CheckCircle, Clock, ChevronRight, MessageSquare, ArrowRight } from 'lucide-react';
 
 const DisputeListPage = () => {
@@ -62,9 +63,7 @@ const DisputeListPage = () => {
                 </div>
 
                 {loading ? (
-                     <div className="flex justify-center items-center min-h-130 ">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
+                    <LoadingSpinner fullPage={false} />
                 ) : items.length === 0 ? (
                     <div className="bg-white rounded-3xl p-16 text-center border-2 border-dashed border-gray-200 shadow-sm">
                         <Shield size={64} className="mx-auto text-gray-200 mb-6" />

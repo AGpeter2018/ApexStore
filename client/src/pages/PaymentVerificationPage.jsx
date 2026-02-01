@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { orderAPI } from '../utils/api';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { Loader, CheckCircle, XCircle } from 'lucide-react';
 
 const PaymentVerificationPage = () => {
@@ -57,11 +58,11 @@ const PaymentVerificationPage = () => {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-md">
                 {status === 'verifying' && (
-                    <>
-                        <Loader className="mx-auto text-blue-600 animate-spin mb-4" size={48} />
+                    <div className="py-8">
+                        <LoadingSpinner fullPage={false} />
                         <h2 className="text-2xl font-bold mb-2">Verifying Payment</h2>
                         <p className="text-gray-600">{message}</p>
-                    </>
+                    </div>
                 )}
 
                 {status === 'success' && (

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Package, TrendingUp, Search } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 
 const Categories = () => {
     const [categories, setCategories] = useState([]);
@@ -19,14 +20,14 @@ const Categories = () => {
         try {
             setLoading(true);
             let endpoint = `${import.meta.env.VITE_API_URL}/categories`;
-            
+
             // Adjust endpoint based on view mode
             if (viewMode === 'main') {
                 endpoint = `${import.meta.env.VITE_API_URL}/categories?parentId=null`;
             } else if (viewMode === 'hierarchy') {
                 endpoint = `${import.meta.env.VITE_API_URL}/categories?includeSubcategories=true&parentId=null`;
             }
-            
+
             const { data } = await axios.get(endpoint);
             setCategories(data.data);
             setFilteredCategories(data.data);
@@ -41,7 +42,7 @@ const Categories = () => {
 
     const handleSearch = (value) => {
         setSearchTerm(value);
-        
+
         if (!value.trim()) {
             setFilteredCategories(categories);
             setError('');
@@ -54,7 +55,7 @@ const Categories = () => {
         );
 
         setFilteredCategories(filtered);
-        
+
         if (filtered.length === 0) {
             setError("No matching categories found.");
         } else {
@@ -63,11 +64,7 @@ const Categories = () => {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     return (
@@ -84,31 +81,28 @@ const Categories = () => {
             <div className="mb-6 flex flex-wrap gap-2">
                 <button
                     onClick={() => setViewMode('all')}
-                    className={`px-4 py-2 rounded-lg font-medium transition ${
-                        viewMode === 'all'
+                    className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'all'
                             ? 'bg-amber-600 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                        }`}
                 >
                     All Categories
                 </button>
                 <button
                     onClick={() => setViewMode('main')}
-                    className={`px-4 py-2 rounded-lg font-medium transition ${
-                        viewMode === 'main'
+                    className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'main'
                             ? 'bg-amber-600 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                        }`}
                 >
                     Main Categories
                 </button>
                 <button
                     onClick={() => setViewMode('hierarchy')}
-                    className={`px-4 py-2 rounded-lg font-medium transition ${
-                        viewMode === 'hierarchy'
+                    className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'hierarchy'
                             ? 'bg-amber-600 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                        }`}
                 >
                     With Subcategories
                 </button>
@@ -207,7 +201,7 @@ const Categories = () => {
                                         alt={category.categoryImage?.alt || category.name}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                                     />
-                                    
+
                                     {/* Featured Badge */}
                                     {category.featured && (
                                         <div className="absolute top-4 right-4 bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
@@ -216,7 +210,7 @@ const Categories = () => {
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 {/* Category Info */}
                                 <div className="p-6">
                                     <h2 className="text-2xl font-bold mb-2 group-hover:text-amber-600 transition">
@@ -225,7 +219,7 @@ const Categories = () => {
                                     <p className="text-gray-600 mb-4 line-clamp-2">
                                         {category.description}
                                     </p>
-                                    
+
                                     {/* Stats */}
                                     <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                                         <span className="flex items-center gap-1">
@@ -238,13 +232,13 @@ const Categories = () => {
                                             </span>
                                         )}
                                     </div>
-                                    
+
                                     {/* View Button */}
                                     <div className="flex items-center text-amber-600 font-semibold group-hover:gap-2 transition-all">
                                         Browse Products
-                                        <ChevronRight 
-                                            className="group-hover:translate-x-1 transition-transform" 
-                                            size={20} 
+                                        <ChevronRight
+                                            className="group-hover:translate-x-1 transition-transform"
+                                            size={20}
                                         />
                                     </div>
                                 </div>

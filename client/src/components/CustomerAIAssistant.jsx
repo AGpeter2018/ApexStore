@@ -116,7 +116,7 @@ const CustomerAIAssistant = () => {
                                         <Bot size={16} className="text-pink-600" />
                                     </div>
                                     <div className="p-3 bg-white shadow-sm border border-gray-100 rounded-2xl rounded-tl-none flex items-center gap-2">
-                                        <Loader2 className="animate-spin text-orange-500" size={16} />
+                                        <LoadingSpinner fullPage={false} size="h-4 w-4" color="text-orange-500" />
                                         <span className="text-sm text-gray-400">Thinking...</span>
                                     </div>
                                 </div>

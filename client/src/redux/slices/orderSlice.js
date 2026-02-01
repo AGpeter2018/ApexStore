@@ -180,6 +180,7 @@ const orderSlice = createSlice({
 
 // Selectors
 export const selectOrders = (state) => state.order.orders;
+export const selectMyOrders = (state) => state.order.orders;
 export const selectCurrentOrder = (state) => state.order.currentOrder;
 export const selectCheckoutResult = (state) => state.order.checkoutResult;
 export const selectOrderLoading = (state) => state.order.loading;

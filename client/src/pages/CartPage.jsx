@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchCart, selectCartItems, selectCartTotal, selectCartCount, selectCartLoading } from '../redux/slices/cartSlice';
 import CartItem from '../components/CartItem';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { ShoppingCart, ArrowRight } from 'lucide-react';
 
 const CartPage = () => {
@@ -50,9 +51,7 @@ const CartPage = () => {
     const total = discountedSubtotal + shippingFee + tax;
 
     if (loading) {
-        <div className="flex justify-center items-center min-h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-        </div>
+        return <LoadingSpinner />;
     }
 
     if (cartItems.length === 0) {
