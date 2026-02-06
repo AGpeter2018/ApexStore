@@ -11,6 +11,7 @@ import {
     deleteOrder,
     getVendorPayments,
     processRefund,
+    confirmCodPayment,
     cancelOrder
 } from '../controller/order.controller.js';
 import { protect, authorize } from '../../middleware/auth.js';
@@ -34,6 +35,7 @@ orderRouter.get('/:id', protect, authorize('customer', 'vendor', 'admin'), getOr
 
 // Update status (vendor/admin only)
 orderRouter.patch('/:id/status', protect, authorize('vendor', 'admin'), updateOrderStatus);
+orderRouter.patch('/:id/confirm-cod', protect, authorize('admin'), confirmCodPayment);
 
 // Delete order (admin/customer)
 orderRouter.delete('/:id', protect, authorize('admin', 'customer'), deleteOrder);

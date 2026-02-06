@@ -2,6 +2,7 @@ import { ChevronDown, ChevronUp, Menu, Search, User, X, Sparkles, ShoppingBag, L
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import CartIcon from './CartIcon'
+import Logo from './Logo'
 
 
 const Navbar = ({ scrolled }) => {
@@ -94,33 +95,7 @@ const Navbar = ({ scrolled }) => {
         <div className='flex justify-between items-center'>
           {/* Logo Section */}
           <Link to="/" className='flex items-center gap-2 group'>
-            <div className='w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-orange-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-6 transition-transform'>
-             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="100%" style={{stopColor:'#06b6d4',stopOpacity: '1' }}/>
-                                </linearGradient>
-                                <filter id="shadow"> <feDropShadow dx="0" dy="2" stdDeviation="4" floodOpacity="0.25"/>
-                                </filter>
-                                </defs>
-                                <g transform="translate(50, 50)" filter="url(#shadow)"><rect x="-20" y="-15" width="40" height="38" rx="4" 
-                                fill="url(#gradient1)"/>
-                                <path d="M -10 -15 Q -10 -28 0 -28 Q 10 -28 10 -15"  stroke="#1e293b" strokeWidth="3" 
-                                fill="none"
-                                strokeLinecap="round"/>
-                                <path d="M 0 -5 L -8 8 L 8 8 Z" fill="#fbbf24" 
-                                opacity="0.9"/>
-                                <circle cx="-8" cy="-5" r="2.5" fill="rgba(255,255,255,0.3)"/>
-                                <line x1="-15" y1="18" x2="15" y2="18" 
-                                stroke="rgba(255,255,255,0.2)" 
-                                strokeWidth="2"
-                                strokeLinecap="round"/>
-                                </g>
-                            </svg>
-            </div>
-            <div className='text-xl md:text-2xl font-black tracking-tighter text-white'>
-              APEX<span className="text-orange-500">STORE</span>
-            </div>
+            <Logo size="md" light={true} />
           </Link>
 
           {/* Desktop Navigation */}
@@ -183,11 +158,11 @@ const Navbar = ({ scrolled }) => {
 
                           {user.role === 'vendor' && (
                             <>
-                            <Link to="/vendor" className='flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-all'>
-                              <LayoutDashboard size={18} /> <span className='text-sm font-bold'>Vendor Hub</span>
-                            </Link>
-     
-                            <Link to="/Categories" className='flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-all'>
+                              <Link to="/vendor" className='flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-all'>
+                                <LayoutDashboard size={18} /> <span className='text-sm font-bold'>Vendor Hub</span>
+                              </Link>
+
+                              <Link to="/Categories" className='flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-all'>
                                 <LayoutDashboard size={18} /> <span className='text-sm font-bold'>Categories</span>
                               </Link>
                             </>
@@ -195,7 +170,7 @@ const Navbar = ({ scrolled }) => {
 
                           {user.role === 'customer' && (
                             <>
-                            <Link to="/categories" className='flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-all'>
+                              <Link to="/categories" className='flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-all'>
                                 <LayoutDashboard size={18} /> <span className='text-sm font-bold'>Categories</span>
                               </Link>
 
@@ -297,7 +272,7 @@ const Navbar = ({ scrolled }) => {
 
                   {user.role === 'customer' && (
                     <>
-                    <Link to="/categories" className='block w-full p-4 text-center text-sm font-black text-white uppercase tracking-widest border border-white/10 rounded-2xl' onClick={() => setOpenMenu(false)}>Categories</Link>
+                      <Link to="/categories" className='block w-full p-4 text-center text-sm font-black text-white uppercase tracking-widest border border-white/10 rounded-2xl' onClick={() => setOpenMenu(false)}>Categories</Link>
                       <Link to="/wishlist" className='block w-full p-4 text-center text-sm font-black text-white uppercase tracking-widest border border-white/10 rounded-2xl' onClick={() => setOpenMenu(false)}>Wishlist</Link>
                       <Link to="/my-orders" className='block w-full p-4 text-center text-sm font-black text-white uppercase tracking-widest border border-white/10 rounded-2xl' onClick={() => setOpenMenu(false)}>My Orders</Link>
                       <Link to="/disputes" className='block w-full p-4 text-center text-sm font-black text-white uppercase tracking-widest border border-white/10 rounded-2xl' onClick={() => setOpenMenu(false)}>Support Center</Link>

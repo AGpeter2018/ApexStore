@@ -311,7 +311,7 @@ const ProductItem = () => {
                     <p className="font-bold">Error</p>
                     <p>{error || 'Product not found'}</p>
                 </div>
-                <Link to="/categories" className="text-amber-600 hover:underline mt-4 inline-block">
+                <Link to="/categories" className="text-secondary-600 hover:text-indigo-600 hover:underline mt-4 inline-block font-bold">
                     ← Back to Categories
                 </Link>
             </div>
@@ -327,7 +327,7 @@ const ProductItem = () => {
             <div className="bg-white border-b">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Link to="/categories" className="hover:text-amber-600">Categories</Link>
+                        <Link to="/categories" className="hover:text-indigo-600 transition-colors">Categories</Link>
                         <span>/</span>
 
                         {/* Main Category */}
@@ -335,7 +335,7 @@ const ProductItem = () => {
                             <>
                                 <Link
                                     to={`/categories/${product.categoryId.slug}`}
-                                    className="hover:text-amber-600"
+                                    className="hover:text-indigo-600 transition-colors"
                                 >
                                     {product.categoryId.name}
                                 </Link>
@@ -348,7 +348,7 @@ const ProductItem = () => {
                             <>
                                 <Link
                                     to={`/categories/${product.subcategoryId.slug}`}
-                                    className="hover:text-amber-600"
+                                    className="hover:text-indigo-600 transition-colors"
                                 >
                                     {product.subcategoryId.name}
                                 </Link>
@@ -361,7 +361,7 @@ const ProductItem = () => {
                             <>
                                 <Link
                                     to={`/collections/${product.collection.slug}`}
-                                    className="hover:text-amber-600"
+                                    className="hover:text-indigo-600 transition-colors"
                                 >
                                     {product.collection.name}
                                 </Link>
@@ -397,9 +397,9 @@ const ProductItem = () => {
                                     <button
                                         key={index}
                                         onClick={() => setSelectedImage(index)}
-                                        className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
-                                            ? 'border-amber-600 shadow-lg'
-                                            : 'border-gray-200 hover:border-amber-300'
+                                        className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-300 ${selectedImage === index
+                                            ? 'border-indigo-600 shadow-xl shadow-indigo-100'
+                                            : 'border-gray-100 hover:border-indigo-200 hover:shadow-lg'
                                             }`}
                                     >
                                         <img
@@ -415,10 +415,8 @@ const ProductItem = () => {
 
                     {/* Product Info Section */}
                     <div>
-                        {/* Category/Type Badge - UPDATED to be flexible */}
-                        <div className="flex items-center gap-2 mb-4">
-                            {/* Show category or drumType */}
-                            <span className="bg-amber-100 text-amber-700 px-4 py-2 rounded-full text-sm font-semibold">
+                        <div className="flex items-center gap-3 mb-6">
+                            <span className="bg-indigo-50 text-indigo-700 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest border border-indigo-100 shadow-sm">
                                 {product.subcategoryId?.name ||
                                     product.categoryId?.name ||
                                     product.drumType ||
@@ -426,15 +424,15 @@ const ProductItem = () => {
                             </span>
 
                             {product.featured && (
-                                <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1">
-                                    <Star size={14} fill="currentColor" />
+                                <span className="bg-emerald-50 text-emerald-700 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest border border-emerald-100 shadow-sm flex items-center gap-1.5">
+                                    <Star size={12} fill="currentColor" className="text-emerald-500" />
                                     Featured
                                 </span>
                             )}
                         </div>
 
                         {/* Product Name */}
-                        <h1 className="text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
+                        <h1 className="text-4xl sm:text-5xl font-black text-gray-900 mb-4 uppercase tracking-tighter">{product.name}</h1>
 
                         {/* Rating */}
                         {(product.rating > 0 || product.avgRating > 0) && (
@@ -457,18 +455,17 @@ const ProductItem = () => {
                             </div>
                         )}
 
-                        {/* Price */}
-                        <div className="mb-6">
-                            <div className="flex items-baseline gap-3">
-                                <span className="text-4xl font-bold text-gray-900">
+                        <div className="mb-8">
+                            <div className="flex items-baseline gap-4">
+                                <span className="text-5xl font-black text-gray-900 tracking-tight">
                                     {formatPrice(product.price)}
                                 </span>
                                 {discount > 0 && (
                                     <>
-                                        <span className="text-xl text-gray-500 line-through">
+                                        <span className="text-2xl text-gray-400 line-through font-medium">
                                             {formatPrice(product.compareAtPrice)}
                                         </span>
-                                        <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                        <span className="bg-rose-500 text-white px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-rose-200">
                                             Save {discount}%
                                         </span>
                                     </>
@@ -484,120 +481,120 @@ const ProductItem = () => {
                         )}
 
                         {/* Stock Status - UPDATED with real-time indicator */}
-                        <div className="mb-6">
+                        <div className="mb-8">
                             {stockQuantity > 0 ? (
-                                <div className="flex items-center gap-2">
-                                    <div className={`w-3 h-3 rounded-full ${stockQuantity <= (product.lowStockThreshold || 5) ? 'bg-orange-500 animate-pulse' : 'bg-green-500'
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-2.5 h-2.5 rounded-full ${stockQuantity <= (product.lowStockThreshold || 5) ? 'bg-orange-500 animate-pulse' : 'bg-emerald-500'
                                         }`}></div>
-                                    <span className={`font-semibold ${stockQuantity <= (product.lowStockThreshold || 5) ? 'text-orange-600' : 'text-green-600'
+                                    <span className={`text-sm font-black uppercase tracking-widest ${stockQuantity <= (product.lowStockThreshold || 5) ? 'text-orange-600' : 'text-emerald-600'
                                         }`}>
                                         {stockQuantity <= (product.lowStockThreshold || 5)
                                             ? `Only ${stockQuantity} left in stock!`
-                                            : `${stockQuantity} in stock`}
+                                            : `${stockQuantity} items in stock`}
                                     </span>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-2 text-red-600">
-                                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                                    <span className="font-semibold">Out of Stock</span>
+                                <div className="flex items-center gap-3 text-rose-600">
+                                    <div className="w-2.5 h-2.5 bg-rose-500 rounded-full"></div>
+                                    <span className="text-sm font-black uppercase tracking-widest">Out of Stock</span>
                                 </div>
                             )}
                         </div>
 
                         {/* Quantity Selector */}
                         {stockQuantity > 0 && (
-                            <div className="mb-6">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Quantity
+                            <div className="mb-8">
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                                    Select Quantity
                                 </label>
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center border border-gray-300 rounded-lg">
+                                <div className="flex items-center gap-6">
+                                    <div className="flex items-center bg-gray-50 rounded-2xl p-1 border border-gray-100">
                                         <button
                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="px-4 py-2 hover:bg-gray-100 transition"
+                                            className="w-12 h-12 flex items-center justify-center hover:bg-white hover:shadow-sm rounded-xl transition-all font-black text-gray-400 hover:text-indigo-600"
                                         >
                                             -
                                         </button>
-                                        <span className="px-6 py-2 border-x border-gray-300 font-semibold">
+                                        <span className="px-8 py-3 font-black text-gray-900 border-x-2 border-gray-100/50">
                                             {quantity}
                                         </span>
                                         <button
                                             onClick={() => setQuantity(Math.min(stockQuantity, quantity + 1))}
-                                            className="px-4 py-2 hover:bg-gray-100 transition"
+                                            className="w-12 h-12 flex items-center justify-center hover:bg-white hover:shadow-sm rounded-xl transition-all font-black text-gray-400 hover:text-indigo-600"
                                         >
                                             +
                                         </button>
                                     </div>
-                                    <span className="text-sm text-gray-500">
-                                        Max: {stockQuantity}
+                                    <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                                        Max available: {stockQuantity}
                                     </span>
                                 </div>
                             </div>
                         )}
 
                         {/* Action Buttons */}
-                        <div className="flex gap-4 mb-8">
+                        <div className="flex flex-col sm:flex-row gap-4 mb-10">
                             <button
                                 onClick={handleAddToCart}
                                 disabled={stockQuantity === 0 || adding}
-                                className="flex-1 bg-amber-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-amber-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                                className="flex-[3] bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 hover:shadow-indigo-200"
                             >
-                                <ShoppingCart size={24} />
-                                {adding ? 'Adding...' : stockQuantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                                <ShoppingCart size={22} strokeWidth={2.5} />
+                                {adding ? 'Adding...' : stockQuantity === 0 ? 'Out of Stock' : 'Add to Bag'}
                             </button>
-                            <button
-                                onClick={handleToggleWishlist}
-                                className={`border p-4 rounded-lg transition-colors flex items-center justify-center ${isInWishlist
-                                    ? 'border-red-200 bg-red-50 text-red-500 shadow-inner'
-                                    : 'border-gray-300 hover:bg-gray-50 text-gray-400'
-                                    }`}
-                                title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-                            >
-                                <Heart size={24} fill={isInWishlist ? "currentColor" : "none"} />
-                            </button>
-                            <button className="border border-gray-300 p-4 rounded-lg hover:bg-gray-50 transition-colors">
-                                <Share2 size={24} />
-                            </button>
+                            <div className="flex gap-4 flex-1">
+                                <button
+                                    onClick={handleToggleWishlist}
+                                    className={`flex-1 rounded-2xl transition-all active:scale-95 flex items-center justify-center border-2 py-4 ${isInWishlist
+                                        ? 'border-indigo-600 bg-indigo-50 text-indigo-600 shadow-inner'
+                                        : 'border-gray-100 hover:border-indigo-200 text-gray-400 hover:text-indigo-600'
+                                        }`}
+                                    title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+                                >
+                                    <Heart size={22} fill={isInWishlist ? "currentColor" : "none"} strokeWidth={2.5} />
+                                </button>
+                                <button className="flex-1 border-2 border-gray-100 rounded-2xl hover:border-indigo-200 text-gray-400 hover:text-indigo-600 transition-all active:scale-95 flex items-center justify-center py-4">
+                                    <Share2 size={22} strokeWidth={2.5} />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Features */}
                         <div className="grid grid-cols-3 gap-4 mb-8 p-6 bg-gray-100 rounded-lg">
-                            <div className="text-center">
-                                <Truck className="mx-auto mb-2 text-amber-600" size={32} />
+                            <div className="text-center group/feature">
+                                <Truck className="mx-auto mb-2 text-indigo-600 group-hover/feature:scale-110 transition-transform" size={32} />
                                 <p className="text-sm font-semibold">Free Shipping</p>
                             </div>
-                            <div className="text-center">
-                                <Shield className="mx-auto mb-2 text-amber-600" size={32} />
+                            <div className="text-center group/feature">
+                                <Shield className="mx-auto mb-2 text-indigo-600 group-hover/feature:scale-110 transition-transform" size={32} />
                                 <p className="text-sm font-semibold">Authentic</p>
                             </div>
-                            <div className="text-center">
-                                <RotateCcw className="mx-auto mb-2 text-amber-600" size={32} />
+                            <div className="text-center group/feature">
+                                <RotateCcw className="mx-auto mb-2 text-indigo-600 group-hover/feature:scale-110 transition-transform" size={32} />
                                 <p className="text-sm font-semibold">7-Day Return</p>
                             </div>
                         </div>
 
-                        {/* Vendor Info - NEW! */}
+                        {/* Vendor Info */}
                         {product.vendorId && (
-                            <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-                                <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                    <User size={20} className="text-amber-600" />
-                                    Sold by {product.vendorId.storeName || 'Vendor'}
-                                </h3>
+                            <div className="bg-white border border-gray-100 rounded-3xl p-6 mb-6 shadow-sm flex items-center justify-between group hover:border-indigo-200 transition-colors">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                        <User size={24} strokeWidth={2.5} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Verified Vendor</p>
+                                        <h3 className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
+                                            {product.vendorId.storeName || 'Vendor'}
+                                        </h3>
+                                    </div>
+                                </div>
                                 {product.vendorId.rating && (
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <div className="flex">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    size={14}
-                                                    className={i < Math.floor(product.vendorId.rating)
-                                                        ? 'text-yellow-400 fill-yellow-400'
-                                                        : 'text-gray-300'}
-                                                />
-                                            ))}
-                                        </div>
-                                        <span className="text-gray-600">
-                                            {product.vendorId.rating.toFixed(1)} vendor rating
+                                    <div className="flex items-center gap-2">
+                                        <Star size={16} fill="currentColor" className="text-yellow-400" />
+                                        <span className="text-gray-400 font-bold text-sm tracking-tight">
+                                            <span className="text-gray-900 mr-1">{product.vendorId.rating.toFixed(1)}</span>
+                                            rating
                                         </span>
                                     </div>
                                 )}
@@ -606,19 +603,17 @@ const ProductItem = () => {
 
                         {/* Origin Info */}
                         {product.origin && (
-                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                                <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                    <MapPin size={20} className="text-amber-600" />
-                                    Crafted in Nigeria
-                                </h3>
-                                <div className="text-sm text-gray-700 space-y-1">
-                                    <p>📍 {product.origin.city}, {product.origin.state} State</p>
-                                    {product.origin.artisan && (
-                                        <p className="flex items-center gap-1">
-                                            <User size={16} />
-                                            Artisan: {product.origin.artisan}
-                                        </p>
-                                    )}
+                            <div className="bg-white border border-gray-100 rounded-3xl p-6 mb-6 shadow-sm flex items-center justify-between group hover:border-indigo-200 transition-colors">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                        <MapPin size={24} strokeWidth={2.5} />
+                                    </div>
+                                    <div className="space-y-0.5">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Crafted in Nigeria</p>
+                                        <h3 className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
+                                            {product.origin.city}, {product.origin.state}
+                                        </h3>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -627,23 +622,33 @@ const ProductItem = () => {
 
                 {/* Detailed Information Tabs */}
                 <div className="mt-16">
-                    <div className="bg-white rounded-2xl shadow-lg p-8">
+                    <div className="bg-white rounded-[2.5rem] shadow-sm p-10 border border-gray-100">
                         {/* Description */}
-                        <div className="mb-8">
-                            <h2 className="text-2xl font-bold mb-4">Description</h2>
+                        <div className="mb-12">
+                            <h2 className="text-2xl font-black text-gray-900 mb-8 uppercase tracking-widest flex items-center gap-4">
+                                <span className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-base">
+                                    <Package size={20} />
+                                </span>
+                                Description
+                            </h2>
                             {renderDescription()}
                         </div>
 
                         {/* Cultural Story - YOUR UNIQUE FEATURE! */}
                         {product.culturalStory && (
-                            <div className="mb-8 bg-amber-50 border-l-4 border-amber-500 p-6 rounded">
-                                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                    <TrendingUp className="text-amber-600" />
-                                    Cultural Story
-                                </h2>
-                                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                                    {product.culturalStory}
-                                </p>
+                            <div className="mb-12 bg-indigo-50/50 border border-indigo-100 p-8 rounded-[2rem] relative overflow-hidden group">
+                                <div className="relative z-10">
+                                    <h2 className="text-2xl font-black text-gray-900 mb-6 uppercase tracking-widest flex items-center gap-4">
+                                        <span className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+                                            <TrendingUp size={20} strokeWidth={3} />
+                                        </span>
+                                        Cultural Story
+                                    </h2>
+                                    <p className="text-gray-700 leading-relaxed font-medium">
+                                        {product.culturalStory}
+                                    </p>
+                                </div>
+                                <Sparkles className="absolute -bottom-6 -right-6 text-indigo-500/10 w-32 h-32 rotate-12 group-hover:rotate-0 transition-transform duration-700" />
                             </div>
                         )}
 
@@ -652,13 +657,18 @@ const ProductItem = () => {
 
                         {/* Materials */}
                         {product.materials && product.materials.length > 0 && (
-                            <div className="mb-8">
-                                <h2 className="text-2xl font-bold mb-4">Materials Used</h2>
-                                <div className="flex flex-wrap gap-2">
+                            <div className="mb-12">
+                                <h2 className="text-2xl font-black text-gray-900 mb-8 uppercase tracking-widest flex items-center gap-4">
+                                    <span className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+                                        <Shield size={20} />
+                                    </span>
+                                    Materials Used
+                                </h2>
+                                <div className="flex flex-wrap gap-3">
                                     {product.materials.map((material, index) => (
                                         <span
                                             key={index}
-                                            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm"
+                                            className="bg-gray-50 text-gray-500 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest border border-gray-100"
                                         >
                                             {material}
                                         </span>
@@ -669,13 +679,20 @@ const ProductItem = () => {
 
                         {/* Features */}
                         {product.features && product.features.length > 0 && (
-                            <div className="mb-8">
-                                <h2 className="text-2xl font-bold mb-4">Features</h2>
-                                <ul className="space-y-2">
+                            <div className="mb-12">
+                                <h2 className="text-2xl font-black text-gray-900 mb-8 uppercase tracking-widest flex items-center gap-4">
+                                    <span className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+                                        <CheckCircle size={20} />
+                                    </span>
+                                    Features
+                                </h2>
+                                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {product.features.map((feature, index) => (
-                                        <li key={index} className="flex items-start gap-2">
-                                            <span className="text-amber-600 mt-1">✓</span>
-                                            <span className="text-gray-700">{feature}</span>
+                                        <li key={index} className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 font-bold text-sm tracking-tight text-gray-700">
+                                            <span className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center shrink-0">
+                                                <CheckCircle size={14} strokeWidth={3} />
+                                            </span>
+                                            {feature}
                                         </li>
                                     ))}
                                 </ul>
@@ -685,9 +702,14 @@ const ProductItem = () => {
                         {/* Care Instructions */}
                         {product.careInstructions && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-4">Care Instructions</h2>
-                                <p className="text-gray-700 leading-relaxed">
-                                    {product.careInstructions}
+                                <h2 className="text-2xl font-black text-gray-900 mb-8 uppercase tracking-widest flex items-center gap-4">
+                                    <span className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+                                        <RotateCcw size={20} />
+                                    </span>
+                                    Care Instructions
+                                </h2>
+                                <p className="text-gray-700 leading-relaxed font-medium bg-gray-50 p-8 rounded-3xl border border-gray-100 italic">
+                                    "{product.careInstructions}"
                                 </p>
                             </div>
                         )}
@@ -705,24 +727,27 @@ const ProductItem = () => {
                             </h2>
 
                             {/* Aggregate Rating */}
-                            <div className="mb-8 p-6 bg-white rounded-xl shadow-sm border border-gray-100 text-center">
-                                <div className="text-5xl font-black text-gray-900 mb-2">
-                                    {(product.rating || product.avgRating || 0).toFixed(1)}
+                            <div className="mb-10 p-10 bg-white rounded-[2rem] shadow-sm border border-gray-100 text-center relative overflow-hidden group">
+                                <div className="relative z-10">
+                                    <div className="text-6xl font-black text-gray-900 mb-4 tracking-tighter">
+                                        {(product.rating || product.avgRating || 0).toFixed(1)}
+                                    </div>
+                                    <div className="flex justify-center mb-4">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star
+                                                key={i}
+                                                size={22}
+                                                className={i < Math.floor(product.rating || product.avgRating || 0)
+                                                    ? 'text-yellow-400 fill-yellow-400'
+                                                    : 'text-gray-100'}
+                                            />
+                                        ))}
+                                    </div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                                        Verified Feedback ({product.numReviews || product.reviewCount || 0})
+                                    </p>
                                 </div>
-                                <div className="flex justify-center mb-2">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star
-                                            key={i}
-                                            size={20}
-                                            className={i < Math.floor(product.rating || product.avgRating || 0)
-                                                ? 'text-yellow-400 fill-yellow-400'
-                                                : 'text-gray-200'}
-                                        />
-                                    ))}
-                                </div>
-                                <p className="text-gray-500 font-medium">
-                                    Based on {product.numReviews || product.reviewCount || 0} reviews
-                                </p>
+                                <Star size={100} className="absolute -bottom-10 -right-10 text-gray-50/50 rotate-12 group-hover:rotate-0 transition-transform duration-700" />
                             </div>
 
                             {/* Add Review Form */}
@@ -795,37 +820,37 @@ const ProductItem = () => {
                         </div>
 
                         {/* Reviews List */}
-                        <div className="p-8 lg:col-span-2 max-h-[800px] overflow-y-auto custom-scrollbar">
-                            <div className="space-y-6">
+                        <div className="p-10 lg:col-span-2 max-h-[800px] overflow-y-auto custom-scrollbar bg-white">
+                            <div className="space-y-8">
                                 {product.reviews && product.reviews.length > 0 ? (
                                     product.reviews.map((review) => (
                                         <div
                                             key={review._id}
-                                            className="bg-gray-50 rounded-2xl p-6 border border-transparent hover:border-amber-100 hover:bg-white hover:shadow-xl transition-all duration-300"
+                                            className="bg-gray-50/50 rounded-3xl p-8 border-2 border-transparent hover:border-indigo-100 hover:bg-white hover:shadow-xl hover:shadow-indigo-50 transition-all duration-500 group"
                                         >
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-500 to-orange-400 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-100 group-hover:scale-110 transition-transform duration-500">
                                                         {(review.user || 'A')[0].toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <h4 className="font-bold text-gray-900 leading-tight">
+                                                        <h4 className="font-black text-gray-900 leading-tight uppercase tracking-tight">
                                                             {review.user || 'Anonymous'}
                                                         </h4>
-                                                        <div className="flex mt-1">
+                                                        <div className="flex mt-1.5 gap-0.5">
                                                             {[...Array(5)].map((_, i) => (
                                                                 <Star
                                                                     key={i}
                                                                     size={14}
                                                                     className={i < review.rating
                                                                         ? 'text-yellow-400 fill-yellow-400'
-                                                                        : 'text-gray-200'}
+                                                                        : 'text-gray-100'}
                                                                 />
                                                             ))}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <span className="text-sm text-gray-400 font-medium bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
+                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
                                                     {new Date(review.createdAt || Date.now()).toLocaleDateString('en-US', {
                                                         month: 'short',
                                                         day: 'numeric',
@@ -833,16 +858,18 @@ const ProductItem = () => {
                                                     })}
                                                 </span>
                                             </div>
-                                            <p className="text-gray-700 leading-relaxed italic">
+                                            <p className="text-gray-700 leading-relaxed font-medium italic text-lg px-2 border-l-4 border-indigo-100">
                                                 "{review.comment}"
                                             </p>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                                        <Sparkles className="mx-auto text-gray-300 mb-4" size={48} />
-                                        <p className="text-gray-500 text-lg font-medium">Be the first to share your experience!</p>
-                                        <p className="text-gray-400">Your feedback helps others make better choices.</p>
+                                    <div className="text-center py-24 bg-gray-50/30 rounded-[2.5rem] border-4 border-dashed border-gray-100">
+                                        <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-gray-100">
+                                            <Sparkles className="text-gray-200" size={40} />
+                                        </div>
+                                        <p className="text-gray-500 text-xl font-black uppercase tracking-widest">No reviews yet</p>
+                                        <p className="text-gray-400 mt-2 font-medium">Be the first to share your experience with this piece.</p>
                                     </div>
                                 )}
                             </div>
@@ -853,21 +880,22 @@ const ProductItem = () => {
 
                 {/* AI Recommendations Section */}
                 {(recommendations.length > 0 || recLoading) && (
-                    <div className="mt-16">
-                        <div className="flex items-center gap-2 mb-8">
-                            <Sparkles className="text-orange-500" />
-                            <h2 className="text-3xl font-bold text-gray-900">Complete Your Collection</h2>
-                            <span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold uppercase tracking-wider">AI Powered</span>
+                    <div className="mt-24">
+                        <div className="flex items-center gap-4 mb-10">
+                            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+                                <Sparkles size={24} strokeWidth={2.5} />
+                            </div>
+                            <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tighter">Perfect Pairings</h2>
                         </div>
 
                         {recLoading ? (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 animate-pulse">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 animate-pulse">
                                 {[...Array(4)].map((_, i) => (
-                                    <div key={i} className="aspect-square bg-gray-200 rounded-xl"></div>
+                                    <div key={i} className="aspect-square bg-gray-100 rounded-[2rem]"></div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                                 {recommendations.map((rec) => (
                                     <Link
                                         key={rec._id}
@@ -875,24 +903,25 @@ const ProductItem = () => {
                                         className="group"
                                         onClick={() => window.scrollTo(0, 0)}
                                     >
-                                        <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300">
-                                            <div className="relative aspect-square overflow-hidden bg-gray-100">
+                                        <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 group-hover:-translate-y-2 border border-gray-100">
+                                            <div className="relative aspect-square overflow-hidden bg-gray-50">
                                                 <img
                                                     src={rec.images?.[0]?.url || 'https://via.placeholder.com/300x300?text=Product'}
                                                     alt={rec.name}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                 />
-                                                <div className="absolute top-2 right-2">
-                                                    <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm">
-                                                        <Wand2 size={12} className="text-orange-500" />
+                                                <div className="absolute top-4 right-4">
+                                                    <div className="bg-white/90 backdrop-blur-sm p-2 rounded-xl shadow-sm border border-gray-100">
+                                                        <Sparkles size={14} className="text-indigo-600" strokeWidth={3} />
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="p-3">
-                                                <h3 className="font-semibold text-gray-900 text-sm line-clamp-1 group-hover:text-orange-600 transition-colors">
+                                            <div className="p-6">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Recommendation</p>
+                                                <h3 className="font-black text-gray-900 text-sm line-clamp-1 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
                                                     {rec.name}
                                                 </h3>
-                                                <p className="text-orange-600 font-bold mt-1 text-sm">
+                                                <p className="text-indigo-600 font-black mt-2 text-base">
                                                     {formatPrice(rec.price)}
                                                 </p>
                                             </div>

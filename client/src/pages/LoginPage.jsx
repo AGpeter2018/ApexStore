@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { syncCart, selectCartItems } from '../redux/slices/cartSlice';
 import axios from 'axios';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import Logo from '../components/Logo';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -71,138 +72,135 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 flex items-center justify-center py-8 px-4">
-            <div className="max-w-md w-full">
+        <div className="min-h-screen bg-white flex items-center justify-center py-20 px-4 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-50 rounded-full blur-[120px] opacity-60"></div>
+                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-50 rounded-full blur-[120px] opacity-60"></div>
+            </div>
+
+            <div className="max-w-md w-full relative z-10">
                 {/* Logo/Brand */}
-                <div className="text-center mb-8">
-                    <svg className='h-20 w-20 mx-auto' viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: '1' }} />
-                                <stop offset="100%" style={{ stopColor: '#06b6d4', stopOpacity: '1' }} />
-                            </linearGradient>
-                            <filter id="shadow"> <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.25" />
-                            </filter>
-                        </defs>
-                        <g transform="translate(50, 50)" filter="url(#shadow)"><rect x="-20" y="-15" width="40" height="38" rx="4"
-                            fill="url(#gradient1)" />
-                            <path d="M -10 -15 Q -10 -28 0 -28 Q 10 -28 10 -15" stroke="#1e293b" stroke-width="3"
-                                fill="none"
-                                stroke-linecap="round" />
-                            <path d="M 0 -5 L -8 8 L 8 8 Z" fill="#fbbf24"
-                                opacity="0.9" />
-                            <circle cx="-8" cy="-5" r="2.5" fill="rgba(255,255,255,0.3)" />
-                            <line x1="-15" y1="18" x2="15" y2="18"
-                                stroke="rgba(255,255,255,0.2)"
-                                stroke-width="2"
-                                stroke-linecap="round" />
-                        </g>
-                    </svg>
-                    <div className='text-xl font-bold font-serif tracking-tight cursor-pointer pl-0'>
-                        <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent">
-                            ApexStore
-                        </span>
-                    </div>
-                    <p className="text-gray-600 mt-2">Sign in to your account</p>
+                <div className="text-center mb-12 flex flex-col items-center">
+                    <Logo size="lg" />
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] mt-4">Curated Excellence</p>
                 </div>
 
                 {/* Login Form */}
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-indigo-100 p-10 border border-gray-100">
+                    <h2 className="text-2xl font-black text-gray-900 mb-8 uppercase tracking-widest text-center">Welcome Back</h2>
+
                     {error && (
-                        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6">
+                        <div className="bg-rose-50 border border-rose-100 text-rose-600 p-4 rounded-2xl mb-8 flex items-center justify-center text-sm font-bold tracking-tight">
                             {error}
                         </div>
                     )}
 
                     {successMessage && (
-                        <div className="bg-green-100 border-l-4 border-red-500 text-green-700 p-4 rounded mb-6">
+                        <div className="bg-emerald-50 border border-emerald-100 text-emerald-600 p-4 rounded-2xl mb-8 flex items-center justify-center text-sm font-bold tracking-tight uppercase tracking-widest">
+                            <Lock className="mr-2" size={16} />
                             {successMessage}
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <div className="group">
+                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
                                 Email Address
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-3 text-gray-400" size={20} />
+                                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors">
+                                    <Mail size={20} strokeWidth={2.5} />
+                                </div>
                                 <input
                                     type="email"
                                     name="email"
                                     value={formData.email}
                                     onChange={handleChange}
                                     required
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="your@email.com"
+                                    className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold text-sm tracking-tight"
+                                    placeholder="Enter your email"
                                 />
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Password
-                            </label>
+                        <div className="group text-right">
+                            <div className="flex justify-between items-center mb-3">
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                                    Password
+                                </label>
+                                <Link to="/forgot-password" size="sm" className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-700 transition-colors">
+                                    Forgot?
+                                </Link>
+                            </div>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
+                                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors">
+                                    <Lock size={20} strokeWidth={2.5} />
+                                </div>
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     name="password"
                                     value={formData.password}
                                     onChange={handleChange}
                                     required
-                                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    className="w-full pl-14 pr-14 py-5 bg-gray-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold text-sm tracking-tight"
                                     placeholder="••••••••"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-indigo-600 transition-colors"
                                 >
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between">
-                            <label className="flex items-center">
+                        <div className="flex items-center">
+                            <label className="flex items-center cursor-pointer group">
                                 <input
                                     type="checkbox"
-                                    className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
+                                    className="w-5 h-5 border-2 border-gray-200 rounded-lg text-indigo-600 focus:ring-0 transition-all checked:bg-indigo-600 cursor-pointer"
                                 />
-                                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                                <span className="ml-3 text-xs font-black text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">Stay Signed In</span>
                             </label>
-                            <Link to="/forgot-password" className="text-sm text-orange-600 hover:text-orange-700">
-                                Forgot password?
-                            </Link>
                         </div>
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 rounded-lg font-semibold hover:from-orange-700 hover:to-red-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                            className="w-full bg-indigo-600 text-white py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all active:scale-95 shadow-xl shadow-indigo-100 hover:shadow-indigo-200 mt-2"
                         >
-                            {loading ? 'Signing in...' : 'Sign In'}
+                            {loading ? 'Processing...' : 'Secure Access'}
                         </button>
                     </form>
 
-                    <div className="mt-6 text-center">
-                        <p className="text-gray-600">
-                            Don't have an account?{' '}
-                            <Link to="/register" className="text-orange-600 hover:text-orange-700 font-semibold">
-                                Sign up
+                    <div className="mt-10 text-center">
+                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                            New member?{' '}
+                            <Link to="/register" className="text-indigo-600 hover:text-indigo-700 transition-colors">
+                                Create Account
                             </Link>
                         </p>
                     </div>
                 </div>
 
                 {/* Demo Accounts */}
-                <div className="mt-8 bg-orange-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-700 font-semibold mb-2">Demo Accounts:</p>
-                    <div className="text-xs text-gray-600 space-y-1">
-                        <p>Admin: admin@apexstore.com / password123</p>
-                        <p>Vendor: vendor@apexstore.com / password123</p>
-                        <p>Customer: customer@apexstore.com / password123</p>
+                <div className="mt-12 bg-gray-50/50 rounded-3xl p-8 border border-gray-100 flex flex-col items-center">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-200 pb-2 w-full text-center">Quick Access Prototyping</p>
+                    <div className="grid grid-cols-1 gap-4 w-full">
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-gray-400">Admin</span>
+                            <span className="text-indigo-600 bg-white px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm">admin@apexstore.com</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-gray-400">Vendor</span>
+                            <span className="text-indigo-600 bg-white px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm">vendor@apexstore.com</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-gray-400">Customer</span>
+                            <span className="text-indigo-600 bg-white px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm">customer@apexstore.com</span>
+                        </div>
                     </div>
                 </div>
             </div>

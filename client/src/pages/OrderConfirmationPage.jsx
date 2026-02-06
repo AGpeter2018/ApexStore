@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchOrderById, selectCurrentOrder, selectOrderLoading, verifyPayment } from '../redux/slices/orderSlice';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { CheckCircle, Package, MapPin, CreditCard, ArrowRight } from 'lucide-react';
+import { CheckCircle, Package, MapPin, CreditCard, ArrowRight, ShoppingBag, Truck, Calendar, Sparkles } from 'lucide-react';
+import Logo from '../components/Logo';
 
 const OrderConfirmationPage = () => {
     const { orderId } = useParams();
@@ -15,9 +16,9 @@ const OrderConfirmationPage = () => {
 
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
-        const reference = queryParams.get('reference'); // Paystack
-        const trxref = queryParams.get('trxref'); // Paystack alternate
-        const transactionId = queryParams.get('transaction_id'); // Flutterwave
+        const reference = queryParams.get('reference');
+        const trxref = queryParams.get('trxref');
+        const transactionId = queryParams.get('transaction_id');
 
 
         const paymentRef = reference || trxref || transactionId;
@@ -30,10 +31,8 @@ const OrderConfirmationPage = () => {
 
 
             try {
-                // If we have a payment reference, triggers verification immediately
-                // The backend handles idempotency (if already paid, it returns success or ignores)
                 if (paymentRef) {
-                    const result = await dispatch(verifyPayment({
+                    await dispatch(verifyPayment({
                         orderId,
                         paymentData: {
                             reference: reference || trxref,
@@ -41,18 +40,13 @@ const OrderConfirmationPage = () => {
                         }
                     })).unwrap();
 
-                    // After verification, refresh order data
                     await dispatch(fetchOrderById(orderId)).unwrap();
                 } else {
-                    // Just fetch the order if no verification needed
                     await dispatch(fetchOrderById(orderId)).unwrap();
                 }
             } catch (error) {
                 console.error('Verification/Fetch error:', error);
-
-                // Even if verification fails, try to fetch the order to show current status
                 try {
-                    console.log('Attempting fallback fetch after error...');
                     await dispatch(fetchOrderById(orderId)).unwrap();
                 } catch (fetchError) {
                     console.error('Final fetch error:', fetchError);
@@ -64,423 +58,289 @@ const OrderConfirmationPage = () => {
     }, [orderId, location.search, dispatch]);
 
     if (loading) {
-        return <LoadingSpinner />;
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
+                <LoadingSpinner />
+            </div>
+        );
     }
 
     if (!order) {
         return (
-            <div className="confirmation-page">
-                <div className="error">Order not found</div>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50/50 px-4">
+                <div className="text-center bg-white p-12 rounded-[2.5rem] shadow-2xl shadow-indigo-100 border border-gray-100 max-w-md w-full">
+                    <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                        <Package size={40} strokeWidth={1.5} />
+                    </div>
+                    <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight mb-4">Order Not Found</h2>
+                    <p className="text-gray-500 font-medium mb-8 leading-relaxed italic">
+                        We couldn't retrieve the details for this order. It may be due to an expired session or incorrect URL.
+                    </p>
+                    <Link
+                        to="/my-orders"
+                        className="inline-flex items-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-100"
+                    >
+                        View My Orders
+                        <ArrowRight size={20} />
+                    </Link>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="confirmation-page">
-            <div className="confirmation-container">
-                <div className="success-header">
-                    <CheckCircle size={80} className="success-icon" />
-                    <h1>Order Placed Successfully!</h1>
-                    <p>Thank you for your purchase. Your order has been received and is being processed.</p>
-                    <div className="order-number">
-                        Order Number: <strong>{order.orderNumber}</strong>
+        <div className="min-h-screen bg-gray-50/50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-50 rounded-full blur-[120px] opacity-60"></div>
+                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-50 rounded-full blur-[120px] opacity-60"></div>
+            </div>
+
+            <div className="max-w-5xl mx-auto relative z-10">
+                {/* Brand Logo */}
+                <div className="flex justify-center mb-12">
+                    <Logo size="md" />
+                </div>
+
+                {/* Success Banner */}
+                <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-indigo-100 border border-gray-100 p-8 md:p-12 mb-12 text-center relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 text-indigo-100 opacity-20 pointer-events-none">
+                        <Sparkles size={120} />
+                    </div>
+
+                    <div className="relative inline-block mb-8">
+                        <div className="absolute inset-0 bg-emerald-500 rounded-full blur-2xl opacity-20"></div>
+                        <div className="relative w-24 h-24 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto ring-8 ring-emerald-50/50">
+                            <CheckCircle size={56} strokeWidth={1.5} />
+                        </div>
+                    </div>
+
+                    <h1 className="text-3xl md:text-5xl font-black text-gray-900 uppercase tracking-tighter mb-4">
+                        Order <span className="text-indigo-600 tracking-normal">Confirmed</span>
+                    </h1>
+                    <p className="text-gray-500 text-lg font-medium max-w-2xl mx-auto leading-relaxed italic border-l-4 border-emerald-100 pl-6 text-left md:text-center md:border-l-0 md:pl-0 mb-8">
+                        Thank you for choosing excellence. Your curated items are being prepared for delivery. A confirmation email has been sent to your registered address.
+                    </p>
+
+                    <div className="inline-flex flex-col md:flex-row items-center gap-4 bg-gray-50 p-2 rounded-3xl border border-gray-100">
+                        <div className="px-6 py-3 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Order Number</span>
+                            <span className="text-indigo-600 font-black tracking-widest">{order.orderNumber}</span>
+                        </div>
+                        <div className="px-6 py-3 flex items-center gap-3">
+                            <Calendar size={16} className="text-gray-400" />
+                            <span className="text-xs font-bold text-gray-600">{new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div className="order-details-grid">
-                    <div className="detail-card">
-                        <div className="card-header">
-                            <Package size={24} />
-                            <h3>Order Items</h3>
-                        </div>
-                        <div className="items-list">
-                            {order.items?.map((item) => (
-                                <div key={item._id} className="order-item">
-                                    <img src={item.image} alt={item.name} />
-                                    <div className="item-info">
-                                        <p className="item-name">{item.name}</p>
-                                        <p className="item-quantity">Quantity: {item.quantity}</p>
-                                    </div>
-                                    <p className="item-price">₦{item.subtotal?.toLocaleString()}</p>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Order Items */}
+                    <div className="lg:col-span-2 space-y-8">
+                        <div className="bg-white rounded-[2rem] shadow-xl shadow-indigo-100/50 border border-gray-100 overflow-hidden">
+                            <div className="px-8 py-6 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <ShoppingBag size={20} className="text-indigo-600" />
+                                    <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">Order Summary</h3>
                                 </div>
-                            ))}
-                        </div>
-                        <div className="order-totals">
-                            <div className="total-row">
-                                <span>Subtotal:</span>
-                                <span>₦{order.subtotal?.toLocaleString()}</span>
-                            </div>
-                            <div className="total-row">
-                                <span>Shipping:</span>
-                                <span>₦{order.shippingFee?.toLocaleString()}</span>
-                            </div>
-                            <div className="total-row">
-                                <span>Tax:</span>
-                                <span>₦{order.tax?.toLocaleString()}</span>
-                            </div>
-                            <div className="total-row grand-total">
-                                <span>Total:</span>
-                                <span>₦{order.total?.toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="detail-card">
-                        <div className="card-header">
-                            <MapPin size={24} />
-                            <h3>Shipping Address</h3>
-                        </div>
-                        <div className="address-info">
-                            <p>{order.shippingAddress?.name}</p>
-                            <p>{order.shippingAddress?.phone}</p>
-                            <p>{order.shippingAddress?.street}</p>
-                            <p>{order.shippingAddress?.city}, {order.shippingAddress?.state} {order.shippingAddress?.zipCode}</p>
-                            <p>{order.shippingAddress?.country}</p>
-                        </div>
-                    </div>
-
-                    <div className="detail-card">
-                        <div className="card-header">
-                            <CreditCard size={24} />
-                            <h3>Payment Information</h3>
-                        </div>
-                        <div className="payment-info">
-                            <div className="info-row">
-                                <span>Payment Method:</span>
-                                <strong>{order.paymentMethod?.replace('_', ' ').toUpperCase()}</strong>
-                            </div>
-                            <div className="info-row">
-                                <span>Payment Status:</span>
-                                <span className={`status - badge ${order.paymentStatus} `}>
-                                    {order.paymentStatus?.toUpperCase()}
+                                <span className="bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                    {order.items?.length} {order.items?.length === 1 ? 'Item' : 'Items'}
                                 </span>
                             </div>
-                            <div className="info-row">
-                                <span>Order Status:</span>
-                                <span className={`status - badge ${order.orderStatus} `}>
-                                    {order.orderStatus?.toUpperCase()}
-                                </span>
+
+                            <div className="p-8 space-y-6">
+                                {order.items?.map((item) => (
+                                    <div key={item._id} className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-2xl bg-gray-50/50 border border-transparent hover:border-indigo-100 hover:bg-white transition-all">
+                                        <div className="w-24 h-24 rounded-xl overflow-hidden shadow-md ring-1 ring-gray-100 flex-shrink-0">
+                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1 text-center sm:text-left">
+                                            <h4 className="font-black text-gray-900 uppercase tracking-tight text-lg mb-1">{item.name}</h4>
+                                            <div className="flex items-center justify-center sm:justify-start gap-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                                                <span>Qty: {item.quantity}</span>
+                                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                                <span>₦{item.price?.toLocaleString()} each</span>
+                                            </div>
+                                        </div>
+                                        <div className="text-lg font-black text-indigo-600">
+                                            ₦{item.subtotal?.toLocaleString()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="bg-indigo-50/30 p-8 border-t border-indigo-100">
+                                <div className="space-y-4 max-w-sm ml-auto">
+                                    <div className="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-wider">
+                                        <span>Subtotal</span>
+                                        <span>₦{order.subtotal?.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-wider">
+                                        <span>Shipping</span>
+                                        <span className="text-emerald-600 italic">₦{order.shippingFee?.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-wider">
+                                        <span>Tax</span>
+                                        <span>₦{order.tax?.toLocaleString()}</span>
+                                    </div>
+                                    <div className="pt-4 border-t border-indigo-200 flex justify-between items-center text-xl font-black text-gray-900 tracking-tighter uppercase">
+                                        <span>Total</span>
+                                        <span className="text-indigo-600 text-2xl">₦{order.total?.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Order Status Timeline/Info */}
+                        <div className="bg-white rounded-[2rem] shadow-xl shadow-indigo-100/50 border border-gray-100 p-8">
+                            <div className="flex items-center gap-3 mb-8">
+                                <Truck size={20} className="text-indigo-600" />
+                                <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">Logistics Status</h3>
+                            </div>
+
+                            <div className="flex flex-col md:flex-row gap-8">
+                                <div className="flex-1 p-6 rounded-2xl bg-gray-50 border border-gray-100 flex items-center gap-5">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${order.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                                        }`}>
+                                        <CreditCard size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Payment Status</p>
+                                        <p className={`font-black uppercase tracking-tight ${order.paymentStatus === 'paid' ? 'text-emerald-600' : 'text-amber-600'
+                                            }`}>
+                                            {order.paymentStatus?.replace('_', ' ')}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 p-6 rounded-2xl bg-gray-50 border border-gray-100 flex items-center gap-5">
+                                    <div className="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shadow-sm">
+                                        <Package size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Fullfillment</p>
+                                        <p className="font-black text-gray-900 uppercase tracking-tight">
+                                            {order.orderStatus?.replace('_', ' ')}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="action-buttons" style={{ flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                    {/* Shipping & Payment Info Sidebars */}
+                    <div className="space-y-8">
+                        {/* Shipping Address */}
+                        <div className="bg-white rounded-[2rem] shadow-xl shadow-indigo-100/50 border border-gray-100 overflow-hidden">
+                            <div className="px-8 py-6 bg-gray-50/50 border-b border-gray-100 flex items-center gap-3">
+                                <MapPin size={20} className="text-indigo-600" />
+                                <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">Shipping To</h3>
+                            </div>
+                            <div className="p-8">
+                                <h4 className="font-black text-gray-900 uppercase tracking-tight mb-4">{order.shippingAddress?.name}</h4>
+                                <div className="space-y-3 text-sm font-medium text-gray-500 leading-relaxed italic border-l-2 border-indigo-50 pl-4">
+                                    <p>{order.shippingAddress?.phone}</p>
+                                    <p>{order.shippingAddress?.street}</p>
+                                    <p>{order.shippingAddress?.city}, {order.shippingAddress?.state}</p>
+                                    <p>{order.shippingAddress?.zipCode}, {order.shippingAddress?.country}</p>
+                                </div>
+                            </div>
+                        </div>
 
-                    {/* MANUAL VERIFICATION FALBACK - SHOW IF NOT PAID */}
-                    {order.paymentStatus !== 'paid' && order.paymentMethod !== 'cash_on_delivery' && (
-                        <div className="verification-warning" style={{
-                            padding: '20px',
-                            background: '#fff3cd',
-                            border: '1px solid #ffeeba',
-                            borderRadius: '12px',
-                            color: '#856404',
-                            maxWidth: '600px',
-                            width: '100%',
-                            textAlign: 'center'
-                        }}>
-                            <h4 style={{ margin: '0 0 10px 0' }}>Payment Status: Pending</h4>
-                            <p style={{ margin: '0 0 15px 0' }}>
-                                If you have already completed the payment, please click the button below to update your order status.
-                            </p>
+                        {/* Payment Method */}
+                        <div className="bg-white rounded-[2rem] shadow-xl shadow-indigo-100/50 border border-gray-100 overflow-hidden">
+                            <div className="px-8 py-6 bg-gray-50/50 border-b border-gray-100 flex items-center gap-3">
+                                <CreditCard size={20} className="text-indigo-600" />
+                                <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">Payment</h3>
+                            </div>
+                            <div className="p-8">
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Method</p>
+                                <p className="font-black text-gray-900 uppercase tracking-tight text-lg mb-6">
+                                    {order.paymentMethod?.replace('_', ' ')}
+                                </p>
+
+                                {/* Manual Verification Fallback */}
+                                {order.paymentStatus !== 'paid' && order.paymentMethod !== 'cash_on_delivery' && (
+                                    <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100">
+                                        <p className="text-xs font-bold text-amber-700 leading-relaxed mb-4">
+                                            If your payment didn't automatically verify, please use the button below to update status.
+                                        </p>
+                                        <button
+                                            onClick={() => {
+                                                const params = new URLSearchParams(location.search);
+                                                const paymentData = {
+                                                    reference: params.get('reference') || params.get('trxref'),
+                                                    transactionId: params.get('transaction_id')
+                                                };
+                                                dispatch(verifyPayment({ orderId, paymentData })).unwrap()
+                                                    .then(() => {
+                                                        dispatch(fetchOrderById(orderId));
+                                                        alert('Payment verified successfully!');
+                                                    })
+                                                    .catch((err) => alert('Verification failed: ' + (err.message || 'Unknown error')));
+                                            }}
+                                            className="w-full bg-amber-600 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-700 transition-all active:scale-95 shadow-md shadow-amber-100"
+                                        >
+                                            Verify Transaction
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Direct Actions */}
+                        <div className="space-y-4">
                             <button
-                                onClick={() => {
-                                    const params = new URLSearchParams(location.search);
-                                    const paymentData = {
-                                        reference: params.get('reference') || params.get('trxref'),
-                                        transactionId: params.get('transaction_id')
-                                    };
-
-                                    console.log('Manual verify clicked', paymentData);
-
-                                    dispatch(verifyPayment({
-                                        orderId,
-                                        paymentData
-                                    })).unwrap().then(() => {
-                                        dispatch(fetchOrderById(orderId));
-                                        alert('Payment verified successfully!');
-                                    }).catch((err) => {
-                                        alert('Verification failed: ' + (err.message || 'Unknown error'));
-                                    });
-                                }}
-                                className="btn-primary"
-                                style={{ background: '#856404', border: 'none', margin: '0 auto' }}
+                                onClick={() => navigate('/my-orders')}
+                                className="w-full bg-indigo-600 text-white py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 shadow-xl shadow-indigo-100 flex items-center justify-center gap-3"
                             >
-                                Verify Payment Now
+                                Track My Orders
+                                <ArrowRight size={20} />
+                            </button>
+                            <button
+                                onClick={() => navigate('/categories')}
+                                className="w-full bg-white text-indigo-600 border-2 border-indigo-600 py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-50 transition-all active:scale-95 flex items-center justify-center gap-3"
+                            >
+                                Continue Shopping
                             </button>
                         </div>
-                    )}
+                    </div>
+                </div>
 
-                    <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                        <button onClick={() => navigate('/my-orders')} className="btn-primary">
-                            View All Orders
-                            <ArrowRight size={20} />
-                        </button>
-                        <button onClick={() => navigate('/categories')} className="btn-secondary">
-                            Continue Shopping
-                        </button>
+                {/* Footer Polish */}
+                <div className="mt-16 text-center">
+                    <div className="inline-flex items-center gap-8 opacity-40">
+                        <div className="flex items-center gap-2">
+                            <Sparkles size={14} className="text-indigo-400" />
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Authentic Artistry</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <ShieldCheck size={14} className="text-indigo-400" />
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Escrow Protected</span>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {/* DEBUG SECTION */}
-            <div style={{ marginTop: '50px', padding: '20px', background: '#f0f0f0', borderRadius: '8px', fontSize: '12px', fontFamily: 'monospace' }}>
-                <h4>DEBUG INFO (Share this if you have issues)</h4>
-                <p><strong>Order ID:</strong> {orderId}</p>
-                <p><strong>Payment Status:</strong> {order.paymentStatus}</p>
-                <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
-                <p><strong>URL Params:</strong> {location.search}</p>
-                <details>
-                    <summary>Full Order Object</summary>
-                    <pre>{JSON.stringify(order, null, 2)}</pre>
-                </details>
-            </div>
-
-
-            <style jsx>{`
-    .confirmation - page {
-    min - height: 80vh;
-    background: linear - gradient(135deg, #f5f7fa 0 %, #c3cfe2 100 %);
-    padding: 40px 20px;
-}
-
-                .confirmation - container {
-    max - width: 1000px;
-    margin: 0 auto;
-}
-
-                .success - header {
-    text - align: center;
-    background: white;
-    padding: 50px 30px;
-    border - radius: 16px;
-    margin - bottom: 30px;
-}
-
-                .success - icon {
-    color: #4CAF50;
-    margin - bottom: 20px;
-}
-
-                .success - header h1 {
-    font - size: 32px;
-    color: #333;
-    margin - bottom: 10px;
-}
-
-                .success - header p {
-    font - size: 18px;
-    color: #666;
-    margin - bottom: 20px;
-}
-
-                .order - number {
-    display: inline - block;
-    padding: 12px 24px;
-    background: linear - gradient(135deg, #667eea 0 %, #764ba2 100 %);
-    color: white;
-    border - radius: 25px;
-    font - size: 16px;
-}
-
-                .order - details - grid {
-    display: grid;
-    gap: 20px;
-    margin - bottom: 30px;
-}
-
-                .detail - card {
-    background: white;
-    padding: 30px;
-    border - radius: 16px;
-    box - shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-                .card - header {
-    display: flex;
-    align - items: center;
-    gap: 12px;
-    margin - bottom: 20px;
-    color: #667eea;
-}
-
-                .card - header h3 {
-    font - size: 20px;
-    color: #333;
-    margin: 0;
-}
-
-                .items - list {
-    margin - bottom: 20px;
-}
-
-                .order - item {
-    display: flex;
-    align - items: center;
-    gap: 15px;
-    padding: 15px;
-    background: #f9f9f9;
-    border - radius: 12px;
-    margin - bottom: 10px;
-}
-
-                .order - item img {
-    width: 60px;
-    height: 60px;
-    object - fit: cover;
-    border - radius: 8px;
-}
-
-                .item - info {
-    flex: 1;
-}
-
-                .item - name {
-    font - weight: 600;
-    color: #333;
-    margin: 0 0 5px 0;
-}
-
-                .item - quantity {
-    color: #666;
-    font - size: 14px;
-    margin: 0;
-}
-
-                .item - price {
-    font - weight: 700;
-    color: #667eea;
-    margin: 0;
-}
-
-                .order - totals {
-    border - top: 2px solid #e0e0e0;
-    padding - top: 15px;
-}
-
-                .total - row {
-    display: flex;
-    justify - content: space - between;
-    margin - bottom: 10px;
-    font - size: 16px;
-    color: #666;
-}
-
-                .total - row.grand - total {
-    font - size: 20px;
-    font - weight: 700;
-    color: #333;
-    margin - top: 10px;
-    padding - top: 10px;
-    border - top: 2px solid #667eea;
-}
-
-                .address - info p {
-    margin: 8px 0;
-    color: #666;
-    line - height: 1.6;
-}
-
-                .payment - info {
-    display: flex;
-    flex - direction: column;
-    gap: 15px;
-}
-
-                .info - row {
-    display: flex;
-    justify - content: space - between;
-    align - items: center;
-    padding: 12px;
-    background: #f9f9f9;
-    border - radius: 8px;
-}
-
-                .status - badge {
-    padding: 6px 16px;
-    border - radius: 20px;
-    font - size: 12px;
-    font - weight: 700;
-}
-
-                .status - badge.pending {
-    background: #fff3cd;
-    color: #856404;
-}
-
-                .status - badge.paid,
-                .status - badge.processing {
-    background: #d4edda;
-    color: #155724;
-}
-
-                .status - badge.failed {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-                .action - buttons {
-    display: flex;
-    gap: 15px;
-    justify - content: center;
-}
-
-                .btn - primary,
-                .btn - secondary {
-    padding: 14px 30px;
-    border - radius: 12px;
-    font - size: 16px;
-    font - weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-    display: flex;
-    align - items: center;
-    gap: 10px;
-}
-
-                .btn - primary {
-    background: linear - gradient(135deg, #667eea 0 %, #764ba2 100 %);
-    color: white;
-}
-
-                .btn - primary:hover {
-    transform: translateY(-2px);
-    box - shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-}
-
-                .btn - secondary {
-    background: white;
-    color: #667eea;
-    border: 2px solid #667eea;
-}
-
-                .btn - secondary:hover {
-    background: #f5f7ff;
-}
-
-                .loading,
-                .error {
-    text - align: center;
-    padding: 100px 20px;
-    font - size: 20px;
-    color: #667eea;
-}
-
-@media(max - width: 768px) {
-                    .action - buttons {
-        flex - direction: column;
-    }
-
-                    .btn - primary,
-                    .btn - secondary {
-        width: 100 %;
-        justify - content: center;
-    }
-}
-`}</style>
-        </div >
+        </div>
     );
 };
+
+const ShieldCheck = ({ size, className }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+    >
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="m9 12 2 2 4-4" />
+    </svg>
+);
 
 export default OrderConfirmationPage;

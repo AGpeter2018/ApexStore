@@ -78,30 +78,30 @@ const Categories = () => {
             </div>
 
             {/* View Mode Toggle */}
-            <div className="mb-6 flex flex-wrap gap-2">
+            <div className="mb-6 flex flex-wrap gap-3">
                 <button
                     onClick={() => setViewMode('all')}
-                    className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'all'
-                            ? 'bg-amber-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'all'
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
+                        : 'bg-white text-gray-400 border border-gray-100 hover:border-indigo-200 hover:text-indigo-600 shadow-sm'
                         }`}
                 >
                     All Categories
                 </button>
                 <button
                     onClick={() => setViewMode('main')}
-                    className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'main'
-                            ? 'bg-amber-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'main'
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
+                        : 'bg-white text-gray-400 border border-gray-100 hover:border-indigo-200 hover:text-indigo-600 shadow-sm'
                         }`}
                 >
                     Main Categories
                 </button>
                 <button
                     onClick={() => setViewMode('hierarchy')}
-                    className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'hierarchy'
-                            ? 'bg-amber-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'hierarchy'
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
+                        : 'bg-white text-gray-400 border border-gray-100 hover:border-indigo-200 hover:text-indigo-600 shadow-sm'
                         }`}
                 >
                     With Subcategories
@@ -117,7 +117,7 @@ const Categories = () => {
                         placeholder="Search categories..."
                         value={searchTerm}
                         onChange={(e) => handleSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        className="w-full pl-10 pr-4 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
                     />
                 </div>
             </div>
@@ -144,7 +144,7 @@ const Categories = () => {
                                         className="w-20 h-20 rounded-lg object-cover"
                                     />
                                     <div className="flex-1">
-                                        <h2 className="text-2xl font-bold group-hover:text-amber-600 transition">
+                                        <h2 className="text-2xl font-black group-hover:text-indigo-600 transition tracking-tight">
                                             {category.name}
                                         </h2>
                                         <p className="text-gray-600">{category.description}</p>
@@ -234,11 +234,12 @@ const Categories = () => {
                                     </div>
 
                                     {/* View Button */}
-                                    <div className="flex items-center text-amber-600 font-semibold group-hover:gap-2 transition-all">
+                                    <div className="flex items-center text-indigo-600 font-black uppercase tracking-widest text-[10px] group-hover:gap-2 transition-all">
                                         Browse Products
                                         <ChevronRight
                                             className="group-hover:translate-x-1 transition-transform"
-                                            size={20}
+                                            size={14}
+                                            strokeWidth={3}
                                         />
                                     </div>
                                 </div>

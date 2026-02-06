@@ -62,6 +62,7 @@ export const orderAPI = {
     deleteOrder: (orderId) => api.delete(`/orders/${orderId}`),
     getVendorPayments: () => api.get('/orders/vendor/payments'),
     refundOrder: (orderId, refundData) => api.post(`/orders/${orderId}/refund`, refundData),
+    confirmCODPayment: (orderId) => api.patch(`/orders/${orderId}/confirm-cod`),
     cancelOrder: (orderId, data) => api.patch(`/orders/${orderId}/cancel`, data),
 };
 

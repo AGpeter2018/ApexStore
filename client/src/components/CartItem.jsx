@@ -22,179 +22,63 @@ const CartItem = ({ item }) => {
     };
 
     return (
-        <div className="cart-item">
-            <div className="cart-item-image">
-                <img src={item.image} alt={item.name} />
-            </div>
+        <div className="group bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 overflow-hidden mb-4">
+            <div className="flex flex-col sm:flex-row items-center p-4 sm:p-6 gap-4 sm:gap-6">
+                {/* Product Image */}
+                <div className="w-full sm:w-24 h-48 sm:h-24 rounded-xl overflow-hidden bg-gray-50 flex-shrink-0">
+                    <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                </div>
 
-            <div className="cart-item-details">
-                <h3>{item.name}</h3>
-                <p className="cart-item-price">₦{item.price.toLocaleString()}</p>
-                {item.stock < 10 && (
-                    <p className="stock-warning">Only {item.stock} left in stock</p>
-                )}
-            </div>
+                {/* Details */}
+                <div className="flex-1 min-w-0 w-full text-center sm:text-left">
+                    <h3 className="text-lg font-bold text-gray-900 truncate mb-1">{item.name}</h3>
+                    <p className="text-indigo-600 font-bold text-xl mb-2">₦{item.price.toLocaleString()}</p>
+                    {item.stock < 10 && (
+                        <div className="flex items-center justify-center sm:justify-start gap-1.5 text-red-500 text-xs font-bold uppercase tracking-wider">
+                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                            Only {item.stock} left in stock
+                        </div>
+                    )}
+                </div>
 
-            <div className="cart-item-quantity">
+                {/* Quantity Controls */}
+                <div className="flex items-center bg-gray-50 rounded-xl p-1.5 border border-gray-100">
+                    <button
+                        onClick={() => handleQuantityChange(item.quantity - 1)}
+                        disabled={item.quantity <= 1}
+                        className="w-10 h-10 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-indigo-600 disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600 transition-all font-bold shadow-sm"
+                    >
+                        <Minus size={18} />
+                    </button>
+                    <span className="w-12 text-center font-bold text-gray-900">{item.quantity}</span>
+                    <button
+                        onClick={() => handleQuantityChange(item.quantity + 1)}
+                        disabled={item.quantity >= item.stock}
+                        className="w-10 h-10 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-indigo-600 disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600 transition-all font-bold shadow-sm"
+                    >
+                        <Plus size={18} />
+                    </button>
+                </div>
+
+                {/* Subtotal */}
+                <div className="w-full sm:w-auto text-center sm:text-right">
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Subtotal</p>
+                    <p className="text-2xl font-black text-gray-900">₦{(item.price * item.quantity).toLocaleString()}</p>
+                </div>
+
+                {/* Remove Button */}
                 <button
-                    onClick={() => handleQuantityChange(item.quantity - 1)}
-                    disabled={item.quantity <= 1}
-                    className="quantity-btn"
+                    onClick={handleRemove}
+                    className="absolute top-4 right-4 sm:static w-12 h-12 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 group/remove shadow-sm sm:shadow-none"
+                    title="Remove item"
                 >
-                    <Minus size={16} />
-                </button>
-                <span className="quantity-value">{item.quantity}</span>
-                <button
-                    onClick={() => handleQuantityChange(item.quantity + 1)}
-                    disabled={item.quantity >= item.stock}
-                    className="quantity-btn"
-                >
-                    <Plus size={16} />
+                    <Trash2 size={20} className="group-hover/remove:scale-110 transition-transform" />
                 </button>
             </div>
-
-            <div className="cart-item-subtotal">
-                <p>₦{(item.price * item.quantity).toLocaleString()}</p>
-            </div>
-
-            <button onClick={handleRemove} className="remove-btn" title="Remove item">
-                <Trash2 size={20} />
-            </button>
-
-            <style jsx>{`
-                .cart-item {
-                    display: grid;
-                    grid-template-columns: 100px 1fr auto auto auto;
-                    gap: 20px;
-                    align-items: center;
-                    padding: 20px;
-                    background: white;
-                    border-radius: 12px;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                    margin-bottom: 15px;
-                    transition: transform 0.2s, box-shadow 0.2s;
-                }
-
-                .cart-item:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                }
-
-                .cart-item-image {
-                    width: 100px;
-                    height: 100px;
-                    border-radius: 8px;
-                    overflow: hidden;
-                }
-
-                .cart-item-image img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                }
-
-                .cart-item-details h3 {
-                    font-size: 16px;
-                    font-weight: 600;
-                    margin: 0 0 8px 0;
-                    color: #333;
-                }
-
-                .cart-item-price {
-                    font-size: 18px;
-                    font-weight: 700;
-                    color: #667eea;
-                    margin: 0;
-                }
-
-                .stock-warning {
-                    color: #ff6b6b;
-                    font-size: 12px;
-                    margin: 5px 0 0 0;
-                }
-
-                .cart-item-quantity {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    background: #f5f5f5;
-                    padding: 8px 12px;
-                    border-radius: 8px;
-                }
-
-                .quantity-btn {
-                    background: white;
-                    border: 1px solid #ddd;
-                    border-radius: 6px;
-                    width: 32px;
-                    height: 32px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-
-                .quantity-btn:hover:not(:disabled) {
-                    background: #667eea;
-                    color: white;
-                    border-color: #667eea;
-                }
-
-                .quantity-btn:disabled {
-                    opacity: 0.5;
-                    cursor: not-allowed;
-                }
-
-                .quantity-value {
-                    font-weight: 600;
-                    min-width: 30px;
-                    text-align: center;
-                }
-
-                .cart-item-subtotal p {
-                    font-size: 20px;
-                    font-weight: 700;
-                    color: #333;
-                    margin: 0;
-                }
-
-                .remove-btn {
-                    background: #fee;
-                    color: #ff6b6b;
-                    border: none;
-                    border-radius: 8px;
-                    width: 40px;
-                    height: 40px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-
-                .remove-btn:hover {
-                    background: #ff6b6b;
-                    color: white;
-                }
-
-                @media (max-width: 768px) {
-                    .cart-item {
-                        grid-template-columns: 80px 1fr;
-                        gap: 15px;
-                    }
-
-                    .cart-item-quantity,
-                    .cart-item-subtotal {
-                        grid-column: 2;
-                    }
-
-                    .remove-btn {
-                        grid-column: 2;
-                        justify-self: end;
-                    }
-                }
-            `}</style>
         </div>
     );
 };

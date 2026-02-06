@@ -978,3 +978,41 @@ export const processRefund = async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
     }
 };
+
+/**
+ * Confirm COD payment (Admin only)
+ * @route PATCH /api/orders/:id/confirm-cod
+ * @access Private (Admin)
+ */
+export const confirmCodPayment = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        // Verify it's a COD order and pending payment
+        if (order.paymentMethod !== 'cash_on_delivery') {
+            return res.status(400).json({ success: false, message: 'Only COD orders can be confirmed manually' });
+        }
+
+        if (order.paymentStatus === 'paid') {
+            return res.status(400).json({ success: false, message: 'Order is already marked as paid' });
+        }
+
+        // Use finalizeOrder helper to update vendor balances and mark as paid
+        // We pass 'COD_CASH_CONFIRMED' as the reference
+        const updatedOrder = await finalizeOrder(orderId, `COD_CASH_CONFIRMED_${Date.now()}`);
+
+        res.status(200).json({
+            success: true,
+            message: 'COD payment confirmed successfully',
+            data: updatedOrder
+        });
+    } catch (error) {
+        console.error('Confirm COD payment error:', error);
+        res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
+    }
+};

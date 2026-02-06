@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { orderAPI } from '../../utils/api';
-import { ArrowLeft, Package, MapPin, AlertCircle, Trash2, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, Package, MapPin, AlertCircle, Trash2, RefreshCcw, CheckCircle } from 'lucide-react';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const OrderDetailPage = () => {
@@ -78,6 +78,19 @@ const OrderDetailPage = () => {
             } catch (error) {
                 console.error('Refund error:', error);
                 alert(error.response?.data?.message || 'Failed to initiate refund');
+            }
+        }
+    };
+
+    const handleConfirmPayment = async () => {
+        if (window.confirm('Are you sure you want to mark this COD order as PAID? This will update vendor balances and commissions.')) {
+            try {
+                await orderAPI.confirmCODPayment(id);
+                alert('Payment confirmed and vendor balances updated!');
+                fetchOrder();
+            } catch (error) {
+                console.error('Confirm payment error:', error);
+                alert(error.response?.data?.message || 'Failed to confirm payment');
             }
         }
     };
@@ -192,6 +205,15 @@ const OrderDetailPage = () => {
                             </div>
                             {JSON.parse(localStorage.getItem('user') || '{}').role === 'admin' && (
                                 <div className="flex gap-2">
+                                    {order.paymentMethod === 'cash_on_delivery' && order.paymentStatus === 'pending' && (
+                                        <button
+                                            onClick={handleConfirmPayment}
+                                            className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-colors text-sm font-semibold"
+                                        >
+                                            <CheckCircle size={16} />
+                                            Confirm Payment
+                                        </button>
+                                    )}
                                     <button
                                         onClick={handleRefundOrder}
                                         disabled={order.paymentStatus !== 'paid'}
@@ -380,8 +402,8 @@ const OrderDetailPage = () => {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

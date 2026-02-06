@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, CheckCircle, AlertCircle } from 'lucide-react';
+import Logo from '../components/Logo';
 
 const ResetPasswordPage = () => {
     const { token } = useParams();
@@ -39,7 +40,7 @@ const ResetPasswordPage = () => {
 
             setMessage({ type: 'success', text: data.message });
             setSuccess(true);
-            
+
             setTimeout(() => {
                 navigate('/login');
             }, 3000);
@@ -55,21 +56,27 @@ const ResetPasswordPage = () => {
 
     if (success) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-                <div className="max-w-md w-full">
-                    <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <CheckCircle className="text-green-600" size={32} />
+            <div className="min-h-screen bg-white flex items-center justify-center py-20 px-4 relative overflow-hidden">
+                {/* Background Decorations */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                    <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-50 rounded-full blur-[120px] opacity-60"></div>
+                    <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-50 rounded-full blur-[120px] opacity-60"></div>
+                </div>
+
+                <div className="max-w-md w-full relative z-10">
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-indigo-100 p-10 border border-gray-100 text-center">
+                        <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 shadow-inner shadow-emerald-100/50">
+                            <CheckCircle size={40} strokeWidth={2.5} />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                            Password Reset Successful!
-                        </h2>
-                        <p className="text-gray-600 mb-6">
-                            Your password has been reset successfully. You can now login with your new password.
+                        <h2 className="text-2xl font-black text-gray-900 mb-4 uppercase tracking-tight">Access Restored</h2>
+                        <p className="text-sm font-medium text-gray-500 mb-8 leading-relaxed italic border-l-4 border-emerald-100 pl-4 text-left">
+                            Your secure credentials have been updated. You are being redirected to the login portal.
                         </p>
-                        <p className="text-sm text-gray-500">
-                            Redirecting to login page...
-                        </p>
+                        <div className="flex items-center justify-center gap-3">
+                            <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                            <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -77,86 +84,90 @@ const ResetPasswordPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-            <div className="max-w-md w-full">
-                <div className="bg-white rounded-2xl shadow-xl p-8">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Lock className="text-orange-600" size={32} />
-                        </div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                            Reset Password
-                        </h2>
-                        <p className="text-gray-600">
-                            Enter your new password below
-                        </p>
-                    </div>
+        <div className="min-h-screen bg-white flex items-center justify-center py-20 px-4 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-50 rounded-full blur-[120px] opacity-60"></div>
+                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-50 rounded-full blur-[120px] opacity-60"></div>
+            </div>
 
-                    {/* Message */}
+            <div className="max-w-md w-full relative z-10">
+                {/* Logo/Brand */}
+                <div className="text-center mb-12 flex flex-col items-center">
+                    <Logo size="lg" />
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] mt-4">Initialize New Access</p>
+                </div>
+
+                <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-indigo-100 p-10 border border-gray-100 text-center">
+                    <h2 className="text-2xl font-black text-gray-900 mb-8 uppercase tracking-widest">Reset Password</h2>
+
                     {message.text && (
-                        <div className={`p-4 rounded-lg mb-6 flex items-start gap-3 ${
-                            message.type === 'success'
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-red-100 text-red-700'
-                        }`}>
+                        <div className={`p-4 rounded-2xl mb-8 flex items-start gap-3 text-sm font-bold tracking-tight ${message.type === 'success'
+                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                            : 'bg-rose-50 text-rose-600 border border-rose-100'
+                            }`}>
                             {message.type === 'error' && <AlertCircle className="flex-shrink-0 mt-0.5" size={20} />}
                             {message.type === 'success' && <CheckCircle className="flex-shrink-0 mt-0.5" size={20} />}
                             <span>{message.text}</span>
                         </div>
                     )}
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <form onSubmit={handleSubmit} className="space-y-8 text-left">
+                        <div className="group">
+                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
                                 New Password
                             </label>
-                            <input
-                                type="password"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                required
-                                minLength={6}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                placeholder="Enter new password"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                                Must be at least 6 characters
-                            </p>
+                            <div className="relative">
+                                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors">
+                                    <Lock size={20} strokeWidth={2.5} />
+                                </div>
+                                <input
+                                    type="password"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    required
+                                    minLength={6}
+                                    className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold text-sm tracking-tight"
+                                    placeholder="Minimum 6 characters"
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Confirm Password
+                        <div className="group">
+                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
+                                Confirm New Password
                             </label>
-                            <input
-                                type="password"
-                                value={formData.confirmPassword}
-                                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                required
-                                minLength={6}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                placeholder="Confirm new password"
-                            />
+                            <div className="relative">
+                                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors">
+                                    <Lock size={20} strokeWidth={2.5} />
+                                </div>
+                                <input
+                                    type="password"
+                                    value={formData.confirmPassword}
+                                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                    required
+                                    minLength={6}
+                                    className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold text-sm tracking-tight"
+                                    placeholder="Repeat new password"
+                                />
+                            </div>
                         </div>
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 disabled:bg-gray-400 transition-colors"
+                            className="w-full bg-indigo-600 text-white py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all active:scale-95 shadow-xl shadow-indigo-100 hover:shadow-indigo-200"
                         >
-                            {loading ? 'Resetting...' : 'Reset Password'}
+                            {loading ? 'Redefining Access...' : 'Reset Secure Password'}
                         </button>
                     </form>
 
-                    {/* Back to Login */}
-                    <div className="mt-6 text-center">
+                    <div className="mt-10 pt-8 border-t border-gray-50 text-center">
                         <Link
                             to="/login"
-                            className="text-orange-600 hover:text-orange-700 font-semibold"
+                            className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-indigo-600 transition-colors"
                         >
-                            Back to Login
+                            Back to Secure Login
                         </Link>
                     </div>
                 </div>
