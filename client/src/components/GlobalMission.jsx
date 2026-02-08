@@ -27,6 +27,10 @@ const GlobalMission = () => {
                         <p className="text-lg text-slate-400 font-medium leading-relaxed max-w-xl">
                             We are building the backbone of a new African creative economy. Every transaction on ApexStore directly empowers the hands that create, ensuring the survival of centuries-old craftsmanship in a digital world.
                         </p>
+                        <div className="flex bg-orange-500/10 border border-orange-500/20 p-4 rounded-2xl gap-4 items-center">
+                            <Sparkles className="text-orange-500 animate-pulse" size={24} />
+                            <p className="text-xs text-orange-200 font-medium">Join 5,000+ contributors preserving cultural heritage through digital excellence.</p>
+                        </div>
                     </div>
 
                     <div className="lg:w-1/2 grid grid-cols-2 gap-8 animate-fadeInUp" style={{ animationDelay: '200ms' }}>

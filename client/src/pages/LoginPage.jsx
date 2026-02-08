@@ -72,7 +72,7 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white flex items-center justify-center py-20 px-4 relative overflow-hidden">
+        <div className="min-h-screen bg-white flex items-center justify-center py-10 px-4 relative overflow-hidden">
             {/* Background Decorations */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-50 rounded-full blur-[120px] opacity-60"></div>
@@ -81,7 +81,7 @@ const LoginPage = () => {
 
             <div className="max-w-md w-full relative z-10">
                 {/* Logo/Brand */}
-                <div className="text-center mb-12 flex flex-col items-center">
+                <div className="text-center mb-2 flex flex-col items-center">
                     <Logo size="lg" />
                     <p className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] mt-4">Curated Excellence</p>
                 </div>
@@ -182,25 +182,6 @@ const LoginPage = () => {
                                 Create Account
                             </Link>
                         </p>
-                    </div>
-                </div>
-
-                {/* Demo Accounts */}
-                <div className="mt-12 bg-gray-50/50 rounded-3xl p-8 border border-gray-100 flex flex-col items-center">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-200 pb-2 w-full text-center">Quick Access Prototyping</p>
-                    <div className="grid grid-cols-1 gap-4 w-full">
-                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                            <span className="text-gray-400">Admin</span>
-                            <span className="text-indigo-600 bg-white px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm">admin@apexstore.com</span>
-                        </div>
-                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                            <span className="text-gray-400">Vendor</span>
-                            <span className="text-indigo-600 bg-white px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm">vendor@apexstore.com</span>
-                        </div>
-                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                            <span className="text-gray-400">Customer</span>
-                            <span className="text-indigo-600 bg-white px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm">customer@apexstore.com</span>
-                        </div>
                     </div>
                 </div>
             </div>

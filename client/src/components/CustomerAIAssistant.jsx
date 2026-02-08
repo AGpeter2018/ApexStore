@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Send, X, Bot, User, Loader2, Sparkles, ShoppingBag } from 'lucide-react';
 import axios from 'axios';
+import { aiAPI } from '../utils/api';
+import LoadingSpinner from './LoadingSpinner';
 
 const CustomerAIAssistant = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -10,8 +12,6 @@ const CustomerAIAssistant = () => {
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef(null);
-
-    const API_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -29,7 +29,7 @@ const CustomerAIAssistant = () => {
         setIsLoading(true);
 
         try {
-            const { data } = await axios.post(`${API_URL}/ai/chat`, {
+            const { data } = await aiAPI.chat({
                 message,
                 history: history,
                 context: {
@@ -53,14 +53,14 @@ const CustomerAIAssistant = () => {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-[9999]">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999]">
             {/* Chat Bubble Toggle */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 ${isOpen ? 'bg-gray-800 rotate-90' : 'bg-gradient-to-r from-orange-500 to-pink-600'
+                className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 ${isOpen ? 'bg-gray-800 rotate-90' : 'bg-gradient-to-r from-orange-500 to-pink-600'
                     }`}
             >
-                {isOpen ? <X className="text-white" size={28} /> : <MessageSquare className="text-white" size={28} />}
+                {isOpen ? <X className="text-white" size={24} /> : <MessageSquare className="text-white" size={24} />}
                 {!isOpen && (
                     <span className="absolute -top-1 -right-1 flex h-4 w-4">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
@@ -71,7 +71,7 @@ const CustomerAIAssistant = () => {
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="absolute bottom-20 right-0 w-[90vw] sm:w-[380px] h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+                <div className="absolute bottom-16 right-0 w-[calc(100vw-2rem)] sm:w-[380px] h-[70vh] sm:h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-orange-500 to-pink-600 p-4 flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">

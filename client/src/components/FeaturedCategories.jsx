@@ -38,7 +38,7 @@ const FeaturedCategories = () => {
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-600/5 blur-[120px] rounded-full -mr-64 -mt-64" />
 
             <div className="container mx-auto px-6 relative z-10">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-16 gap-6 text-center md:text-left">
                     <motion.div
                         initial={{ opacity: 0, x: -50 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -46,7 +46,7 @@ const FeaturedCategories = () => {
                         transition={{ duration: 0.8 }}
                         className="max-w-2xl"
                     >
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
                             <span className="w-8 h-[1px] bg-orange-500"></span>
                             <h2 className="text-sm font-black text-orange-500 uppercase tracking-[0.4em]">Curated Heritage</h2>
                         </div>
@@ -70,7 +70,7 @@ const FeaturedCategories = () => {
                     </motion.div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     {categories.map((cat, i) => (
                         <motion.div
                             key={i}

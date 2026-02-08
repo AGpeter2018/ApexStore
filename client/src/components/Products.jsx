@@ -38,8 +38,8 @@ const Products = () => {
 
             <div className="container mx-auto px-6 relative z-10 animate-fadeInUp">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
-                    <div className="max-w-2xl text-left">
+                <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 gap-8">
+                    <div className="max-w-2xl text-center md:text-left">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 mb-4">
                             <TrendingUp className="text-orange-500" size={14} />
                             <span className="text-[10px] font-black uppercase tracking-widest text-orange-400">Handpicked Excellence</span>
@@ -53,20 +53,23 @@ const Products = () => {
                         </p>
                     </div>
 
-                    {/* Modern Filter Tabs */}
-                    <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 backdrop-blur-md">
-                        {['all', 'latest', 'popular'].map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${activeTab === tab
-                                    ? 'bg-orange-600 text-white shadow-xl shadow-orange-900/40'
-                                    : 'text-slate-500 hover:text-white'
-                                    }`}
-                            >
-                                {tab}
-                            </button>
-                        ))}
+                    <div className='pr-5'>
+                        {/* Modern Filter Tabs */}
+                        <div className="flex  bg-black/40  p-1.5  rounded-2xl border border-white/5 backdrop-blur-md">
+                            {['all', 'latest', 'popular'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${activeTab === tab
+                                        ? 'bg-orange-600 text-white shadow-xl shadow-orange-900/40'
+                                        : 'text-slate-500 hover:text-white'
+                                        }`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
                     </div>
                 </div>
 
@@ -162,7 +165,7 @@ const Products = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent md:bg-gradient-to-r" />
 
-                    <div className="relative z-10 px-8 py-20 md:p-24 flex flex-col md:flex-row items-center justify-between gap-12 text-left">
+                    <div className="relative z-10 px-8 py-20 md:p-24 flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
                         <div className="max-w-xl">
                             <h3 className="text-3xl sm:text-5xl md:text-7xl font-black text-white tracking-tighter mb-8 leading-none">
                                 JOIN THE <br />
@@ -175,7 +178,7 @@ const Products = () => {
                         <div className="flex flex-col sm:flex-row gap-6 w-full md:w-auto">
                             <Link
                                 to="/categories"
-                                className="bg-white text-black px-12 py-7 rounded-3xl font-black text-xl hover:shadow-[0_30px_60px_rgba(255,255,255,0.3)] hover:-translate-y-2 transition-all flex items-center justify-center gap-3 active:scale-95"
+                                className="bg-white text-black px-12 py-4 md:py-5 lg:py-7 rounded-3xl font-black text-xs md:text-sm lg:text-xl hover:shadow-[0_30px_60px_rgba(255,255,255,0.3)] hover:-translate-y-2 transition-all flex items-center justify-center gap-3 active:scale-95"
                             >
                                 START EXPLORING
                                 <ArrowRight size={24} />

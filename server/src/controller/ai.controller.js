@@ -31,7 +31,7 @@ const callAI = async (prompt, modelOptions = {}) => {
         // Try Groq First
         const groq = getGroqClient();
         const completion = await groq.chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
+            messages: modelOptions.messages || [{ role: "user", content: prompt }],
             model: modelOptions.groqModel || "llama-3.3-70b-versatile",
             temperature: modelOptions.temperature || 0.7,
             max_tokens: modelOptions.maxTokens || 2000
@@ -47,9 +47,22 @@ const callAI = async (prompt, modelOptions = {}) => {
                 model: modelOptions.geminiModel || "gemini-1.5-flash"
             });
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            return response.text();
+            // Use sendMessage for history if available, otherwise generateContent
+            if (modelOptions.messages && modelOptions.messages.length > 1) {
+                const chat = model.startChat({
+                    history: modelOptions.messages.slice(0, -1).map(m => ({
+                        role: m.role === 'assistant' ? 'model' : m.role,
+                        parts: [{ text: m.content }]
+                    }))
+                });
+                const lastMsg = modelOptions.messages[modelOptions.messages.length - 1].content;
+                const result = await chat.sendMessage(lastMsg);
+                return result.response.text();
+            } else {
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                return response.text();
+            }
         } catch (geminiError) {
             console.error("Both AI providers failed:", geminiError.message);
             throw new Error("AI services unavailable");

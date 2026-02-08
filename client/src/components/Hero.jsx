@@ -47,24 +47,27 @@ const Hero = () => {
 
             {/* Content Container */}
             <div className={`relative z-10 container mx-auto px-6 text-center`}>
-
+ 
+                <div className='pb-20'>
                 {/* Premium Badge */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8"
+                    className="inline-flex items-center gap-2 px-4 py-1   rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-15 "
                 >
                     <Sparkles className="text-orange-500" size={16} />
-                    <span className="text-xs font-bold tracking-widest text-orange-200 uppercase tracking-[0.3em]">The Premier African Marketplace</span>
+                    <span className="text-[8px] md:text-[10px] lg:text-xs font-bold  tracking-widest text-orange-200 uppercase tracking-[0.3em] ">The Premier African Marketplace</span>
                 </motion.div>
 
+
+                </div>
                 {/* Main Headline */}
                 <motion.h1
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.4 }}
-                    className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black text-white mb-6 tracking-tighter leading-none"
+                    className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6 tracking-tighter leading-[0.9] sm:leading-none"
                 >
                     <span className="block mb-2">DISCOVER THE</span>
                     <span className="bg-gradient-to-r from-orange-500 via-rose-500 to-amber-500 bg-clip-text text-transparent">
@@ -92,10 +95,10 @@ const Hero = () => {
                 >
                     <Link
                         to="/categories"
-                        className="group relative px-12 py-5 bg-orange-600 text-white rounded-2xl font-black text-xl hover:bg-orange-700 transition-all shadow-[0_0_40px_-10px_rgba(234,88,12,0.5)] active:scale-95 overflow-hidden"
+                        className="group relative px-12 py-4 md:py-5 bg-orange-600 text-white rounded-2xl font-black text-xl hover:bg-orange-700 transition-all shadow-[0_0_40px_-10px_rgba(234,88,12,0.5)] active:scale-95 overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                        <span className="flex items-center gap-2">
+                        <span className=" text-sm md:text-base lg:text-lg flex items-center gap-2">
                             START SHOPPING
                             <ShoppingBag size={24} />
                         </span>
@@ -103,7 +106,7 @@ const Hero = () => {
 
                     <Link
                         to="/register?role=vendor"
-                        className="flex items-center gap-4 px-8 py-5 text-white bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl font-bold hover:bg-white/10 transition-all group"
+                        className="flex items-center gap-4 px-8 py-4 md:py-5 text-white text-sm md:text-base lg:text-lg bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl font-bold hover:bg-white/10 transition-all group"
                     >
                         <Store className="text-orange-500" size={24} />
                         BECOME A VENDOR
