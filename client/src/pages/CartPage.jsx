@@ -56,16 +56,23 @@ const CartPage = () => {
 
     if (cartItems.length === 0) {
         return (
-            <div className="min-h-[80vh] bg-gradient-to-br from-[#f5f7fa] to-[#c3cfe2] flex items-center justify-center px-4 py-10">
-                <div className="text-center p-12 bg-white rounded-2xl max-w-lg w-full mx-auto shadow-lg">
-                    <ShoppingCart size={80} className="text-gray-300 mx-auto mb-6" />
-                    <h2 className="text-3xl font-bold text-gray-800 mb-3">Your cart is empty</h2>
-                    <p className="text-gray-600 text-lg mb-8">Add some products to get started!</p>
+            <div className="min-h-[80vh] bg-slate-50 flex items-center justify-center px-4 py-10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] rounded-full -mr-64 -mt-64" />
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/5 blur-[120px] rounded-full -ml-64 -mb-64" />
+
+                <div className="text-center p-16 bg-white/40 backdrop-blur-xl rounded-[3rem] border border-white/60 max-w-lg w-full mx-auto shadow-2xl relative z-10 animate-fadeInUp">
+                    <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white mx-auto mb-8 shadow-xl shadow-indigo-200">
+                        <ShoppingCart size={48} strokeWidth={2.5} />
+                    </div>
+                    <h2 className="text-4xl font-black text-gray-900 mb-4 tracking-tighter uppercase">Cart is Empty</h2>
+                    <p className="text-gray-500 font-medium text-lg mb-10 leading-relaxed">
+                        Your treasure bag is waiting to be filled with authentic African excellence.
+                    </p>
                     <button
                         onClick={() => navigate('/categories')}
-                        className="px-10 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:-translate-y-1 transition-transform shadow-lg hover:shadow-indigo-500/30"
+                        className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-indigo-600 transition-all shadow-xl shadow-gray-200 hover:shadow-indigo-200 active:scale-95"
                     >
-                        Start Shopping
+                        Explore Collections
                     </button>
                 </div>
             </div>

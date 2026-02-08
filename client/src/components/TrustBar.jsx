@@ -31,18 +31,20 @@ const TrustBar = () => {
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-orange-500/30 to-transparent"></div>
 
             <div className="container mx-auto px-6 relative z-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 sm:gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                     {features.map((f, i) => (
                         <div
                             key={i}
                             className="flex flex-col items-center text-center group animate-fadeInUp"
                             style={{ animationDelay: `${i * 100}ms` }}
                         >
-                            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:bg-orange-600/10 group-hover:border-orange-500/50 transition-all duration-500 transform group-hover:-translate-y-2">
-                                {f.icon}
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:bg-orange-600 transition-all duration-700 transform group-hover:rotate-[360deg] shadow-[0_0_20px_rgba(234,88,12,0)] group-hover:shadow-[0_0_40px_rgba(234,88,12,0.4)]">
+                                <div className="group-hover:scale-125 transition-transform duration-500 text-orange-500 group-hover:text-white">
+                                    {f.icon}
+                                </div>
                             </div>
-                            <h4 className="text-white font-black text-xs uppercase tracking-[0.3em] mb-2">{f.title}</h4>
-                            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{f.desc}</p>
+                            <h4 className="text-white font-black text-[10px] sm:text-xs uppercase tracking-[0.3em] mb-2 group-hover:text-orange-500 transition-colors">{f.title}</h4>
+                            <p className="text-slate-500 text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">{f.desc}</p>
                         </div>
                     ))}
                 </div>

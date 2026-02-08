@@ -116,7 +116,7 @@ const Navbar = ({ scrolled }) => {
                   placeholder="Universal Discovery..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 pr-4 text-[10px] uppercase font-bold tracking-widest text-white placeholder-slate-500 focus:bg-white/10 focus:border-orange-500/50 transition-all outline-none backdrop-blur-md w-40 focus:w-64"
+                  className="bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 pr-4 text-[10px] uppercase font-bold tracking-widest text-white placeholder-slate-500 focus:bg-white/10 focus:border-orange-500/50 transition-all outline-none backdrop-blur-md w-32 xl:w-40 xl:focus:w-72 lg:focus:w-56"
                 />
                 <Search className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-orange-500 transition-colors' size={14} />
               </form>
@@ -219,7 +219,7 @@ const Navbar = ({ scrolled }) => {
 
       {/* Mobile Menu Overlay */}
       {openMenu && (
-        <div className='md:hidden absolute top-full left-0 w-full bg-slate-950 border-t border-white/5 shadow-2xl animate-in slide-in-from-top duration-300'>
+        <div className='md:hidden absolute top-full left-0 w-full bg-slate-950/95 backdrop-blur-2xl border-t border-white/5 shadow-2xl animate-in slide-in-from-top duration-300 max-h-[90vh] overflow-y-auto'>
           <div className='p-6 space-y-6'>
             <div className='grid grid-cols-2 gap-4'>
               <NavItem href="#home" label="Home" tab="home" mobile />

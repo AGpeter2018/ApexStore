@@ -5,6 +5,7 @@ import axios from 'axios';
 import ProductItem from '../components/ProductItem';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Search, Filter, SlidersHorizontal, Package, ArrowRight, Grid, List, Star, Sparkles } from 'lucide-react';
+import { aiAPI, productAPI } from '../utils/api';
 
 const SearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -26,27 +27,24 @@ const SearchPage = () => {
             setLoading(true);
 
             // 1. Expand search intent using AI
-            const expansionRes = await axios.post(`${import.meta.env.VITE_API_URL} /ai/expand - search - intent`, {
-                query
-            });
+            const expansionRes = await aiAPI.expandSearchIntent({ query });
 
             const expansion = expansionRes.data.data;
             setAiExpansion(expansion);
 
             // 2. Fetch products using expanded terms
-            // Combine original query and expanded terms for a broader search
             const searchQuery = [expansion.originalQuery, ...(expansion.expandedTerms || [])].join(' ');
 
-            const params = new URLSearchParams({
+            const params = {
                 search: searchQuery,
                 limit: 20
-            });
+            };
 
             if (expansion.suggestedMaxPrice) {
-                params.append('maxPrice', expansion.suggestedMaxPrice);
+                params.maxPrice = expansion.suggestedMaxPrice;
             }
 
-            const productsRes = await axios.get(`${import.meta.env.VITE_API_URL}/products?${params}`);
+            const productsRes = await productAPI.getProducts(params);
             setProducts(productsRes.data.data);
 
         } catch (err) {
